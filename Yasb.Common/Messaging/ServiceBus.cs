@@ -36,8 +36,7 @@ namespace Yasb.Common.Messaging
         }
         public void Publish<TMessage>(TMessage message) where TMessage : IMessage
         {
-            var subscriptionPoints = new BusEndPoint[] { BusEndPoint.Parse("192.168.127.128:6379:redis_consumer") };
-           // var subscriptionPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().FullName);
+            var subscriptionPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().FullName);
             foreach (var endPoint in subscriptionPoints)
             {
                 Send<TMessage>(endPoint, message);
