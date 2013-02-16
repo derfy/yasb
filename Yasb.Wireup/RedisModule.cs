@@ -49,7 +49,7 @@ namespace Yasb.Wireup
                 };
             });
             builder.RegisterType<TaskRunner>().As<ITaskRunner>();
-            builder.Register(c => new RedisSubscriptionService(localEndPoint, redisClient)).As<ISubscriptionService>();
+            builder.Register(c => new SubscriptionService(localEndPoint, redisClient)).As<ISubscriptionService>();
             builder.Register(c => new MessagesSender(c.Resolve<Func<BusEndPoint,IQueue>>()))
                    .As<IMessagesSender>();
            

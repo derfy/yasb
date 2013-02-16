@@ -8,11 +8,11 @@ using Yasb.Common.Extensions;
 
 namespace Yasb.Redis.Messaging
 {
-    public class RedisSubscriptionService : ISubscriptionService
+    public class SubscriptionService : ISubscriptionService
     {
         private RedisClient _conn;
         private BusEndPoint _localEndPoint;
-        public RedisSubscriptionService(BusEndPoint localEndPoint, RedisClient conn)
+        public SubscriptionService(BusEndPoint localEndPoint, RedisClient conn)
         {
             _localEndPoint = localEndPoint;
             _conn = conn;
