@@ -95,9 +95,13 @@ namespace Yasb.Redis.Messaging.Client
         
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
         {
-            var task = _socketClient.StartConnect();
-            task.Wait();
-            return task.Result.Send<TResult>(command).GetLatestResult<TResult>();
+            var taskConnect = _socketClient.StartConnect();
+            taskConnect.Wait();
+            var taskSend = _socketClient.SendAsync<TResult>(command,taskConnect.Result);
+            using (var commandProcessor = taskSend.Result)
+            {
+                return command.ProcessResponse(commandProcessor);
+            }
         }
 
 

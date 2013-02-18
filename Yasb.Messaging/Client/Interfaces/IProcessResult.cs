@@ -7,7 +7,7 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
 {
     public interface IProcessResult<TResult> : IRedisCommand
     {
-        TResult ProcessResponse(RedisSocketAsyncEventArgs e);
+        TResult ProcessResponse(ICommandResultProcessor processor);
     }
 
 }

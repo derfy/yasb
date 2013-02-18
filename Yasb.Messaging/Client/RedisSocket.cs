@@ -14,44 +14,20 @@ namespace Yasb.Redis.Messaging.Client
 {
    
     
-   
-    public class CommandToken : ICommandToken
+    public class RedisSocket 
     {
-        private TaskCompletionSource<ICommandSender> _tcs = new TaskCompletionSource<ICommandSender>();
-        protected CommandToken()
-        {
-
-        }
-        public CommandToken(IRedisCommand command)
-        {
-            this.Command = command;
-        }
-
-        public virtual IRedisCommand Command { get; private set; }
-
-        public TaskCompletionSource<ICommandSender> TaskCompletionSource { get { return _tcs; } }
-
-
-
-        public void SetException(Exception ex)
-        {
-            TaskCompletionSource.SetException(ex);
-        }
-    }
-    
-    public class RedisSocket
-    {
-        private ConcurrentQueue<RedisSocketAsyncEventArgs> _connectEventArgsPool;
+        private ConcurrentQueue<RedisSocketAsyncEventArgs> _socketAsyncEventArgsPool;
         private IPEndPoint _ipEndPoint;
+        private bool _disposed = false;
         public RedisSocket(IPEndPoint ipEndPoint, int maxConnectionsNumber=10)
         {
             _ipEndPoint = ipEndPoint;
-            _connectEventArgsPool = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
+            _socketAsyncEventArgsPool = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
           
             for (int i = 0; i < maxConnectionsNumber; i++)
             {
                 var connectEventArg = CreateConnectionEventArg();
-                _connectEventArgsPool.Enqueue(connectEventArg);
+                _socketAsyncEventArgsPool.Enqueue(connectEventArg);
             }
         }
 
@@ -64,16 +40,17 @@ namespace Yasb.Redis.Messaging.Client
             };
             connectEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
             return connectEventArg;
+    
         }
 
-        public Task<ICommandSender> StartConnect()
+        public Task<RedisSocketAsyncEventArgs> StartConnect()
         {
             RedisSocketAsyncEventArgs connectEventArgs = null;
-            while (!_connectEventArgsPool.TryDequeue(out connectEventArgs))
+            while (!_socketAsyncEventArgsPool.TryDequeue(out connectEventArgs))
             {
-                Thread.Sleep(10);
+               Thread.Sleep(10);
             }
-            var tcs = new TaskCompletionSource<ICommandSender>();
+            var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
             connectEventArgs.UserToken = tcs;
             bool willRaiseEvent = connectEventArgs.AcceptSocket.ConnectAsync(connectEventArgs);
             if (!willRaiseEvent)
@@ -83,34 +60,50 @@ namespace Yasb.Redis.Messaging.Client
             return tcs.Task;
         }
 
-     
-      
-        //set the send buffer and post a send op
-        internal Task<ICommandSender> StartSend(RedisSocketAsyncEventArgs sendEventArgs, IRedisCommand command)
-        {
-            var token = new CommandToken(command);
-            sendEventArgs.UserToken = token;
-            InternalSend(sendEventArgs);
-            return token.TaskCompletionSource.Task;
-        }
 
-        private void InternalSend(RedisSocketAsyncEventArgs sendEventArgs)
+
+        public Task<ICommandResultProcessor> SendAsync<TResult>(IProcessResult<TResult> redisCommand, RedisSocketAsyncEventArgs sendEventArgs)
         {
-            var token = sendEventArgs.UserToken as ICommandToken;
-            token.Command.SendRequest(sendEventArgs);
+            var tcs = new TaskCompletionSource<ICommandResultProcessor>();
+            sendEventArgs.UserToken = tcs;
+            redisCommand.SendRequest(sendEventArgs);
             bool willRaiseEvent = sendEventArgs.AcceptSocket.SendAsync(sendEventArgs);
             if (!willRaiseEvent)
             {
                 ProcessSend(sendEventArgs);
             }
+            return tcs.Task;
         }
+
+
+       
+        private void ProcessReceive(RedisSocketAsyncEventArgs e)
+        {
+            var tcs = e.UserToken as TaskCompletionSource<ICommandResultProcessor>;
+            if (tcs != null)
+            {
+                try
+                {
+                     tcs.SetResult(CommandResultProcessor.CreateFrom(e));
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+                finally
+                {
+                    ReuseConnection(e);
+                }
+            }
+        }
+
 
         private void ProcessConnect(RedisSocketAsyncEventArgs connectEventArgs)
         {
-            var tcs = connectEventArgs.UserToken as TaskCompletionSource<ICommandSender>;
+            var tcs = connectEventArgs.UserToken as TaskCompletionSource<RedisSocketAsyncEventArgs>;
             if (connectEventArgs.SocketError == SocketError.Success || connectEventArgs.SocketError == SocketError.IsConnected)
             {
-                tcs.SetResult(new CommandSender(this, connectEventArgs));
+                tcs.SetResult(connectEventArgs);
                 return;
             }
            
@@ -130,20 +123,11 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-        private void ProcessReceive(RedisSocketAsyncEventArgs e)
-        {
-            var token = e.UserToken as ICommandToken;
-            if(token!=null)
-            {
-                token.TaskCompletionSource.SetResult(new CommandSender(this, e));
-            }
-        }
 
-
-        internal void ReuseConnection(RedisSocketAsyncEventArgs _socketAsyncEventArgs)
+        private void ReuseConnection(RedisSocketAsyncEventArgs _socketAsyncEventArgs)
         {
             _socketAsyncEventArgs.Reset();
-            _connectEventArgsPool.Enqueue(_socketAsyncEventArgs);
+            _socketAsyncEventArgsPool.Enqueue(_socketAsyncEventArgs);
         }
         
 
@@ -171,9 +155,6 @@ namespace Yasb.Redis.Messaging.Client
                
             }
         }
-
-
-
 
         
     }

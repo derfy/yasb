@@ -66,6 +66,7 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
+
         public abstract byte[][] ToBinary { get; }
 
         private class SAddCommand : RedisCommand, IProcessResult<byte[]>
@@ -77,9 +78,9 @@ namespace Yasb.Redis.Messaging.Client
                _set = set.ToUtf8Bytes();
                 _value = value.ToUtf8Bytes();
             }
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
             public override byte[][] ToBinary
             {
@@ -95,9 +96,9 @@ namespace Yasb.Redis.Messaging.Client
                 _set = set.ToUtf8Bytes();
             }
 
-            public byte[][] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[][] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectMultiBulkData();
+                return processor.ExpectMultiBulkData();
             }
             public override byte[][] ToBinary
             {
@@ -115,9 +116,9 @@ namespace Yasb.Redis.Messaging.Client
                 _set = set.ToUtf8Bytes();
                 _value = value.ToUtf8Bytes();
             }
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
             public override byte[][] ToBinary
             {
@@ -137,9 +138,9 @@ namespace Yasb.Redis.Messaging.Client
                 _sup = sup.ToUtf8Bytes();
             }
 
-            public byte[][] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[][] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectMultiBulkData();
+                return processor.ExpectMultiBulkData();
             }
             public override byte[][] ToBinary
             {
@@ -154,9 +155,9 @@ namespace Yasb.Redis.Messaging.Client
                 _script = script;
             }
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectBulkData();
+                return processor.ExpectBulkData();
             }
 
             public override byte[][] ToBinary
@@ -176,9 +177,9 @@ namespace Yasb.Redis.Messaging.Client
                 _keys = list.ToArray() ;
             }
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectMultiLine()[0];
+                return processor.ExpectMultiLine()[0];
             }
 
             public override byte[][] ToBinary
@@ -196,9 +197,9 @@ namespace Yasb.Redis.Messaging.Client
                 _sha1 = sha;
             }
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectMultiLine()[0];
+                return processor.ExpectMultiLine()[0];
             }
 
             public override byte[][] ToBinary
@@ -218,9 +219,9 @@ namespace Yasb.Redis.Messaging.Client
                 _value = value;
             }
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectBulkData();
+                return processor.ExpectBulkData();
             }
 
             public override byte[][] ToBinary
@@ -240,9 +241,9 @@ namespace Yasb.Redis.Messaging.Client
                 _key=key;
                 _value=value;
 	        }
-            public  byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
             public  override byte[][]  ToBinary
             {
@@ -263,9 +264,9 @@ namespace Yasb.Redis.Messaging.Client
 	            get { return new byte[2][] { Commands.Ttl, _key.ToUtf8Bytes() }; }
             }
 
-            public  byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
         }
 
@@ -278,9 +279,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public  byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectBulkData();
+                return processor.ExpectBulkData();
             }
 
             public override byte[][] ToBinary
@@ -300,9 +301,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectSingleLine();
+                return processor.ExpectSingleLine();
             }
 
             public override byte[][] ToBinary
@@ -317,11 +318,11 @@ namespace Yasb.Redis.Messaging.Client
             {
                 _key=key;
             }
-           
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
 
             public override byte[][] ToBinary
@@ -341,9 +342,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
 
             public override byte[][] ToBinary
@@ -365,9 +366,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectInt();
+                return processor.ExpectInt();
             }
 
             public override byte[][] ToBinary
@@ -384,9 +385,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectBulkData();
+                return processor.ExpectBulkData();
             }
 
             public override byte[][] ToBinary
@@ -403,9 +404,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectBulkData();
+                return processor.ExpectBulkData();
             }
 
             public override byte[][] ToBinary
@@ -428,9 +429,9 @@ namespace Yasb.Redis.Messaging.Client
             }
 
 
-            public byte[][] ProcessResponse(RedisSocketAsyncEventArgs e)
+            public byte[][] ProcessResponse(ICommandResultProcessor processor)
             {
-                return e.ExpectMultiLine();
+                return processor.ExpectMultiLine();
             }
         
             public  override byte[][]  ToBinary
