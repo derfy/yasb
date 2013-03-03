@@ -55,7 +55,8 @@ namespace Producer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128",6379,"redis_producer"))
+            var bus = configurator.Bus(c => c.WithLocalEndPoint(conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_producer"))
+                                             .WithEndPoint("consumer",conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_consumer")))
                                   .Resolver().InstanceOf<IServiceBus>();
            
             int i = 0;

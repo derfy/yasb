@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IQueue
+    public interface IQueue:IDisposable
     {
         void Initialize();
         MessageEnvelope GetMessage(TimeSpan delta);

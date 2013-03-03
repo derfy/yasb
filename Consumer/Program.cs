@@ -56,13 +56,14 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128",6379,"redis_consumer")
-                                            .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly))
+            var bus = configurator.Bus(c => c.WithLocalEndPoint(conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_consumer"))
+                                             .WithEndPoint("producer",conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_producer"))
+                                             .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly))
                                    .Resolver().InstanceOf<IServiceBus>();
 
-            var endPoint = new BusEndPoint("192.168.127.128",6379,"redis_producer");
-            bus.Subscribe<ExampleMessage>(endPoint);
-            bus.Subscribe<ExampleMessage2>(endPoint);
+
+            bus.Subscribe<ExampleMessage>("producer");
+            bus.Subscribe<ExampleMessage2>("producer");
             bus.Run();
         }
 

@@ -2,16 +2,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Net;
 
 namespace Yasb.Common.Messaging
 {
-    public  class BusEndPoint
+
+    public struct AddressInfo 
     {
-        public BusEndPoint(string host, int port, string queueName)
+        private string _host;
+        private int _port;
+        public AddressInfo(string host,int port)
+        {
+            _host = host;
+            _port = port;
+        }
+
+        public string Host { get { return _host; } }
+        public int Port { get { return _port; } }
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}", Host, Port);
+        }
+
+        public EndPoint ToEndPoint() 
+        {
+            var ipAddress = IPAddress.Parse(Host);
+            return new IPEndPoint(ipAddress, Port);
+
+        }
+
+        public static AddressInfo CreateForm(EndPoint endPoint)
+        {
+            var ipEndPoint = (IPEndPoint)endPoint;
+            return new AddressInfo(ipEndPoint.Address.ToString(), ipEndPoint.Port);
+        }
+    }
+    public  class BusEndPoint 
+    {
+      
+       
+        private BusEndPoint(string host, int port, string queueName="local")
         {
             Host = host;
             Port = port;
             QueueName = queueName;
+        }
+        public BusEndPoint()
+        {
+
+        }
+
+        public BusEndPoint(string endPointName)
+        {
+            this.Name = endPointName;
         }
         
 
@@ -23,13 +66,36 @@ namespace Yasb.Common.Messaging
             return new BusEndPoint(array[0], int.Parse(array[1]), array[2]);
         }
 
-        public string Host { get; private set; }
-        public int Port { get; private set; }
-        public string QueueName { get; private set; }
+        
+
+        public AddressInfo AddressInfo { 
+            get {
+               
+                return new AddressInfo(Host, Port);
+            } 
+        }
+
+        public string Name { get;  set; }
+        public string Host { get;  set; }
+
+        public int Port { get;  set; }
+        public string QueueName { get;  set; }
 
         public override string ToString()
         {
             return string.Format("{0}:{1}:{2}",Host,Port,QueueName);
+        }
+        public override bool Equals(object obj)
+        {
+            var endPoint = obj as BusEndPoint;
+            if (endPoint == null) return false;
+            var isEqual= Host==endPoint.Host && Port==endPoint.Port && QueueName==endPoint.QueueName;
+            return isEqual;
+        }
+
+        public override int GetHashCode()
+        {
+            return Host.GetHashCode() ^ Port.GetHashCode() ^ QueueName.GetHashCode();
         }
 
     }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface ISubscriptionService
+    public interface ISubscriptionService : IDisposable
     {
         BusEndPoint[] GetSubscriptionEndPoints(string typeName);
         void AddSubscriberFor(string typeName, BusEndPoint subscriberEndPoint);

@@ -9,47 +9,29 @@ using System.IO;
 using System.Threading.Tasks;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Net;
+using Yasb.Common.Messaging;
 
 namespace Yasb.Redis.Messaging.Client
 {
    
     
-    public class RedisSocket 
+    public class RedisSocket : IDisposable
     {
-        private ConcurrentQueue<RedisSocketAsyncEventArgs> _socketAsyncEventArgsPool;
-        private IPEndPoint _ipEndPoint;
-        private bool _disposed = false;
-        public RedisSocket(IPEndPoint ipEndPoint, int maxConnectionsNumber=10)
+        private object _disposed = null;
+        private int MaxConnectionsNumber;
+        private Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>> _connectionEventArgsPoolFactory;
+        public RedisSocket(Func<AddressInfo,ConcurrentQueue<RedisSocketAsyncEventArgs>> connectionEventArgsPoolFactory,int maxConnectionsNumber=5)
         {
-            _ipEndPoint = ipEndPoint;
-            _socketAsyncEventArgsPool = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
-          
-            for (int i = 0; i < maxConnectionsNumber; i++)
-            {
-                var connectEventArg = CreateConnectionEventArg();
-                _socketAsyncEventArgsPool.Enqueue(connectEventArg);
-            }
+            MaxConnectionsNumber = maxConnectionsNumber;
+            _connectionEventArgsPoolFactory = connectionEventArgsPoolFactory;
         }
 
-        private RedisSocketAsyncEventArgs CreateConnectionEventArg()
-        {
-            var connectEventArg = new RedisSocketAsyncEventArgs()
-            {
-                RemoteEndPoint = _ipEndPoint,
-                AcceptSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-            };
-            connectEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-            return connectEventArg;
-    
-        }
 
-        public Task<RedisSocketAsyncEventArgs> StartConnect()
+
+        public Task<RedisSocketAsyncEventArgs> StartConnect(AddressInfo endPoint)
         {
-            RedisSocketAsyncEventArgs connectEventArgs = null;
-            while (!_socketAsyncEventArgsPool.TryDequeue(out connectEventArgs))
-            {
-               Thread.Sleep(10);
-            }
+            RedisSocketAsyncEventArgs connectEventArgs = DequeueConnectionEventArgs(endPoint);
+           
             var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
             connectEventArgs.UserToken = tcs;
             bool willRaiseEvent = connectEventArgs.AcceptSocket.ConnectAsync(connectEventArgs);
@@ -60,8 +42,21 @@ namespace Yasb.Redis.Messaging.Client
             return tcs.Task;
         }
 
+        private RedisSocketAsyncEventArgs DequeueConnectionEventArgs(AddressInfo endPoint)
+        {
+            
+            var connectionsQueue = _connectionEventArgsPoolFactory(endPoint);
+            RedisSocketAsyncEventArgs connectEventArgs;
+            if (!connectionsQueue.TryDequeue(out connectEventArgs))
+            {
+                connectEventArgs=CreateConnectionEventArg(endPoint);
 
+            }
+            connectEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            return connectEventArgs;
+        }
 
+       
         public Task<ICommandResultProcessor> SendAsync<TResult>(IProcessResult<TResult> redisCommand, RedisSocketAsyncEventArgs sendEventArgs)
         {
             var tcs = new TaskCompletionSource<ICommandResultProcessor>();
@@ -124,10 +119,13 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-        private void ReuseConnection(RedisSocketAsyncEventArgs _socketAsyncEventArgs)
+        private void ReuseConnection(RedisSocketAsyncEventArgs socketAsyncEventArgs)
         {
-            _socketAsyncEventArgs.Reset();
-            _socketAsyncEventArgsPool.Enqueue(_socketAsyncEventArgs);
+            socketAsyncEventArgs.Reset();
+            socketAsyncEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
+            var remoteEndPoint = AddressInfo.CreateForm(socketAsyncEventArgs.RemoteEndPoint);
+            var connectionsQueue = _connectionEventArgsPoolFactory(remoteEndPoint);
+            connectionsQueue.Enqueue(socketAsyncEventArgs);
         }
         
 
@@ -156,6 +154,32 @@ namespace Yasb.Redis.Messaging.Client
             }
         }
 
-        
+
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, true) == null)
+            {
+                //RedisSocketAsyncEventArgs connectionArgs = null;
+                //while (_socketAsyncEventArgsPool.TryDequeue(out connectionArgs))
+                //{
+                //    connectionArgs.Dispose();
+                //    connectionArgs = null;
+                //}
+            }
+        }
+
+        private RedisSocketAsyncEventArgs CreateConnectionEventArg(AddressInfo endPoint)
+        {
+            var connectEventArgs = new RedisSocketAsyncEventArgs()
+            {
+                RemoteEndPoint = endPoint.ToEndPoint(),
+                AcceptSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            };
+            return connectEventArgs;
+
+        }
+
+
     }
 }

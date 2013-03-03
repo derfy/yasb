@@ -21,10 +21,11 @@ namespace Yasb.Tests.Common.Messaging
         {
             var endPoint=new BusEndPoint("foo",88,"bar");
             var queue=new Mock<IQueue>();
-           Func<BusEndPoint,IQueue> func = endpoint => queue.Object;
+            var endpointName = "foo";
+           Func<string,IQueue> func = name => queue.Object;
            var sut = new MessagesSender(func);
            var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
-           sut.Send(endPoint, envelope);
+           sut.Send(endpointName, envelope);
            queue.Verify(q => q.Push(envelope));
 
         }
@@ -35,7 +36,7 @@ namespace Yasb.Tests.Common.Messaging
         {
             var endPoint = new BusEndPoint("foo", 88, "bar");
             var queue = new Mock<IQueue>();
-            Func<BusEndPoint, IQueue> func = endpoint => queue.Object;
+            Func<string, IQueue> func = endpoint => queue.Object;
             var sut = new MessagesSender(func);
             var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
             sut.Send(null, envelope);

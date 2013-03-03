@@ -10,16 +10,18 @@ using System.IO;
 using System.Reflection;
 using Yasb.Common.Extensions;
 using Yasb.Redis.Messaging.Client.Interfaces;
+using Yasb.Common.Messaging;
 
 namespace Yasb.Redis.Messaging.Client
 {
-    public class RedisClient 
+    public class RedisClient : IDisposable
     {
         internal const int Success = 1;
         private RedisSocket _socketClient;
-        public RedisClient(RedisSocket socketClient)
+        private AddressInfo _addressInfo;
+        public RedisClient(RedisSocket socketClient,AddressInfo addressInfo)
         {
-            
+            _addressInfo = addressInfo;
             _socketClient = socketClient;
         }
 
@@ -95,7 +97,7 @@ namespace Yasb.Redis.Messaging.Client
         
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
         {
-            var taskConnect = _socketClient.StartConnect();
+            var taskConnect = _socketClient.StartConnect(_addressInfo);
             taskConnect.Wait();
             var taskSend = _socketClient.SendAsync<TResult>(command,taskConnect.Result);
             using (var commandProcessor = taskSend.Result)
@@ -106,9 +108,8 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-
-
-
-        
+        public void Dispose()
+        {
+        }
     }
 }

@@ -48,10 +48,10 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldBeAbleToSubscribe()
         {
-            var message = new SubscriptionMessage() { TypeName = typeof(FooMessage).FullName, SubscriberEndPoint = _localEndPoint };
+            var message = new SubscriptionMessage() { TypeName = typeof(FooMessage).FullName, SubscriberEndPointName = _localEndPoint };
             var endPoint = new BusEndPoint("remote", 88, "remoteQueue");
             _sut.Subscribe<FooMessage>(endPoint);
-            _messagesSender.Verify(s => s.Send(endPoint, It.Is<MessageEnvelope>(env => ((SubscriptionMessage)env.Message).TypeName == typeof(FooMessage).FullName && ((SubscriptionMessage)env.Message).SubscriberEndPoint==_localEndPoint && env.To == endPoint && env.From == _sut.LocalEndPoint)), Times.Once());
+            _messagesSender.Verify(s => s.Send(endPoint, It.Is<MessageEnvelope>(env => ((SubscriptionMessage)env.Message).TypeName == typeof(FooMessage).FullName && ((SubscriptionMessage)env.Message).SubscriberEndPointName==_localEndPoint && env.To == endPoint && env.From == _sut.LocalEndPoint)), Times.Once());
         }
 
         [TestMethod]
@@ -60,7 +60,7 @@ namespace Yasb.Tests.Common.Messaging
             var message = new FooMessage();
             var endPoint1=new BusEndPoint("remote1",88,"subscriberQueue1");
             var endPoint2=new BusEndPoint("remote2",88,"subscriberQueue2");
-            _subscriptionService.Setup(s => s.GetSubscriptionEndPoints(typeof(FooMessage).FullName)).Returns(new BusEndPoint[] { endPoint1,endPoint2 });
+            _subscriptionService.Setup(s => s.GetSubscriptionEndPointNames(typeof(FooMessage).FullName)).Returns(new BusEndPoint[] { endPoint1,endPoint2 });
             _sut.Publish<FooMessage>(message);
             _messagesSender.Verify(s => s.Send(endPoint1, It.Is<MessageEnvelope>(env => env.Message == message  && env.To == endPoint1 && env.From == _sut.LocalEndPoint)), Times.Once());
             _messagesSender.Verify(s => s.Send(endPoint2, It.Is<MessageEnvelope>(env => env.Message == message && env.To == endPoint2 && env.From == _sut.LocalEndPoint)), Times.Once());

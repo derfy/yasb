@@ -8,7 +8,8 @@ namespace Yasb.Common.Messaging.Configuration
 {
     public interface IServiceBusConfiguration
     {
-        IServiceBusConfiguration WithLocalEndPoint(string host,int port,string queueName);
+        IServiceBusConfiguration WithLocalEndPoint(Action<EndPointConfiguration> configurer);
         IServiceBusConfiguration WithMessageHandlersAssembly(Assembly assembly);
+        IServiceBusConfiguration WithEndPoint(string endPointName, Action<EndPointConfiguration> configurer);
     }
 }

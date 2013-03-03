@@ -16,14 +16,14 @@ namespace Yasb.Redis.Messaging
     public class Queue : IQueue
     {
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        private RedisClient _conn;
+        private Func<AddressInfo,RedisClient> _connectionFactory;
         private ISerializer _serializer;
-        private string _queueName;
-        public Queue(RedisClient conn,ISerializer serializer,string queueName)
+        private BusEndPoint _endPoint;
+        public Queue(BusEndPoint endPoint, ISerializer serializer, Func<AddressInfo, RedisClient> connectionFactory)
         {
             _serializer = serializer;
-            _queueName = queueName;
-            _conn = conn;
+            _endPoint = endPoint;
+            _connectionFactory = connectionFactory;
         }
         public void Initialize(){
             var fileNames = new string[] { "GetMessage.lua", "SetMessageInProgress.lua", "SetMessageError.lua", "SetMessageCompleted.lua" };
@@ -33,13 +33,17 @@ namespace Yasb.Redis.Messaging
                 using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.Scripts.{1}", type.Namespace,fileName))))
                 {
                     string fileContent = reader.ReadToEnd();
-                    _internalCache[fileName]= _conn.Load(fileContent);
+                    using (var conn = _connectionFactory(_endPoint.AddressInfo))
+                    {
+                        _internalCache[fileName] = conn.Load(fileContent);
+                    }
+                    
                 }
             }
         }
         public MessageEnvelope GetMessage(TimeSpan delta)
         {
-            var bytes = EvalSha("GetMessage.lua", 1, _queueName, DateTime.Now.Subtract(delta).Ticks.ToString());
+            var bytes = EvalSha("GetMessage.lua", 1, _endPoint.QueueName, DateTime.Now.Subtract(delta).Ticks.ToString());
             if (bytes == null)
                 return null;
             return _serializer.Deserialize<MessageEnvelope>(bytes);
@@ -66,18 +70,29 @@ namespace Yasb.Redis.Messaging
         public void Push(MessageEnvelope envelope)
         {
             var bytes = _serializer.Serialize(envelope);
-            _conn.LPush(_queueName, bytes);
+            using (var conn = _connectionFactory(_endPoint.AddressInfo))
+            {
+                conn.LPush(_endPoint.QueueName, bytes);
+            }
+            
         }
 
         private byte[] EvalSha(string fileName,int noKeys, params string[] keys)
         {
             var scriptSha = _internalCache[fileName];
-            return _conn.EvalSha(scriptSha, noKeys, keys);
+            using (var conn = _connectionFactory(_endPoint.AddressInfo))
+            {
+               return conn.EvalSha(scriptSha, noKeys, keys);
+            }
         }
 
 
 
 
 
+
+        public void Dispose()
+        {
+        }
     }
 }
