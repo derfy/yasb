@@ -19,13 +19,14 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldInvokeQueuePushOnSend()
         {
-            var endPoint=new BusEndPoint("foo",88,"bar");
-            var queue=new Mock<IQueue>();
             var endpointName = "foo";
-           Func<string,IQueue> func = name => queue.Object;
+            var endPoint = new BusEndPoint(endpointName);
+            var queue=new Mock<IQueue>();
+            
+            Func<BusEndPoint, IQueue> func = e => queue.Object;
            var sut = new MessagesSender(func);
            var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
-           sut.Send(endpointName, envelope);
+           sut.Send(endPoint, envelope);
            queue.Verify(q => q.Push(envelope));
 
         }
@@ -34,9 +35,9 @@ namespace Yasb.Tests.Common.Messaging
         [ExpectedException(typeof(ArgumentNullException))]
         public void SendShouldThrowWhenEndpointIsNull()
         {
-            var endPoint = new BusEndPoint("foo", 88, "bar");
+            var endPoint = new BusEndPoint();
             var queue = new Mock<IQueue>();
-            Func<string, IQueue> func = endpoint => queue.Object;
+            Func<BusEndPoint, IQueue> func = endpoint => queue.Object;
             var sut = new MessagesSender(func);
             var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
             sut.Send(null, envelope);

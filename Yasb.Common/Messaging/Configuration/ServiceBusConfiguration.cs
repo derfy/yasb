@@ -9,10 +9,19 @@ namespace Yasb.Common.Messaging.Configuration
     public class ServiceBusConfiguration : IServiceBusConfiguration
     {
         private List<BusEndPoint> _namedEndPointsList = new List<BusEndPoint>();
-        private BusEndPoint _currentEndPoint;
+      
         public ServiceBusConfiguration()
         {
         }
+
+        public BusEndPoint[] EndPoints { get { return _namedEndPointsList.ToArray(); } }
+
+        public AddressInfo[] AddressInfoList { get { return _namedEndPointsList.Select(e => e.AddressInfo).Distinct().ToArray(); } }
+
+        public BusEndPoint LocalEndPoint { get { return _namedEndPointsList.First(e => e.Name == "local"); } }
+
+        public Assembly MessageHandlersAssembly { get; private set; }
+
         public IServiceBusConfiguration WithLocalEndPoint(Action<EndPointConfiguration> configurer)
         {
             return WithEndPoint("local",configurer);
@@ -31,13 +40,15 @@ namespace Yasb.Common.Messaging.Configuration
             return this;
         }
 
-        public BusEndPoint[] EndPoints { get { return _namedEndPointsList.ToArray(); } }
+        public BusEndPoint GetEndPointByName(string endPointName)
+        {
+            var endPoint = _namedEndPointsList.FirstOrDefault(e => e.Name == endPointName);
+            if (endPoint == null)
+                throw new ApplicationException(string.Format("No Endpoint was registered with name {0}", endPointName));
+            return endPoint;
+        }
 
-        public AddressInfo[] AddressInfoList { get { return EndPoints.Select(e => e.AddressInfo).Distinct().ToArray(); } }
-
-        public BusEndPoint LocalEndPoint { get { return _namedEndPointsList.First(e=>e.Name=="local"); } }
-
-        public Assembly MessageHandlersAssembly { get; private set; }
+       
 
     }
 }

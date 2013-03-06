@@ -11,5 +11,6 @@ namespace Yasb.Common.Messaging.Configuration
         IServiceBusConfiguration WithLocalEndPoint(Action<EndPointConfiguration> configurer);
         IServiceBusConfiguration WithMessageHandlersAssembly(Assembly assembly);
         IServiceBusConfiguration WithEndPoint(string endPointName, Action<EndPointConfiguration> configurer);
+        BusEndPoint GetEndPointByName(string endPointName);
     }
 }

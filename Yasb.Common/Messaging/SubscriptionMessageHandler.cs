@@ -7,18 +7,15 @@ namespace Yasb.Common.Messaging
 {
     public class SubscriptionMessageHandler : IHandleMessages<SubscriptionMessage>
     {
-        private Func<ISubscriptionService> _subscriptionServiceFactory;
-        public SubscriptionMessageHandler(Func<ISubscriptionService> subscriptionService)
+        private ISubscriptionService _subscriptionService;
+        public SubscriptionMessageHandler(ISubscriptionService subscriptionService)
         {
-            _subscriptionServiceFactory = subscriptionService;
+            _subscriptionService = subscriptionService;
         }
 
         public void Handle(SubscriptionMessage message)
         {
-            using (var subscriptionService = _subscriptionServiceFactory())
-            {
-                subscriptionService.AddSubscriberFor(message.TypeName, message.SubscriberEndPoint);
-            }
+            _subscriptionService.AddSubscriberFor(message.TypeName, message.SubscriberEndPoint);
            
         }
 

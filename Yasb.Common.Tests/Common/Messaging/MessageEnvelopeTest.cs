@@ -19,8 +19,8 @@ namespace Yasb.Tests.Common.Messaging
         public void ShouldGetCorrectTypeName()
         {
             var message=new FooMessage();
-            var fromEndPoint=new BusEndPoint("from",88,"fromQueue");
-            var toEndPoint=new BusEndPoint("to",88,"toQueue");
+            var fromEndPoint=new BusEndPoint();
+            var toEndPoint=new BusEndPoint();
             var envelope = new MessageEnvelope(message, Guid.NewGuid(), fromEndPoint, toEndPoint);
             Assert.AreEqual(typeof(FooMessage), envelope.ContentType);
         }

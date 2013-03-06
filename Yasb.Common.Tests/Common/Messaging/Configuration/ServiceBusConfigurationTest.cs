@@ -22,7 +22,7 @@ namespace Yasb.Tests.Common.Messaging.Configuration
         [TestMethod]
         public void ShouldConfigureEndpoint()
         {
-            _sut.WithLocalEndPoint("foo", 80, "queueName");
+            _sut.WithLocalEndPoint(c=> c.WithAddressInfo("foo", 80).WithInputQueue("queueName"));
             Assert.AreEqual("foo:80:queueName", _sut.LocalEndPoint.ToString());
         }
 

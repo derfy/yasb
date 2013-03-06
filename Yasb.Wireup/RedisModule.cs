@@ -89,14 +89,7 @@ namespace Yasb.Wireup
                 };
             });
 
-            builder.Register<Func<ISubscriptionService>>(c =>
-            {
-                var context = c.Resolve<IComponentContext>();
-                return () => new SubscriptionService(localEndPoint, context.Resolve<Func<AddressInfo,RedisClient>>());
-            });
-           
-
-            
+            builder.Register<ISubscriptionService>(c => new SubscriptionService(localEndPoint, c.Resolve<Func<AddressInfo, RedisClient>>()));
 
             builder.RegisterType<TaskRunner>().As<ITaskRunner>();
             builder.Register(c => new MessagesSender(c.Resolve<Func<BusEndPoint,IQueue>>()))
@@ -104,8 +97,8 @@ namespace Yasb.Wireup
 
             builder.Register(c => new MessagesReceiver(c.ResolveKeyed<IQueue>(localEndPoint), c.Resolve<Func<Type, IEnumerable<IHandleMessages>>>())).As(typeof(IWorker));
 
-            builder.Register(c => new SubscriptionMessageHandler(c.Resolve<Func<ISubscriptionService>>())).As<IHandleMessages<SubscriptionMessage>>();
-            builder.Register(c => new ServiceBus(_configuration.EndPoints, c.Resolve<IWorker>(), c.Resolve<IMessagesSender>(), c.Resolve<Func<ISubscriptionService>>(), c.Resolve<ITaskRunner>())).As<IServiceBus>();
+            builder.Register(c => new SubscriptionMessageHandler(c.Resolve<ISubscriptionService>())).As<IHandleMessages<SubscriptionMessage>>();
+            builder.Register(c => new ServiceBus(_configuration, c.Resolve<IWorker>(), c.Resolve<IMessagesSender>(), c.Resolve<ISubscriptionService>(), c.Resolve<ITaskRunner>())).As<IServiceBus>();
 
             if (_configuration.MessageHandlersAssembly != null)
             {

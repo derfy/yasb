@@ -17,7 +17,10 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void EndPointShouldBeCorrectlyStringified()
         {
-            var busEndPoint = new BusEndPoint("foo", 80, "bar");
+            var busEndPoint = new BusEndPoint();
+            busEndPoint.Host = "foo";
+            busEndPoint.Port = 80;
+            busEndPoint.QueueName = "bar";
             var toString = busEndPoint.ToString();
             Assert.AreEqual("foo:80:bar", toString);
         }
