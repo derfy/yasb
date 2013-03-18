@@ -50,6 +50,7 @@
     <Compile Include="Client\Commands.cs" />
     <Compile Include="Client\CommandResultProcessor.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />
+    <Compile Include="Client\Interfaces\IConnectionFactory.cs" />
     <Compile Include="Client\Interfaces\IProcessResult.cs" />
     <Compile Include="Client\Interfaces\IRedisCommand.cs" />
     <Compile Include="Client\RedisClient.cs" />

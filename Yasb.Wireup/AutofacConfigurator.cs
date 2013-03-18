@@ -27,6 +27,11 @@ namespace Yasb.Wireup
             {
                 return _container.Resolve<T>();
             }
+
+            public void Dispose()
+            {
+                _container.Dispose();
+            }
         }
         private ContainerBuilder _builder;
         
@@ -47,6 +52,8 @@ namespace Yasb.Wireup
             return new AutofacResolver(_builder.Build());
         }
 
-        
+
+
+      
     }
 }

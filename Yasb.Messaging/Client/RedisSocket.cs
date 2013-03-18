@@ -20,7 +20,7 @@ namespace Yasb.Redis.Messaging.Client
         private object _disposed = null;
         private int MaxConnectionsNumber;
         private Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>> _connectionEventArgsPoolFactory;
-        public RedisSocket(Func<AddressInfo,ConcurrentQueue<RedisSocketAsyncEventArgs>> connectionEventArgsPoolFactory,int maxConnectionsNumber=5)
+        public RedisSocket(Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>> connectionEventArgsPoolFactory, int maxConnectionsNumber = 5)
         {
             MaxConnectionsNumber = maxConnectionsNumber;
             _connectionEventArgsPoolFactory = connectionEventArgsPoolFactory;

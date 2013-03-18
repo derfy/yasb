@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IResolver
+    public interface IResolver : IDisposable
     {
         T InstanceOf<T>();
     }

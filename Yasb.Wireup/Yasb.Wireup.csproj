@@ -49,7 +49,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutofacConfigurator.cs" />
+    <Compile Include="AutofacConnectionFactory.cs" />
     <Compile Include="ExampleMessage.cs" />
+    <Compile Include="LifetimeScopeFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisModule.cs" />
   </ItemGroup>
