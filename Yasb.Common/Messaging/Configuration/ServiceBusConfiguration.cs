@@ -14,10 +14,7 @@ namespace Yasb.Common.Messaging.Configuration
         {
         }
 
-        public BusEndPoint[] EndPoints { get { return _namedEndPointsList.ToArray(); } }
-
-        public AddressInfo[] AddressInfoList { get { return _namedEndPointsList.Select(e => e.AddressInfo).Distinct().ToArray(); } }
-
+      
         public BusEndPoint LocalEndPoint { get { return _namedEndPointsList.First(e => e.Name == "local"); } }
 
         public Assembly MessageHandlersAssembly { get; private set; }

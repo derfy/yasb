@@ -19,8 +19,8 @@ namespace Yasb.Redis.Messaging.Client
     {
         private object _disposed = null;
         private int MaxConnectionsNumber;
-        private Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>> _connectionEventArgsPoolFactory;
-        public RedisSocket(Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>> connectionEventArgsPoolFactory, int maxConnectionsNumber = 5)
+        private IConnectionEventArgsPoolFactory _connectionEventArgsPoolFactory;
+        public RedisSocket(IConnectionEventArgsPoolFactory connectionEventArgsPoolFactory, int maxConnectionsNumber = 5)
         {
             MaxConnectionsNumber = maxConnectionsNumber;
             _connectionEventArgsPoolFactory = connectionEventArgsPoolFactory;
@@ -42,14 +42,14 @@ namespace Yasb.Redis.Messaging.Client
             return tcs.Task;
         }
 
-        private RedisSocketAsyncEventArgs DequeueConnectionEventArgs(AddressInfo endPoint)
+        private RedisSocketAsyncEventArgs DequeueConnectionEventArgs(AddressInfo addressInfo)
         {
             
-            var connectionsQueue = _connectionEventArgsPoolFactory(endPoint);
+            var connectionsQueue = _connectionEventArgsPoolFactory.GetConnectionsFor(addressInfo);
             RedisSocketAsyncEventArgs connectEventArgs;
             if (!connectionsQueue.TryDequeue(out connectEventArgs))
             {
-                connectEventArgs=CreateConnectionEventArg(endPoint);
+                connectEventArgs=CreateConnectionEventArg(addressInfo);
 
             }
             connectEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
@@ -123,8 +123,8 @@ namespace Yasb.Redis.Messaging.Client
         {
             socketAsyncEventArgs.Reset();
             socketAsyncEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-            var remoteEndPoint = AddressInfo.CreateForm(socketAsyncEventArgs.RemoteEndPoint);
-            var connectionsQueue = _connectionEventArgsPoolFactory(remoteEndPoint);
+            var remoteAddress = AddressInfo.CreateForm(socketAsyncEventArgs.RemoteEndPoint);
+            var connectionsQueue = _connectionEventArgsPoolFactory.GetConnectionsFor(remoteAddress);
             connectionsQueue.Enqueue(socketAsyncEventArgs);
         }
         

@@ -18,9 +18,8 @@ namespace Yasb.Common.Messaging
         public void Send(BusEndPoint endPoint, MessageEnvelope message)
         {
             Guard.NotNull<BusEndPoint>(() => endPoint, endPoint);
-            using (var queue = _queueFactory(endPoint)) {
-                queue.Push(message);
-            }
+            var queue = _queueFactory(endPoint);
+            queue.Push(message);
             
         }
 

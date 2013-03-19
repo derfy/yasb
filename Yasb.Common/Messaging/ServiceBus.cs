@@ -6,7 +6,7 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Common.Messaging
 {
-    public class ServiceBus : IServiceBus 
+    public class ServiceBus : IServiceBus , IDisposable
     {
         private readonly IWorker _messagesReceiver;
         private readonly IMessagesSender _messagesSender;
@@ -61,6 +61,10 @@ namespace Yasb.Common.Messaging
             _taskRunner.Run(_messagesReceiver);
         }
 
-       
+
+
+        public void Dispose()
+        {
+        }
     }
 }

@@ -10,20 +10,17 @@ namespace Yasb.Redis.Messaging
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private Func<AddressInfo,RedisClient> _connectionFactory;
+        private RedisClient _connection;
         private BusEndPoint _localEndPoint;
-        public SubscriptionService(BusEndPoint localEndPoint, Func<AddressInfo,RedisClient> connectionFactory)
+        public SubscriptionService(BusEndPoint localEndPoint, RedisClient connection)
         {
             _localEndPoint = localEndPoint;
-            _connectionFactory = connectionFactory;
+            _connection = connection;
         }
         public BusEndPoint[] GetSubscriptionEndPoints(string typeName)
         {
             string set = string.Format("{0}:{1}", _localEndPoint.ToString(), typeName);
-            using (var conn = _connectionFactory(_localEndPoint.AddressInfo))
-            {
-                return conn.SMembers(set).Select(e => BusEndPoint.Parse(e.FromUtf8Bytes())).ToArray();
-            }
+            return _connection.SMembers(set).Select(e => BusEndPoint.Parse(e.FromUtf8Bytes())).ToArray();
             
         }
 
@@ -31,10 +28,7 @@ namespace Yasb.Redis.Messaging
         public void AddSubscriberFor(string typeName, BusEndPoint subscriberEndPoint) 
         {
             string set = string.Format("{0}:{1}", _localEndPoint.ToString(), typeName);
-            using (var conn = _connectionFactory(_localEndPoint.AddressInfo))
-            {
-                conn.Sadd(set, subscriberEndPoint.ToString());
-            }
+            _connection.Sadd(set, subscriberEndPoint.ToString());
         }
 
 

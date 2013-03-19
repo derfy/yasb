@@ -78,10 +78,10 @@ namespace Yasb.Tests.Wireup
             builder.RegisterModule(new RedisModule(configuration));
             var container = builder.Build();
             var addressInfo=new AddressInfo("192.168.0.10",80);
-            var factory = container.Resolve<Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>>>();
-            var c1=factory(addressInfo);
-            var c2 = factory(addressInfo);
-            var c3 = factory(configuration.LocalEndPoint.AddressInfo);
+            var factory = container.Resolve<IConnectionEventArgsPoolFactory>();
+            var c1=factory.GetConnectionsFor(addressInfo);
+            var c2 = factory.GetConnectionsFor(addressInfo);
+            var c3 = factory.GetConnectionsFor(configuration.LocalEndPoint.AddressInfo);
         }
     }
 }

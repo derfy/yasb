@@ -11,7 +11,7 @@ using Yasb.Common;
 
 namespace Yasb.Common.Messaging
 {
-    public class MessagesReceiver : IWorker
+    public class MessagesReceiver : IWorker,IDisposable
     {
         Func<Type, IEnumerable<IHandleMessages>> _handlerRegistrar;
         private IQueue _queue;
@@ -59,6 +59,11 @@ namespace Yasb.Common.Messaging
                 return;
             Console.WriteLine("error on processing message : " + handlerException.Message);
             _queue.SetMessageError(handlerException.EnvelopeId);
+        }
+
+        public void Dispose()
+        {
+          
         }
     }
 }

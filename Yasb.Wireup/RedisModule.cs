@@ -17,12 +17,15 @@ using System.Net.Sockets;
 using Autofac.Core;
 using Autofac.Core.Registration;
 using Autofac.Core.Lifetime;
+using Autofac.Builder;
 
 namespace Yasb.Wireup
 {
     public class RedisModule : Autofac.Module
     {
         private ServiceBusConfiguration _configuration;
+        private ConcurrentDictionary<AddressInfo, AddressInfo> _addressInfoSet = new ConcurrentDictionary<AddressInfo, AddressInfo>();
+        private object _locker=new object();
         public RedisModule(ServiceBusConfiguration configuration)
         {
             this._configuration = configuration;
@@ -30,78 +33,55 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
 
-
             var localEndPoint = _configuration.LocalEndPoint;
-
-            builder.RegisterType<RedisSocket>().SingleInstance();
-
-            builder.Register<Func<AddressInfo, ConcurrentQueue<RedisSocketAsyncEventArgs>>>(ctx => {
-                var lifetimeScopeFactory = new LifetimeScopeFactory(ctx.Resolve<ILifetimeScope>(), (tag, cb) => cb.Register<ConcurrentQueue<RedisSocketAsyncEventArgs>>(c => CreateConnectionQueue((AddressInfo)tag)).InstancePerMatchingLifetimeScope(tag));
-                _configuration.AddressInfoList.ToList().ForEach(addressInfo => lifetimeScopeFactory.EnsureLifetimeScopeFor(addressInfo));
-                return (addressInfo)=>{
-                    lifetimeScopeFactory.EnsureLifetimeScopeFor(addressInfo);
-                    var addressScope=lifetimeScopeFactory.GetLifetimeScopeFor(addressInfo);
-                    return addressScope.Resolve<ConcurrentQueue<RedisSocketAsyncEventArgs>>();
-                };
-            }).SingleInstance();
-
-            _configuration.AddressInfoList.ToList().ForEach(addressInfo => builder.RegisterType<RedisClient>().WithParameter(new TypedParameter(typeof(AddressInfo), addressInfo)));
+            builder.RegisterType<ConnectionEventArgsPoolFactory>().As<IConnectionEventArgsPoolFactory>().SingleInstance();
+            builder.RegisterType<RedisClient>().InstancePerLifetimeScope();
            
-            builder.Register<Func<AddressInfo, RedisClient>>(c => {
-                var context = c.Resolve<IComponentContext>();
-                return addressInfo =>
-                {
-                    return context.Resolve<RedisClient>(new TypedParameter(typeof(AddressInfo), addressInfo));
-                };
-            }).SingleInstance();
+           
+            builder.RegisterType<RedisSocket>().InstancePerLifetimeScope();
 
-            _configuration.EndPoints.ToList().ForEach(endPoint => builder.RegisterType<Queue>().As<IQueue>().WithParameter(new TypedParameter(typeof(BusEndPoint), endPoint)));
-           
-              
-            builder.Register<Func<BusEndPoint, IQueue>>(c =>
-            {
-                var lifetimeScope = c.Resolve<ILifetimeScope>();
-                return endPoint =>
-                {
-                    using (var queueScope = lifetimeScope.BeginLifetimeScope())
-                    {
-                        return queueScope.Resolve<IQueue>(new TypedParameter(typeof(BusEndPoint), endPoint));
-                    }
-                    
-                };
-            });
-           
             
-            builder.Register<Func<Type, IEnumerable<IHandleMessages>>>(c =>
+
+            builder.RegisterWithScope<IQueue>((componentScope,parameters) =>
             {
-                var lifetimeScope = c.Resolve<ILifetimeScope>();
-                return type =>
-                {
-                    using (var currentScope = lifetimeScope.BeginLifetimeScope())
-                    {
-                        var genericType = typeof(IHandleMessages<>).MakeGenericType(type);
-                        var collType = typeof(IEnumerable<>).MakeGenericType(genericType);
-                        return currentScope.Resolve(collType) as IEnumerable<IHandleMessages>;
-                    }
-                };
+                var endPoint = parameters.OfType<TypedParameter>().First().Value as BusEndPoint;
+                return new Queue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<AddressInfo>(endPoint.AddressInfo)));
+            }).As(typeof(IQueue));
+
+            builder.RegisterWithScope<ISubscriptionService>(componentScope =>
+            {
+                return new SubscriptionService(localEndPoint, componentScope.Resolve<RedisClient>(TypedParameter.From<AddressInfo>(localEndPoint.AddressInfo)));
+            }).As(typeof(ISubscriptionService));
+
+            
+
+            builder.RegisterWithScope<IEnumerable<IHandleMessages>>((componentScope, p) =>
+            {
+                var type = p.OfType<TypedParameter>().First().Value as Type;
+                var genericType = typeof(IHandleMessages<>).MakeGenericType(type);
+                var collType = typeof(IEnumerable<>).MakeGenericType(genericType);
+                return componentScope.Resolve(collType) as IEnumerable<IHandleMessages>;
             });
 
-            builder.RegisterType<SubscriptionService>().As<ISubscriptionService>().WithParameter(new TypedParameter(typeof(BusEndPoint),localEndPoint));
+            builder.RegisterWithScope<IWorker>(componentScope =>
+            {
+                var localQueue = componentScope.Resolve<IQueue>(TypedParameter.From<BusEndPoint>(localEndPoint));
+                return new MessagesReceiver(localQueue, componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
+            }).As(typeof(IWorker)).InstancePerLifetimeScope();
 
-            builder.RegisterType<TaskRunner>().As<ITaskRunner>();
-            builder.RegisterType<MessagesSender>().As<IMessagesSender>();
+            builder.RegisterWithScope<Func<Type, IEnumerable<IHandleMessages>>>(componentScope =>
+            {
+                return type => componentScope.Resolve<IEnumerable<IHandleMessages>>(TypedParameter.From<Type>(type));
+            }).InstancePerLifetimeScope();
 
-            builder.Register(c => {
-                var lifetimeScope = c.Resolve<ILifetimeScope>();
-                using (var currentScope = lifetimeScope.BeginLifetimeScope())
-                {
-                    var localQueue = c.Resolve<Func<BusEndPoint, IQueue>>()(localEndPoint);
-                    return new MessagesReceiver(localQueue, c.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
-                }
-            }).As(typeof(IWorker));
 
-            builder.RegisterType<SubscriptionMessageHandler>().As<IHandleMessages<SubscriptionMessage>>();
-            builder.RegisterType<ServiceBus>().WithParameter(new TypedParameter(typeof(IServiceBusConfiguration),_configuration)).As<IServiceBus>();
+            builder.RegisterType<TaskRunner>().As<ITaskRunner>().InstancePerLifetimeScope();
+            builder.RegisterType<MessagesSender>().As<IMessagesSender>().InstancePerLifetimeScope();
+
+
+
+            builder.RegisterType<SubscriptionMessageHandler>().As<IHandleMessages<SubscriptionMessage>>().InstancePerLifetimeScope();
+            builder.RegisterType<ServiceBus>().WithParameter(TypedParameter.From<IServiceBusConfiguration>(_configuration)).As<IServiceBus>();
                 
        
             if (_configuration.MessageHandlersAssembly != null)
@@ -111,24 +91,9 @@ namespace Yasb.Wireup
                        .AsImplementedInterfaces();
             }
            
-        }
 
-       
-        private static ConcurrentQueue<RedisSocketAsyncEventArgs> CreateConnectionQueue(AddressInfo addressInfo)
-        {
-            var connectionsQueue = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
-            for (int ii = 0; ii < 10; ii++)
-            {
-                var connectEventArg = new RedisSocketAsyncEventArgs()
-                {
-                    RemoteEndPoint = addressInfo.ToEndPoint(),
-                    AcceptSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
-                };
-                connectionsQueue.Enqueue(connectEventArg);
-            }
-            return connectionsQueue;
+            
         }
-
        
 
         

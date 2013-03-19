@@ -13,17 +13,17 @@ using Yasb.Common.Serialization;
 namespace Yasb.Redis.Messaging
 {
    
-    public class Queue : IQueue
+    public class Queue : IQueue,IDisposable
     {
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        private Func<AddressInfo,RedisClient> _connectionFactory;
+        private RedisClient _connection;
         private ISerializer _serializer;
         private BusEndPoint _endPoint;
-        public Queue(BusEndPoint endPoint, ISerializer serializer, Func<AddressInfo, RedisClient> connectionFactory)
+        public Queue(BusEndPoint endPoint, ISerializer serializer,  RedisClient connection)
         {
             _serializer = serializer;
             _endPoint = endPoint;
-            _connectionFactory = connectionFactory;
+            _connection = connection;
         }
         public void Initialize(){
             var fileNames = new string[] { "GetMessage.lua", "SetMessageInProgress.lua", "SetMessageError.lua", "SetMessageCompleted.lua" };
@@ -33,11 +33,7 @@ namespace Yasb.Redis.Messaging
                 using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.Scripts.{1}", type.Namespace,fileName))))
                 {
                     string fileContent = reader.ReadToEnd();
-                    using (var conn = _connectionFactory(_endPoint.AddressInfo))
-                    {
-                        _internalCache[fileName] = conn.Load(fileContent);
-                    }
-                    
+                    _internalCache[fileName] = _connection.Load(fileContent);
                 }
             }
         }
@@ -70,27 +66,19 @@ namespace Yasb.Redis.Messaging
         public void Push(MessageEnvelope envelope)
         {
             var bytes = _serializer.Serialize(envelope);
-            using (var conn = _connectionFactory(_endPoint.AddressInfo))
-            {
-                conn.LPush(_endPoint.QueueName, bytes);
-            }
+            _connection.LPush(_endPoint.QueueName, bytes);
             
         }
 
         private byte[] EvalSha(string fileName,int noKeys, params string[] keys)
         {
             var scriptSha = _internalCache[fileName];
-            using (var conn = _connectionFactory(_endPoint.AddressInfo))
-            {
-               return conn.EvalSha(scriptSha, noKeys, keys);
-            }
+            return _connection.EvalSha(scriptSha, noKeys, keys);
         }
 
 
 
-
-
-
+     
         public void Dispose()
         {
         }

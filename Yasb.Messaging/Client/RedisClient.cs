@@ -106,10 +106,11 @@ namespace Yasb.Redis.Messaging.Client
             }
         }
 
-
-
+        private bool isDisposed = false;
+      
         public void Dispose()
         {
+            isDisposed = true;
         }
     }
 }
