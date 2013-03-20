@@ -49,9 +49,9 @@
     <Compile Include="Client\BinaryUtils.cs" />
     <Compile Include="Client\Commands.cs" />
     <Compile Include="Client\CommandResultProcessor.cs" />
-    <Compile Include="Client\ConnectionEventArgsPoolFactory.cs" />
+    <Compile Include="Client\ConcurrentQueueRedisSocketEventArgsPool.cs" />
+    <Compile Include="Client\Interfaces\IRedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />
-    <Compile Include="Client\Interfaces\IConnectionEventArgsPoolFactory.cs" />
     <Compile Include="Client\Interfaces\IConnectionFactory.cs" />
     <Compile Include="Client\Interfaces\IProcessResult.cs" />
     <Compile Include="Client\Interfaces\IRedisCommand.cs" />

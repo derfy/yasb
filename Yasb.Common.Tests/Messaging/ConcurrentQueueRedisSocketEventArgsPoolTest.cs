@@ -3,22 +3,16 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Autofac;
-using Yasb.Wireup;
-using Yasb.Common.Messaging.Configuration;
-using Yasb.Common.Messaging;
-using System.Collections.Concurrent;
-using Yasb.Redis.Messaging.Client;
-using Yasb.Redis.Messaging.Client.Interfaces;
-namespace Yasb.Tests.Wireup
+
+namespace Yasb.Tests.Messaging
 {
     /// <summary>
-    /// Summary description for RedisModuleTest
+    /// Summary description for ConcurrentQueueRedisSocketEventArgsPoolTest
     /// </summary>
     [TestClass]
-    public class RedisModuleTest
+    public class ConcurrentQueueRedisSocketEventArgsPoolTest
     {
-        public RedisModuleTest()
+        public ConcurrentQueueRedisSocketEventArgsPoolTest()
         {
             //
             // TODO: Add constructor logic here
@@ -68,20 +62,9 @@ namespace Yasb.Tests.Wireup
         [TestMethod]
         public void TestMethod1()
         {
-            //var builder = new ContainerBuilder();
-            //var configuration = new ServiceBusConfiguration();
-            //Action<IServiceBusConfiguration> configurator = c => {
-            //    c.WithLocalEndPoint(cfg => cfg.WithAddressInfo("127.0.0.1", 80).WithInputQueue("mmgn"));
-            //    c.WithEndPoint("remote", cfg => cfg.WithAddressInfo("192.168.0.1", 80).WithInputQueue("mmgn"));
-            //};
-            //configurator(configuration);
-            //builder.RegisterModule(new RedisModule(configuration));
-            //var container = builder.Build();
-            //var addressInfo=new AddressInfo("192.168.0.10",80);
-            //var factory = container.Resolve<IConnectionEventArgsPoolFactory>();
-            //var c1=factory.GetConnectionsFor(addressInfo);
-            //var c2 = factory.GetConnectionsFor(addressInfo);
-            //var c3 = factory.GetConnectionsFor(configuration.LocalEndPoint.AddressInfo);
+            //
+            // TODO: Add test logic here
+            //
         }
     }
 }

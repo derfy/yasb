@@ -9,6 +9,6 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
 {
     public interface IConnectionEventArgsPoolFactory
     {
-        ConcurrentQueue<RedisSocketAsyncEventArgs> GetConnectionsFor(AddressInfo endPoint);
+        IRedisSocketAsyncEventArgsPool GetConnectionsFor(AddressInfo addressInfo);
     }
 }

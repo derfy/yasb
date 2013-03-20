@@ -34,11 +34,12 @@ namespace Yasb.Wireup
         {
 
             var localEndPoint = _configuration.LocalEndPoint;
-            builder.RegisterType<ConnectionEventArgsPoolFactory>().As<IConnectionEventArgsPoolFactory>().SingleInstance();
+            builder.RegisterType<ConcurrentQueueRedisSocketEventArgsPool>().As<IRedisSocketAsyncEventArgsPool>().SingleInstance();
             builder.RegisterType<RedisClient>().InstancePerLifetimeScope();
-           
-           
-            builder.RegisterType<RedisSocket>().InstancePerLifetimeScope();
+            builder.RegisterWithScope<RedisSocket>(componentScope =>
+            {
+                return new RedisSocket(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<int>(10)));
+            }).InstancePerLifetimeScope();
 
             
 
