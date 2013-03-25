@@ -15,8 +15,10 @@ namespace Yasb.Redis.Messaging.Client
         private ConcurrentDictionary<EndPoint, ConcurrentQueue<RedisSocketAsyncEventArgs>> _internalDictionary = new ConcurrentDictionary<EndPoint, ConcurrentQueue<RedisSocketAsyncEventArgs>>();
        
         private int _size;
+        private Func<EndPoint, RedisSocketAsyncEventArgs> _connectionFactory;
         public ConcurrentQueueRedisSocketEventArgsPool(int size)
         {
+            _connectionFactory = CreateConnectionEventArg;
             _size = size;
         }
 
@@ -24,46 +26,53 @@ namespace Yasb.Redis.Messaging.Client
 
         public RedisSocketAsyncEventArgs Dequeue(EndPoint endPoint)
         {
-            var currentQueue = EnsureQueueFor(endPoint);
+            var currentQueue = PreallocateItems(endPoint);
             RedisSocketAsyncEventArgs connectEventArgs=null;
             if (!currentQueue.TryDequeue(out connectEventArgs))
             {
-                connectEventArgs = CreateConnectionEventArg(endPoint);
+                connectEventArgs = _connectionFactory(endPoint);
             }
             return connectEventArgs;
         }
 
+        
        
        
 
         public void Enqueue(RedisSocketAsyncEventArgs socketAsyncEventArgs)
         {
-            var currentQueue = EnsureQueueFor(socketAsyncEventArgs.RemoteEndPoint);
-            currentQueue.Enqueue(socketAsyncEventArgs);
+            ConcurrentQueue<RedisSocketAsyncEventArgs> currentQueue = null;
+            if (!_internalDictionary.TryGetValue(socketAsyncEventArgs.RemoteEndPoint, out currentQueue))
+                throw new ApplicationException("No item was preallocated");
+            currentQueue.Enqueue(socketAsyncEventArgs);   
+            
         }
 
-       
-
-        private ConcurrentQueue<RedisSocketAsyncEventArgs> EnsureQueueFor(EndPoint endPoint)
+        public ConcurrentQueue<RedisSocketAsyncEventArgs> PreallocateItems(EndPoint endPoint)
         {
             ConcurrentQueue<RedisSocketAsyncEventArgs> currentQueue = null;
-            if(!_internalDictionary.TryGetValue(endPoint,out currentQueue)){
+            if (!_internalDictionary.TryGetValue(endPoint, out currentQueue))
+            {
                 currentQueue = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
                 for (int ii = 0; ii < _size; ii++)
                 {
-                    currentQueue.Enqueue(CreateConnectionEventArg(endPoint));
+                    currentQueue.Enqueue(_connectionFactory(endPoint));
                 }
                 _internalDictionary.TryAdd(endPoint, currentQueue);
             }
             return currentQueue;
         }
 
+        public int Size { get { return _internalDictionary.Select(kv => kv.Value).Sum(q => q.Count); } }
+
+       
+
         private RedisSocketAsyncEventArgs CreateConnectionEventArg(EndPoint endPoint)
         {
             var connectEventArgs = new RedisSocketAsyncEventArgs()
             {
                 RemoteEndPoint = endPoint,
-                AcceptSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+                AcceptSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp)
             };
             return connectEventArgs;
 

@@ -6,6 +6,7 @@ using System.Threading;
 using Autofac;
 using Yasb.Wireup;
 using Yasb.Common.Messaging;
+using Yasb.Redis.Messaging;
 
 namespace Producer
 {
@@ -55,9 +56,9 @@ namespace Producer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Bus(c => c.WithLocalEndPoint(conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_producer"))
-                                             .WithEndPoint("consumer",conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_consumer")))
-                                  .Resolver().InstanceOf<IServiceBus>();
+            var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128:6379:redis_producer")
+                                             .WithEndPoint("192.168.127.128:6379:redis_consumer", conf => conf.WithName("consumer")))
+                                  .Resolver().InstanceOf<IServiceBus<RedisEndPoint>>();
            
             int i = 0;
             bus.Run();
@@ -71,7 +72,7 @@ namespace Producer
                // bus.Send<ExampleMessage>("redis_consumer", message);
                 var message2 = new ExampleMessage2(i, "I am Handler 2");
                 bus.Publish<ExampleMessage>(message2);
-                bus.Send<ExampleMessage2>(BusEndPoint.Parse("192.168.127.128:6379:redis_consumer"), message2);
+                bus.Send<ExampleMessage2>(RedisEndPoint.Parse("192.168.127.128:6379:redis_consumer"), message2);
                 Interlocked.Increment(ref _writeCount);
             }
             

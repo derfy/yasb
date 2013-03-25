@@ -6,28 +6,21 @@ using System.Net;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class EndPointConfiguration
+    public abstract class EndPointConfiguration<TEndPoint> 
+        where TEndPoint : IEndPoint
     {
+        
 
+        protected internal abstract TEndPoint CreateEndPoint(string endPoint);
        
-        public EndPointConfiguration(string endPointName)
+        public EndPointConfiguration<TEndPoint> WithName(string name)
         {
-            Built = new BusEndPoint(endPointName);
-        }
-
-        public EndPointConfiguration WithAddressInfo(string host, int port)
-        {
-            Built.Port = port;
-            Built.Host = host;
-            return this;
-        }
-        public EndPointConfiguration WithInputQueue(string queueName)
-        {
-            Built.QueueName = queueName;
+            Built.Name=name;
             return this;
         }
 
 
-        internal BusEndPoint Built { get; private set; }
+
+        internal TEndPoint Built { get;  set; }
     }
 }

@@ -16,6 +16,10 @@
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -61,13 +65,16 @@
   <ItemGroup>
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
-    <Compile Include="Common\Messaging\BusEndPointTest.cs" />
+    <Compile Include="Common\Messaging\RedisEndPointTest.cs" />
     <Compile Include="Common\Messaging\Configuration\ServiceBusConfigurationTest.cs" />
+    <Compile Include="Common\Messaging\Configuration\TestEndPointConfiguration.cs" />
     <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
     <Compile Include="Common\Messaging\MessagesSenderTest.cs" />
+    <Compile Include="Common\Messaging\TestEndPoint.cs" />
     <Compile Include="Common\Serialization\FooMessage.cs" />
     <Compile Include="Common\Serialization\MessageEnvelopeConverterTest.cs" />
     <Compile Include="Common\Serialization\SerializerTest.cs" />
+    <Compile Include="Common\Serialization\TestEndPointConverter.cs" />
     <Compile Include="Common\TaskRunnerTest.cs" />
     <Compile Include="Messaging\ConcurrentQueueRedisSocketEventArgsPoolTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

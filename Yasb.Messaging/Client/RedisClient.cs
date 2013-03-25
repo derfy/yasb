@@ -18,10 +18,10 @@ namespace Yasb.Redis.Messaging.Client
     {
         internal const int Success = 1;
         private RedisSocket _socketClient;
-        private AddressInfo _addressInfo;
-        public RedisClient(RedisSocket socketClient,AddressInfo addressInfo)
+        private EndPoint _endPoint;
+        public RedisClient(RedisSocket socketClient, EndPoint endPoint)
         {
-            _addressInfo = addressInfo;
+            _endPoint = endPoint;
             _socketClient = socketClient;
         }
 
@@ -97,7 +97,7 @@ namespace Yasb.Redis.Messaging.Client
         
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
         {
-            var taskConnect = _socketClient.StartConnect(_addressInfo);
+            var taskConnect = _socketClient.StartConnect(_endPoint);
             taskConnect.Wait();
             var taskSend = _socketClient.SendAsync<TResult>(command,taskConnect.Result);
             using (var commandProcessor = taskSend.Result)

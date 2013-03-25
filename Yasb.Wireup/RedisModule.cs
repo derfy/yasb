@@ -18,15 +18,15 @@ using Autofac.Core;
 using Autofac.Core.Registration;
 using Autofac.Core.Lifetime;
 using Autofac.Builder;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Wireup
 {
     public class RedisModule : Autofac.Module
     {
-        private ServiceBusConfiguration _configuration;
-        private ConcurrentDictionary<AddressInfo, AddressInfo> _addressInfoSet = new ConcurrentDictionary<AddressInfo, AddressInfo>();
-        private object _locker=new object();
-        public RedisModule(ServiceBusConfiguration configuration)
+        private ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration> _configuration;
+
+        public RedisModule(ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration> configuration)
         {
             this._configuration = configuration;
         }
@@ -45,13 +45,13 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<IQueue>((componentScope,parameters) =>
             {
-                var endPoint = parameters.OfType<TypedParameter>().First().Value as BusEndPoint;
-                return new Queue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<AddressInfo>(endPoint.AddressInfo)));
+                var endPoint = parameters.OfType<TypedParameter>().First().Value as RedisEndPoint;
+                return new Queue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
             }).As(typeof(IQueue));
 
             builder.RegisterWithScope<ISubscriptionService>(componentScope =>
             {
-                return new SubscriptionService(localEndPoint, componentScope.Resolve<RedisClient>(TypedParameter.From<AddressInfo>(localEndPoint.AddressInfo)));
+                return new SubscriptionService(localEndPoint, componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(localEndPoint.ToIPEndPoint())));
             }).As(typeof(ISubscriptionService));
 
             
@@ -66,7 +66,7 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<IWorker>(componentScope =>
             {
-                var localQueue = componentScope.Resolve<IQueue>(TypedParameter.From<BusEndPoint>(localEndPoint));
+                var localQueue = componentScope.Resolve<IQueue>(TypedParameter.From<IEndPoint>(localEndPoint));
                 return new MessagesReceiver(localQueue, componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As(typeof(IWorker)).InstancePerLifetimeScope();
 
@@ -77,12 +77,12 @@ namespace Yasb.Wireup
 
 
             builder.RegisterType<TaskRunner>().As<ITaskRunner>().InstancePerLifetimeScope();
-            builder.RegisterType<MessagesSender>().As<IMessagesSender>().InstancePerLifetimeScope();
+            builder.RegisterType<MessagesSender<RedisEndPoint>>().As<IMessagesSender<RedisEndPoint>>().InstancePerLifetimeScope();
 
 
 
-            builder.RegisterType<SubscriptionMessageHandler>().As<IHandleMessages<SubscriptionMessage>>().InstancePerLifetimeScope();
-            builder.RegisterType<ServiceBus>().WithParameter(TypedParameter.From<IServiceBusConfiguration>(_configuration)).As<IServiceBus>();
+            builder.RegisterType<SubscriptionMessageHandler<RedisEndPoint>>().As<IHandleMessages<SubscriptionMessage<RedisEndPoint>>>().InstancePerLifetimeScope();
+            builder.RegisterType<ServiceBus<RedisEndPoint>>().WithParameter(TypedParameter.From<RedisEndPoint[]>(_configuration.NamedEndPoints)).As<IServiceBus<RedisEndPoint>>();
                 
        
             if (_configuration.MessageHandlersAssembly != null)

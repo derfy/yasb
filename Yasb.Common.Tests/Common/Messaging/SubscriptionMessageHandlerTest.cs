@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging;
 using Moq;
+using Yasb.Redis.Messaging;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -19,11 +20,11 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldInvokeSubscriptionServiceAddOnHandle()
         {
-            var subscription=new SubscriptionMessage(){TypeName="foo"};
+            var subscription = new SubscriptionMessage<TestEndPoint>() { TypeName = "foo" };
             var subscriptionService = new Mock<ISubscriptionService>();
-            var sut = new SubscriptionMessageHandler(subscriptionService.Object);
+            var sut = new SubscriptionMessageHandler<TestEndPoint>(subscriptionService.Object);
             sut.Handle(subscription);
-            subscriptionService.Verify(s => s.AddSubscriberFor("foo", It.IsAny<BusEndPoint>()), Times.Once());
+            subscriptionService.Verify(s => s.AddSubscriberFor("foo", It.IsAny<RedisEndPoint>()), Times.Once());
         }
     }
 }

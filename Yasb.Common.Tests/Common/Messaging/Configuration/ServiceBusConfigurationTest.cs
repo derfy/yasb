@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging.Configuration;
+using Yasb.Wireup;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Tests.Common.Messaging.Configuration
 {
@@ -11,19 +13,19 @@ namespace Yasb.Tests.Common.Messaging.Configuration
     /// Summary description for ServiceBusConfigurationTest
     /// </summary>
     [TestClass]
-    public class ServiceBusConfigurationTest
+    public class RedisServiceBusConfigurationTest
     {
-        private ServiceBusConfiguration _sut;
+        private ServiceBusConfiguration<TestEndPoint,TestEndPointConfiguration> _sut;
         [TestInitialize]
         public void Setup() {
-            _sut = new ServiceBusConfiguration();
+            _sut = new ServiceBusConfiguration<TestEndPoint, TestEndPointConfiguration>();
         }
 
         [TestMethod]
         public void ShouldConfigureEndpoint()
         {
-            _sut.WithLocalEndPoint(c=> c.WithAddressInfo("foo", 80).WithInputQueue("queueName"));
-            Assert.AreEqual("foo:80:queueName", _sut.LocalEndPoint.ToString());
+            _sut.WithLocalEndPoint("localhost:80:queueName");
+            Assert.AreEqual("localhost:80:queueName", _sut.LocalEndPoint.Value);
         }
 
         [TestMethod]

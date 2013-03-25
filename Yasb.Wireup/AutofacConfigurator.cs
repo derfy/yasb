@@ -10,11 +10,15 @@ using System.Linq.Expressions;
 using Yasb.Common.Serialization;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Messaging;
+using Yasb.Redis.Messaging.Configuration;
+using Yasb.Redis.Messaging;
+using Newtonsoft.Json;
+using Yasb.Redis.Messaging.Serialization;
 
 namespace Yasb.Wireup
 {
-    
-    public  class AutofacConfigurator : IConfigurator
+
+    public class AutofacConfigurator : IConfigurator<RedisEndPoint,RedisEndPointConfiguration>
     {
         private class AutofacResolver : IResolver
         {
@@ -39,10 +43,10 @@ namespace Yasb.Wireup
         {
             _builder = new ContainerBuilder();
         }
-        public IConfigurator Bus(Action<IServiceBusConfiguration> configurator)
+        public IConfigurator<RedisEndPoint, RedisEndPointConfiguration> Bus(Action<ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration>> configurator)
         {
-             _builder.RegisterType<Serializer>().As<ISerializer>();
-            var configuration = new ServiceBusConfiguration();
+            _builder.RegisterType<Serializer>().WithParameter(TypedParameter.From<JsonConverter[]>(new JsonConverter[]{new RedisEndPointConverter(),new MessageEnvelopeConverter<RedisEndPoint>()})).As<ISerializer>();
+            var configuration = new ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration>();
             configurator(configuration);
             _builder.RegisterModule(new RedisModule(configuration));
             return this;

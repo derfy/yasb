@@ -11,31 +11,31 @@ namespace Yasb.Redis.Messaging
     public class SubscriptionService : ISubscriptionService
     {
         private RedisClient _connection;
-        private BusEndPoint _localEndPoint;
-        public SubscriptionService(BusEndPoint localEndPoint, RedisClient connection)
+        private IEndPoint _localEndPoint;
+        public SubscriptionService(IEndPoint localEndPoint, RedisClient connection)
         {
             _localEndPoint = localEndPoint;
             _connection = connection;
         }
-        public BusEndPoint[] GetSubscriptionEndPoints(string typeName)
+        public IEndPoint[] GetSubscriptionEndPoints(string typeName)
         {
-            string set = string.Format("{0}:{1}", _localEndPoint.ToString(), typeName);
-            return _connection.SMembers(set).Select(e => BusEndPoint.Parse(e.FromUtf8Bytes())).ToArray();
+            string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
+            return _connection.SMembers(set).Select(e => RedisEndPoint.Parse(e.FromUtf8Bytes())).ToArray();
             
         }
 
 
-        public void AddSubscriberFor(string typeName, BusEndPoint subscriberEndPoint) 
+        public void AddSubscriberFor(string typeName, IEndPoint subscriberEndPoint) 
         {
-            string set = string.Format("{0}:{1}", _localEndPoint.ToString(), typeName);
-            _connection.Sadd(set, subscriberEndPoint.ToString());
+            string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
+            _connection.Sadd(set, subscriberEndPoint.Value);
         }
 
 
 
-        public void RemoveSubscriberFor(string typeName, BusEndPoint subscriberEndPoint)
+        public void RemoveSubscriberFor(string typeName, IEndPoint subscriberEndPoint)
         {
-            string combinedValue = string.Format("{0}:{1}", subscriberEndPoint, typeName);
+            string combinedValue = string.Format("{0}:{1}", subscriberEndPoint.Value, typeName);
         }
 
         public void Dispose()

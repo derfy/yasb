@@ -5,9 +5,11 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IConfigurator
+    public interface IConfigurator<TEndPoint, TEndPointConfiguration>
+        where TEndPoint : IEndPoint
+        where TEndPointConfiguration : EndPointConfiguration<TEndPoint>
     {
-        IConfigurator Bus(Action<IServiceBusConfiguration> configurator);
+        IConfigurator<TEndPoint, TEndPointConfiguration> Bus(Action<ServiceBusConfiguration<TEndPoint, TEndPointConfiguration>> configurator);
         IResolver Resolver();
     }
 }

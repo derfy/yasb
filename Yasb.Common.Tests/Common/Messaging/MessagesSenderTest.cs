@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging;
 using Moq;
+using Yasb.Redis.Messaging;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -19,12 +20,11 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldInvokeQueuePushOnSend()
         {
-            var endpointName = "foo";
-            var endPoint = new BusEndPoint(endpointName);
+            var endPoint = new TestEndPoint("myTestAddress:80:myQueue");
             var queue=new Mock<IQueue>();
             
-            Func<BusEndPoint, IQueue> func = e => queue.Object;
-           var sut = new MessagesSender(func);
+            Func<IEndPoint, IQueue> func = e => queue.Object;
+           var sut = new MessagesSender<TestEndPoint>(func);
            var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
            sut.Send(endPoint, envelope);
            queue.Verify(q => q.Push(envelope));
@@ -35,10 +35,10 @@ namespace Yasb.Tests.Common.Messaging
         [ExpectedException(typeof(ArgumentNullException))]
         public void SendShouldThrowWhenEndpointIsNull()
         {
-            var endPoint = new BusEndPoint();
+            var endPoint = new TestEndPoint("myTestAddress:80:myQueue");
             var queue = new Mock<IQueue>();
-            Func<BusEndPoint, IQueue> func = endpoint => queue.Object;
-            var sut = new MessagesSender(func);
+            Func<IEndPoint, IQueue> func = endpoint => queue.Object;
+            var sut = new MessagesSender<TestEndPoint>(func);
             var envelope = new MessageEnvelope(new FooMessage(), Guid.NewGuid(), endPoint, endPoint);
             sut.Send(null, envelope);
 

@@ -15,6 +15,10 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -61,6 +65,10 @@
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">
       <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
       <Name>Yasb.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yasb.Messaging\Yasb.Redis.Messaging.csproj">
+      <Project>{603CF365-A1F5-42C5-A78B-DA6EC1F61223}</Project>
+      <Name>Yasb.Redis.Messaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Yasb.Wireup\Yasb.Wireup.csproj">
       <Project>{E90CB416-314A-4EA9-9B0A-1D6666644778}</Project>

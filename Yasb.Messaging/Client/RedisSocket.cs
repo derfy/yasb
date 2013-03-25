@@ -26,9 +26,10 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-        public Task<RedisSocketAsyncEventArgs> StartConnect(AddressInfo endPoint)
+        public Task<RedisSocketAsyncEventArgs> StartConnect(EndPoint endPoint)
         {
-            RedisSocketAsyncEventArgs connectEventArgs = DequeueConnectionEventArgs(endPoint);
+            RedisSocketAsyncEventArgs connectEventArgs = _connectionEventArgsPool.Dequeue(endPoint);
+            connectEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
            
             var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
             connectEventArgs.UserToken = tcs;
@@ -111,15 +112,7 @@ namespace Yasb.Redis.Messaging.Client
             _connectionEventArgsPool.Enqueue(socketAsyncEventArgs);
         }
 
-        private RedisSocketAsyncEventArgs DequeueConnectionEventArgs(AddressInfo addressInfo)
-        {
-
-            RedisSocketAsyncEventArgs connectEventArgs = _connectionEventArgsPool.Dequeue(addressInfo.ToEndPoint());
-
-            connectEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
-            return connectEventArgs;
-        }
-
+       
        
         private void IO_Completed(object sender, SocketAsyncEventArgs e)
         {

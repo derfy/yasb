@@ -32,6 +32,33 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Redis.Messaging", "Yasb.Messaging\Yasb.Redis.Messaging.csproj", "{603CF365-A1F5-42C5-A78B-DA6EC1F61223}"
 EndProject
 Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 7
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://derfy.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Consumer\\Consumer.csproj
+		SccProjectTopLevelParentUniqueName1 = Yasb.sln
+		SccProjectName1 = Consumer
+		SccLocalPath1 = Consumer
+		SccProjectUniqueName2 = Producer\\Producer.csproj
+		SccProjectTopLevelParentUniqueName2 = Yasb.sln
+		SccProjectName2 = Producer
+		SccLocalPath2 = Producer
+		SccProjectUniqueName3 = Yasb.Common.Tests\\Yasb.Tests.csproj
+		SccProjectTopLevelParentUniqueName3 = Yasb.sln
+		SccProjectName3 = Yasb.Common.Tests
+		SccLocalPath3 = Yasb.Common.Tests
+		SccProjectUniqueName4 = Yasb.Common\\Yasb.Common.csproj
+		SccProjectName4 = Yasb.Common
+		SccLocalPath4 = Yasb.Common
+		SccProjectUniqueName5 = Yasb.Messaging\\Yasb.Redis.Messaging.csproj
+		SccProjectName5 = Yasb.Messaging
+		SccLocalPath5 = Yasb.Messaging
+		SccProjectUniqueName6 = Yasb.Wireup\\Yasb.Wireup.csproj
+		SccProjectName6 = Yasb.Wireup
+		SccLocalPath6 = Yasb.Wireup
+	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Yasb.vsmdi
 	EndGlobalSection

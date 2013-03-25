@@ -18,8 +18,8 @@ namespace Yasb.Redis.Messaging
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
         private RedisClient _connection;
         private ISerializer _serializer;
-        private BusEndPoint _endPoint;
-        public Queue(BusEndPoint endPoint, ISerializer serializer,  RedisClient connection)
+        private RedisEndPoint _endPoint;
+        public Queue(RedisEndPoint endPoint, ISerializer serializer,  RedisClient connection)
         {
             _serializer = serializer;
             _endPoint = endPoint;

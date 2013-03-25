@@ -6,6 +6,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Bson;
 using Newtonsoft.Json.Linq;
+using Yasb.Common.Messaging;
 
 namespace Yasb.Common.Serialization
 {
@@ -13,12 +14,13 @@ namespace Yasb.Common.Serialization
     public class Serializer : ISerializer
     {
         private JsonSerializer _serializer;
-        public Serializer()
+        public Serializer(JsonConverter[] jsonConverters)
         {
-            _serializer = new JsonSerializer();
-            //_serializer.Converters.Add(new BusEndPointConverter());
-            _serializer.Converters.Add(new MessageEnvelopeConverter());
-            
+            _serializer = new JsonSerializer() { NullValueHandling=NullValueHandling.Ignore};
+            foreach (var converter in jsonConverters)
+            {
+                _serializer.Converters.Add(converter);
+            }
         }
 
         /// <summary>

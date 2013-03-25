@@ -6,6 +6,7 @@ using Autofac;
 using Yasb.Wireup;
 using System.Threading;
 using Yasb.Common.Messaging;
+using Yasb.Redis.Messaging;
 
 namespace Consumer
 {
@@ -56,10 +57,10 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Bus(c => c.WithLocalEndPoint(conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_consumer"))
-                                             .WithEndPoint("producer",conf => conf.WithAddressInfo("192.168.127.128", 6379).WithInputQueue("redis_producer"))
+            var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128:6379:redis_consumer")
+                                             .WithEndPoint("192.168.127.128:6379:redis_producer", conf => conf.WithName("producer"))
                                              .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly))
-                                   .Resolver().InstanceOf<IServiceBus>();
+                                   .Resolver().InstanceOf<IServiceBus<RedisEndPoint>>();
 
 
             bus.Subscribe<ExampleMessage>("producer");
