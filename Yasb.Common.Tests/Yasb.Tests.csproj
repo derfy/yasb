@@ -65,7 +65,6 @@
   <ItemGroup>
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
-    <Compile Include="Common\Messaging\RedisEndPointTest.cs" />
     <Compile Include="Common\Messaging\Configuration\ServiceBusConfigurationTest.cs" />
     <Compile Include="Common\Messaging\Configuration\TestEndPointConfiguration.cs" />
     <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />

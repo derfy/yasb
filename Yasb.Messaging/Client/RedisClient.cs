@@ -19,7 +19,6 @@ namespace Yasb.Redis.Messaging.Client
     {
         internal const int Success = 1;
         private RedisSocket _socketClient;
-        private IRedisSocketAsyncEventArgsPool _redisSocketEventArgsPool;
        
         public RedisClient(RedisSocket socketClient)
         {
