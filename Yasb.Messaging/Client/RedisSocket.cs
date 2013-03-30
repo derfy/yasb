@@ -110,7 +110,6 @@ namespace Yasb.Redis.Messaging.Client
             socketAsyncEventArgs.Reset();
             socketAsyncEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
             _connectionEventArgsPool.Enqueue(socketAsyncEventArgs);
-           // _connectionEventArgsPool.Enqueue(socketAsyncEventArgs);
         }
 
        

@@ -52,10 +52,9 @@ namespace Yasb.Wireup
         private TInstance GetInstanceFor(TKeyObject keyObject)
         {
             var component = default(TInstance);
-            if (!_internalDictionary.TryGetValue(keyObject, out component))
+            while (!_internalDictionary.TryGetValue(keyObject, out component))
             {
-                component = _instanceFactory(keyObject);
-                _internalDictionary.TryAdd(keyObject, component);
+                _internalDictionary.TryAdd(keyObject, _instanceFactory(keyObject));
             }
             return component;
         }
