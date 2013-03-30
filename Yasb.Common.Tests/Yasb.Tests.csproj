@@ -76,7 +76,7 @@
     <Compile Include="Common\Serialization\SerializerTest.cs" />
     <Compile Include="Common\Serialization\TestEndPointConverter.cs" />
     <Compile Include="Common\TaskRunnerTest.cs" />
-    <Compile Include="Messaging\ConcurrentQueueRedisSocketEventArgsPoolTest.cs" />
+    <Compile Include="Messaging\RedisSocketAsyncEventArgsPoolTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Messaging\ServiceBusTests.cs" />
     <Compile Include="Common\Messaging\SubscriptionMessageHandlerTest.cs" />

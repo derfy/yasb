@@ -27,7 +27,12 @@ namespace Yasb.Wireup
                 return func(lifetimeScope.BeginLifetimeScope());
             });
         }
-
+        public static void RegisterOneInstanceForObjectKey<TKeyObject, T>(this ContainerBuilder builder, Func<TKeyObject, T> func)
+            where  TKeyObject : class
+        {
+            builder.RegisterSource(new RedisSocketRegistrationSource<TKeyObject, T>(func));
+            
+        }
        
     }
 }

@@ -19,6 +19,8 @@ using Autofac.Core.Registration;
 using Autofac.Core.Lifetime;
 using Autofac.Builder;
 using Yasb.Redis.Messaging.Configuration;
+using Newtonsoft.Json;
+using Yasb.Redis.Messaging.Serialization;
 
 namespace Yasb.Wireup
 {
@@ -34,16 +36,19 @@ namespace Yasb.Wireup
         {
 
             var localEndPoint = _configuration.LocalEndPoint;
-            builder.RegisterType<ConcurrentQueueRedisSocketEventArgsPool>().As<IRedisSocketAsyncEventArgsPool>().SingleInstance();
-            builder.RegisterType<RedisClient>().InstancePerLifetimeScope();
-            builder.RegisterWithScope<RedisSocket>(componentScope =>
+          
+
+            builder.RegisterWithScope<RedisSocket>((componentScope, parameters) =>
             {
-                return new RedisSocket(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<int>(10)));
-            }).InstancePerLifetimeScope();
+                return new RedisSocket(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(parameters));
+            }).As(typeof(RedisSocket)).InstancePerLifetimeScope(); ;
 
-            
+            builder.RegisterWithScope<RedisClient>((componentScope, parameters) =>
+            {
+                return new RedisClient(componentScope.Resolve<RedisSocket>(parameters));
+            }).As(typeof(RedisClient)).InstancePerLifetimeScope(); ;
 
-            builder.RegisterWithScope<IQueue>((componentScope,parameters) =>
+            builder.RegisterWithScope<IQueue>((componentScope, parameters) =>
             {
                 var endPoint = parameters.OfType<TypedParameter>().First().Value as RedisEndPoint;
                 return new Queue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
@@ -54,15 +59,14 @@ namespace Yasb.Wireup
                 return new SubscriptionService(localEndPoint, componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(localEndPoint.ToIPEndPoint())));
             }).As(typeof(ISubscriptionService));
 
-            
-
-            builder.RegisterWithScope<IEnumerable<IHandleMessages>>((componentScope, p) =>
+            builder.RegisterWithScope<IHandleMessages>((componentScope, p) =>
             {
                 var type = p.OfType<TypedParameter>().First().Value as Type;
                 var genericType = typeof(IHandleMessages<>).MakeGenericType(type);
-                var collType = typeof(IEnumerable<>).MakeGenericType(genericType);
-                return componentScope.Resolve(collType) as IEnumerable<IHandleMessages>;
+                return componentScope.Resolve(genericType) as IHandleMessages;
             });
+
+           
 
             builder.RegisterWithScope<IWorker>(componentScope =>
             {
@@ -70,17 +74,11 @@ namespace Yasb.Wireup
                 return new MessagesReceiver(localQueue, componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As(typeof(IWorker)).InstancePerLifetimeScope();
 
-            builder.RegisterWithScope<Func<Type, IEnumerable<IHandleMessages>>>(componentScope =>
-            {
-                return type => componentScope.Resolve<IEnumerable<IHandleMessages>>(TypedParameter.From<Type>(type));
-            }).InstancePerLifetimeScope();
+            
 
-
+            builder.RegisterType<Serializer>().WithParameter(TypedParameter.From<JsonConverter[]>(new JsonConverter[] { new RedisEndPointConverter(), new MessageEnvelopeConverter<RedisEndPoint>() })).As<ISerializer>();
             builder.RegisterType<TaskRunner>().As<ITaskRunner>().InstancePerLifetimeScope();
             builder.RegisterType<MessagesSender<RedisEndPoint>>().As<IMessagesSender<RedisEndPoint>>().InstancePerLifetimeScope();
-
-
-
             builder.RegisterType<SubscriptionMessageHandler<RedisEndPoint>>().As<IHandleMessages<SubscriptionMessage<RedisEndPoint>>>().InstancePerLifetimeScope();
             builder.RegisterType<ServiceBus<RedisEndPoint>>().WithParameter(TypedParameter.From<RedisEndPoint[]>(_configuration.NamedEndPoints)).As<IServiceBus<RedisEndPoint>>();
                 

@@ -69,10 +69,11 @@ namespace Producer
 
                 var message = new ExampleMessage(i, "I am Handler 1 ");
                 bus.Publish<ExampleMessage>(message);
+                i++;
                // bus.Send<ExampleMessage>("redis_consumer", message);
                 var message2 = new ExampleMessage2(i, "I am Handler 2");
                 bus.Publish<ExampleMessage>(message2);
-                bus.Send<ExampleMessage2>(RedisEndPoint.Parse("192.168.127.128:6379:redis_consumer"), message2);
+                bus.Send<ExampleMessage2>("consumer", message2);
                 Interlocked.Increment(ref _writeCount);
             }
             

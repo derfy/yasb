@@ -11,6 +11,7 @@ using System.Reflection;
 using Yasb.Common.Extensions;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Common.Messaging;
+using System.Collections.Concurrent;
 
 namespace Yasb.Redis.Messaging.Client
 {
@@ -18,11 +19,11 @@ namespace Yasb.Redis.Messaging.Client
     {
         internal const int Success = 1;
         private RedisSocket _socketClient;
-        private EndPoint _endPoint;
-        public RedisClient(RedisSocket socketClient, EndPoint endPoint)
+        private IRedisSocketAsyncEventArgsPool _redisSocketEventArgsPool;
+       
+        public RedisClient(RedisSocket socketClient)
         {
-            _endPoint = endPoint;
-            _socketClient = socketClient;
+           _socketClient = socketClient;
         }
 
         public byte[] Load(string script){
@@ -97,7 +98,8 @@ namespace Yasb.Redis.Messaging.Client
         
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
         {
-            var taskConnect = _socketClient.StartConnect(_endPoint);
+          
+            var taskConnect = _socketClient.StartConnect();
             taskConnect.Wait();
             var taskSend = _socketClient.SendAsync<TResult>(command,taskConnect.Result);
             using (var commandProcessor = taskSend.Result)

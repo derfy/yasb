@@ -59,6 +59,7 @@
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="ExampleMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RedisSocketRegistrationSource.cs" />
     <Compile Include="RedisModule.cs" />
   </ItemGroup>
   <ItemGroup>

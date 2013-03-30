@@ -26,9 +26,9 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-        public Task<RedisSocketAsyncEventArgs> StartConnect(EndPoint endPoint)
+        public Task<RedisSocketAsyncEventArgs> StartConnect()
         {
-            RedisSocketAsyncEventArgs connectEventArgs = _connectionEventArgsPool.Dequeue(endPoint);
+            var connectEventArgs = _connectionEventArgsPool.Dequeue();
             connectEventArgs.Completed += new EventHandler<SocketAsyncEventArgs>(IO_Completed);
            
             var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
@@ -110,6 +110,7 @@ namespace Yasb.Redis.Messaging.Client
             socketAsyncEventArgs.Reset();
             socketAsyncEventArgs.Completed -= new EventHandler<SocketAsyncEventArgs>(IO_Completed);
             _connectionEventArgsPool.Enqueue(socketAsyncEventArgs);
+           // _connectionEventArgsPool.Enqueue(socketAsyncEventArgs);
         }
 
        

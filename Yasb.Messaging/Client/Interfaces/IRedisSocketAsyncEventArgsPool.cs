@@ -8,7 +8,7 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
 {
     public interface IRedisSocketAsyncEventArgsPool
     {
-        RedisSocketAsyncEventArgs Dequeue(EndPoint endPoint);
+        RedisSocketAsyncEventArgs Dequeue();
 
         void Enqueue(RedisSocketAsyncEventArgs socketAsyncEventArgs);
     }

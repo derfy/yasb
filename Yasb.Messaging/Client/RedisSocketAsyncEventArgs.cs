@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.IO;
 using Yasb.Common.Extensions;
+using System.Collections.Concurrent;
 
 namespace Yasb.Redis.Messaging.Client
 {
@@ -12,6 +13,10 @@ namespace Yasb.Redis.Messaging.Client
     {
 
         private readonly byte[] endData = new[] { (byte)'\r', (byte)'\n' };
+
+        public RedisSocketAsyncEventArgs()
+        {
+        }
         public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
         {
             WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
