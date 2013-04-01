@@ -5,8 +5,9 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IMessagesSender<TEndPoint> 
+    public interface IMessagesWrapper
     {
-        void Send(TEndPoint endpoint, MessageEnvelope message);
+        MessageEnvelope WrapInEnvelope(IMessage message, IEndPoint fromEndPoint);
+       
     }
 }

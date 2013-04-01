@@ -6,10 +6,14 @@ using System.Text;
 namespace Yasb.Common.Messaging
 {
    
-    public class MessageEnvelope
+    public class MessageEnvelope :IEnvelope
     {
+        public MessageEnvelope()
+        {
 
-        public MessageEnvelope(IMessage message, Guid id, IEndPoint from, IEndPoint to)
+        }
+       
+        public MessageEnvelope(IMessage message, string id, IEndPoint from, IEndPoint to)
         {
             Message = message;
             Id = id;
@@ -22,6 +26,10 @@ namespace Yasb.Common.Messaging
         public IEndPoint To { get; private set; }
         public Type ContentType { get { return Message.GetType(); } }
 
-        public Guid Id { get; private set; }
+        public string Id { get; private set; }
+
+        public int RetriesNumber { get;set; }
+
+        public long? StartTime { get; set; }
     }
 }

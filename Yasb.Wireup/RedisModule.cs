@@ -26,9 +26,9 @@ namespace Yasb.Wireup
 {
     public class RedisModule : Autofac.Module
     {
-        private ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration> _configuration;
+        private ServiceBusConfiguration<RedisEndPoint,RedisEndPointConfiguration> _configuration;
 
-        public RedisModule(ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration> configuration)
+        public RedisModule(ServiceBusConfiguration<RedisEndPoint,RedisEndPointConfiguration> configuration)
         {
             this._configuration = configuration;
         }
@@ -51,7 +51,7 @@ namespace Yasb.Wireup
             builder.RegisterWithScope<IQueue>((componentScope, parameters) =>
             {
                 var endPoint = parameters.OfType<TypedParameter>().First().Value as RedisEndPoint;
-                return new Queue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
+                return new RedisQueue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
             }).As(typeof(IQueue));
 
             builder.RegisterWithScope<ISubscriptionService>(componentScope =>
@@ -70,17 +70,16 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<IWorker>(componentScope =>
             {
-                var localQueue = componentScope.Resolve<IQueue>(TypedParameter.From<IEndPoint>(localEndPoint));
+                var localQueue = componentScope.Resolve<IQueue>(TypedParameter.From<RedisEndPoint>(localEndPoint));
                 return new MessagesReceiver(localQueue, componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As(typeof(IWorker)).InstancePerLifetimeScope();
 
-            
+
 
             builder.RegisterType<Serializer>().WithParameter(TypedParameter.From<JsonConverter[]>(new JsonConverter[] { new RedisEndPointConverter(), new MessageEnvelopeConverter<RedisEndPoint>() })).As<ISerializer>();
             builder.RegisterType<TaskRunner>().As<ITaskRunner>().InstancePerLifetimeScope();
-            builder.RegisterType<MessagesSender<RedisEndPoint>>().As<IMessagesSender<RedisEndPoint>>().InstancePerLifetimeScope();
-            builder.RegisterType<SubscriptionMessageHandler<RedisEndPoint>>().As<IHandleMessages<SubscriptionMessage<RedisEndPoint>>>().InstancePerLifetimeScope();
-            builder.RegisterType<ServiceBus<RedisEndPoint>>().WithParameter(TypedParameter.From<RedisEndPoint[]>(_configuration.NamedEndPoints)).As<IServiceBus<RedisEndPoint>>();
+            builder.RegisterType<SubscriptionMessageHandler>().As<IHandleMessages<SubscriptionMessage>>().InstancePerLifetimeScope();
+            builder.RegisterType<ServiceBus>().WithParameter(TypedParameter.From<IEndPoint[]>(_configuration.NamedEndPoints)).As<IServiceBus>();
                 
        
             if (_configuration.MessageHandlersAssembly != null)

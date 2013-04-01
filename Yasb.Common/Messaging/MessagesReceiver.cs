@@ -11,12 +11,12 @@ using Yasb.Common;
 
 namespace Yasb.Common.Messaging
 {
-    public class MessagesReceiver : IWorker,IDisposable
+    public class MessagesReceiver : IWorker, IDisposable 
     {
         Func<Type, IEnumerable<IHandleMessages>> _handlerRegistrar;
         private IQueue _queue;
         private MessageDispatcher _messageDispatcher;
-        public MessagesReceiver(IQueue queue,  Func<Type, IEnumerable<IHandleMessages>> handlerRegistrar)
+        public MessagesReceiver(IQueue queue, Func<Type, IEnumerable<IHandleMessages>> handlerRegistrar)
         {
             _queue = queue;
             _handlerRegistrar = handlerRegistrar;
@@ -31,8 +31,8 @@ namespace Yasb.Common.Messaging
             while (true)
             {
                 token.ThrowIfCancellationRequested();
-                var envelope = _queue.GetMessage(delta);
-                if (envelope == null || !_queue.TrySetMessageInProgress(envelope.Id))
+                MessageEnvelope envelope = null;
+                if (!_queue.TryGetEnvelope(delta, out envelope))
                     continue;
                 try
                 {
@@ -58,7 +58,6 @@ namespace Yasb.Common.Messaging
             if (handlerException == null)
                 return;
             Console.WriteLine("error on processing message : " + handlerException.Message);
-            _queue.SetMessageError(handlerException.EnvelopeId);
         }
 
         public void Dispose()

@@ -21,8 +21,8 @@ namespace Yasb.Tests.Common.Serialization
         public void CanSerialize()
         {
             var sut = new Serializer(new JsonConverter[]{});
-            var graph = new FooMessage();
-            Byte[] array = sut.Serialize<FooMessage>(graph);
+            var graph = new TestMessage();
+            Byte[] array = sut.Serialize<TestMessage>(graph);
             var result=System.Text.Encoding.Default.GetString(array);
             Assert.AreEqual("{}", result);
         }
@@ -33,8 +33,8 @@ namespace Yasb.Tests.Common.Serialization
         {
             var sut = new Serializer(new JsonConverter[] { });
             var array = System.Text.Encoding.Default.GetBytes("{}");
-            var result = sut.Deserialize<FooMessage>(array);
-            Assert.AreEqual(typeof(FooMessage), result.GetType());
+            var result = sut.Deserialize<TestMessage>(array);
+            Assert.AreEqual(typeof(TestMessage), result.GetType());
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace Yasb.Tests.Common.Serialization
         {
             var sut = new Serializer(new JsonConverter[] { });
             var array = new Byte[]{};
-            var result = sut.Deserialize<FooMessage>(array);
+            var result = sut.Deserialize<TestMessage>(array);
             Assert.AreEqual(null, result);
         }
     }

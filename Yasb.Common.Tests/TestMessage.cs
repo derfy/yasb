@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging;
 
-namespace Yasb.Tests.Common.Serialization
+namespace Yasb.Tests
 {
-    public class FooMessage : IMessage
+    public class TestMessage : IMessage
     {
-        public FooMessage()
+        public TestMessage()
         {
         }
     }

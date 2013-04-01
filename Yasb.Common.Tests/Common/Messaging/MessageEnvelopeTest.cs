@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
+using Yasb.Tests.Common.Serialization;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -14,16 +15,15 @@ namespace Yasb.Tests.Common.Messaging
     [TestClass]
     public class MessageEnvelopeTest
     {
-        private class FooMessage : IMessage
-        { }
+        
         [TestMethod]
         public void ShouldGetCorrectTypeName()
         {
-            var message=new FooMessage();
+            var message=new TestMessage();
             var fromEndPoint = new TestEndPoint("myTestAddressFrom:80:myQueue");
             var toEndPoint = new TestEndPoint("myTestAddressTo:80:myQueue");
-            var envelope = new MessageEnvelope(message, Guid.NewGuid(), fromEndPoint, toEndPoint);
-            Assert.AreEqual(typeof(FooMessage), envelope.ContentType);
+            var envelope = new MessageEnvelope(message, Guid.NewGuid().ToString(), fromEndPoint, toEndPoint);
+            Assert.AreEqual(typeof(TestMessage), envelope.ContentType);
         }
     }
 }

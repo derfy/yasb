@@ -9,7 +9,7 @@ using Yasb.Common.Messaging;
 
 namespace Yasb.Common.Serialization
 {
-    public class MessageEnvelopeConverter<TEndPoint> : JsonConverter where TEndPoint : IEndPoint 
+    public  class MessageEnvelopeConverter<TEndPoint> : JsonConverter where TEndPoint : IEndPoint
     {
         
        
@@ -23,17 +23,22 @@ namespace Yasb.Common.Serialization
 
         private object PopuplaleFrom(JObject jsonObject,JsonSerializer serializer)
         {
-            var id = jsonObject.Property("Id").Value.ToObject<Guid>();
+            var id = jsonObject.Property("Id").Value.ToObject<string>();
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
             var message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
 
             var from = jsonObject.Property("From").Value.ToObject<TEndPoint>(serializer);
             var to = jsonObject.Property("To").Value.ToObject<TEndPoint>(serializer);
-            
-            
-            return new MessageEnvelope(message,id,from,to);
+
+            var envelope = new MessageEnvelope(message, id, from, to);
+            if (jsonObject.Property("StartTime")!=null)
+                envelope.StartTime = jsonObject.Property("StartTime").Value.ToObject<long?>();
+            if (jsonObject.Property("RetriesNumber") != null)
+                envelope.RetriesNumber = jsonObject.Property("RetriesNumber").Value.ToObject<int>();
+            return envelope;
         }
 
+       
        
         public override bool CanConvert(Type objectType)
         {

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public class SubscriptionMessageHandler<TEndPoint> : IHandleMessages<SubscriptionMessage<TEndPoint>> where TEndPoint : IEndPoint
+    public class SubscriptionMessageHandler : IHandleMessages<SubscriptionMessage> 
     {
         private ISubscriptionService _subscriptionService;
         public SubscriptionMessageHandler(ISubscriptionService subscriptionService)
@@ -13,7 +13,7 @@ namespace Yasb.Common.Messaging
             _subscriptionService = subscriptionService;
         }
 
-        public void Handle(SubscriptionMessage<TEndPoint> message)
+        public void Handle(SubscriptionMessage message)
         {
             _subscriptionService.AddSubscriberFor(message.TypeName, message.SubscriberEndPoint);
            

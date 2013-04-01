@@ -5,13 +5,12 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IQueue
+    public interface IQueue : IMessagesWrapper
     {
         void Initialize();
-        MessageEnvelope GetMessage(TimeSpan delta);
-        bool TrySetMessageInProgress(Guid envelopeId);
-        void SetMessageCompleted(Guid envelopeId);
-        void SetMessageError(Guid envelopeId);
+        bool TryGetEnvelope(TimeSpan delta,out MessageEnvelope envelope);
+        void SetMessageCompleted(string envelopeId);
         void Push(MessageEnvelope envelope);
+        IEndPoint LocalEndPoint { get; }
     }
 }

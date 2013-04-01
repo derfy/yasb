@@ -63,7 +63,7 @@ namespace Yasb.Common.Serialization
             }
         }
 
-        private T Deserialize<T>(Stream stream)
+        public T Deserialize<T>(Stream stream)
         {
             using (var streamReader = new StreamReader(stream, Encoding.UTF8))
             {

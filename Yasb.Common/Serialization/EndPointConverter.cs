@@ -9,7 +9,7 @@ using Yasb.Common.Messaging;
 
 namespace Yasb.Common.Serialization
 {
-    public abstract class EndPointConverter<TEndPoint> : JsonConverter where TEndPoint : IEndPoint
+    public abstract class EndPointConverter : JsonConverter 
     {
         public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
@@ -19,11 +19,11 @@ namespace Yasb.Common.Serialization
             return CreateEndPoint(endPoint);
         }
 
-        protected abstract TEndPoint CreateEndPoint(string endPoint);
+        protected abstract IEndPoint CreateEndPoint(string endPoint);
 
         public override bool CanConvert(Type objectType)
         {
-            return typeof(TEndPoint).IsAssignableFrom(objectType);
+            return typeof(IEndPoint).IsAssignableFrom(objectType);
         }
 
 

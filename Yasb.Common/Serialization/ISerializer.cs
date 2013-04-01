@@ -50,6 +50,11 @@ namespace Yasb.Common.Serialization
         /// </summary>
         /// <returns>The deserialized object.</returns>
         T Deserialize<T>(Byte[] array);
+        /// <summary>
+        /// Deserializes an object graph from the given byte Stream.
+        /// </summary>
+        /// <returns>The deserialized object.</returns>
+        T Deserialize<T>(Stream stream);
 
         /// <summary>
         /// Serializes the provided object graph and writes it to the storage.

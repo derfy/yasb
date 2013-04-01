@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Wireup;
 using Yasb.Redis.Messaging.Configuration;
+using Yasb.Tests.Common.Serialization;
 
 namespace Yasb.Tests.Common.Messaging.Configuration
 {
@@ -31,8 +32,8 @@ namespace Yasb.Tests.Common.Messaging.Configuration
         [TestMethod]
         public void ShouldConfigureHandlersAssembli()
         {
-            _sut.WithMessageHandlersAssembly(typeof(FooMessage).Assembly);
-            Assert.AreEqual(typeof(FooMessage).Assembly, _sut.MessageHandlersAssembly);
+            _sut.WithMessageHandlersAssembly(typeof(TestMessage).Assembly);
+            Assert.AreEqual(typeof(TestMessage).Assembly, _sut.MessageHandlersAssembly);
         }
     }
 }

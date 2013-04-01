@@ -6,34 +6,34 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Common.Messaging
 {
-    public class ServiceBus<TEndPoint> : IServiceBus<TEndPoint>, IDisposable where TEndPoint : IEndPoint
+    public class ServiceBus : IServiceBus 
     {
         private readonly IWorker _messagesReceiver;
-        private readonly IMessagesSender<TEndPoint> _messagesSender;
+        private readonly Func<IEndPoint, IQueue> _queueFactory;
         private readonly ITaskRunner _taskRunner;
         private readonly ISubscriptionService _subscriptionService;
-        private readonly List<TEndPoint> _namedEndPointsList = new List<TEndPoint>();
-        public ServiceBus(TEndPoint[] namedEndPoints, IWorker messagesReceiver, IMessagesSender<TEndPoint> messagesSender, ISubscriptionService subscriptionService, ITaskRunner taskRunner)
+        private readonly List<IEndPoint> _namedEndPointsList = new List<IEndPoint>();
+        public ServiceBus(IEndPoint[] namedEndPoints, IWorker messagesReceiver, Func<IEndPoint, IQueue> queueFactory, ISubscriptionService subscriptionService, ITaskRunner taskRunner)
         {
-            _messagesSender = messagesSender;
+            _queueFactory = queueFactory;
             _messagesReceiver = messagesReceiver;
             _taskRunner = taskRunner;
             _subscriptionService = subscriptionService;
             _namedEndPointsList.AddRange(namedEndPoints);
         }
 
-        public virtual TEndPoint LocalEndPoint { get { return GetEndPointByName("local"); } }
+        public virtual IEndPoint LocalEndPoint { get { return GetEndPointByName("local"); } }
         
-        public void Publish<TMessage>(TMessage message) where TMessage : IMessage
+        public void Publish(IMessage message) 
         {
-            var subscriptionPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().FullName);
-            foreach (var endPoint in subscriptionPoints.OfType<TEndPoint>())
+            var subscriptionEndPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().FullName);
+            foreach (var endPoint in subscriptionEndPoints)
             {
-                Send<TMessage>(endPoint, message);
+                Send(endPoint, message);
             }
             
         }
-        public void Send<TMessage>(string endPointName, TMessage message) where TMessage : IMessage
+        public void Send(string endPointName, IMessage message)
         {
             var endPoint = GetEndPointByName(endPointName);
             Send(endPoint, message);
@@ -45,15 +45,16 @@ namespace Yasb.Common.Messaging
         }
 
 
-        public void Subscribe<TMessage>(TEndPoint endPoint) where TMessage : IMessage
+        public void Subscribe<TMessage>(IEndPoint endPoint) where TMessage : IMessage
         {
-            var subscriptionMessage = new SubscriptionMessage<TEndPoint>() { TypeName = typeof(TMessage).FullName, SubscriberEndPoint = LocalEndPoint };
-            Send<SubscriptionMessage<TEndPoint>>(endPoint, subscriptionMessage);
+            var subscriptionMessage = new SubscriptionMessage() { TypeName = typeof(TMessage).FullName, SubscriberEndPoint = LocalEndPoint };
+            Send(endPoint, subscriptionMessage);
         }
-        public void Send<TMessage>(TEndPoint endPoint, TMessage message) where TMessage : IMessage
+        public void Send(IEndPoint endPoint, IMessage message)
         {
-            var envelope = new MessageEnvelope(message, Guid.NewGuid(), LocalEndPoint, endPoint);
-            _messagesSender.Send(endPoint, envelope);
+            var queue = _queueFactory(endPoint);
+            var envelope = queue.WrapInEnvelope(message, LocalEndPoint);
+            queue.Push(envelope);
         }
         
         public void Run()
@@ -61,7 +62,7 @@ namespace Yasb.Common.Messaging
             _taskRunner.Run(_messagesReceiver);
         }
 
-        private TEndPoint GetEndPointByName(string endPointName)
+        private IEndPoint GetEndPointByName(string endPointName)
         {
             var endPoint = _namedEndPointsList.FirstOrDefault(e => e.Name == endPointName);
             if (endPoint == null)

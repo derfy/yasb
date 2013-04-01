@@ -60,7 +60,7 @@ namespace Consumer
             var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128:6379:redis_consumer")
                                              .WithEndPoint("192.168.127.128:6379:redis_producer", conf => conf.WithName("producer"))
                                              .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly))
-                                   .Resolver().InstanceOf<IServiceBus<RedisEndPoint>>();
+                                   .Resolver().InstanceOf<IServiceBus>();
 
 
             bus.Subscribe<ExampleMessage>("producer");

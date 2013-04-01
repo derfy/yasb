@@ -6,19 +6,18 @@ using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IServiceBusConfiguration<TEndPoint,TEndPointConfiguration>  
-        where TEndPoint : IEndPoint
-        where TEndPointConfiguration : EndPointConfiguration<TEndPoint>
+    public interface IServiceBusConfiguration<TEndPointConfiguration> 
+        where TEndPointConfiguration : EndPointConfiguration
     {
-        IServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithLocalEndPoint(string endPoint);
-        IServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithMessageHandlersAssembly(Assembly assembly);
-        IServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithEndPoint(string endPoint, Action<TEndPointConfiguration> configurer);
+        IServiceBusConfiguration<TEndPointConfiguration> WithLocalEndPoint(string endPoint);
+        IServiceBusConfiguration< TEndPointConfiguration> WithMessageHandlersAssembly(Assembly assembly);
+        IServiceBusConfiguration<TEndPointConfiguration> WithEndPoint(string endPoint, Action<TEndPointConfiguration> configurer);
 
-        TEndPoint LocalEndPoint { get; }
+        IEndPoint LocalEndPoint { get; }
 
         Assembly MessageHandlersAssembly { get; }
 
-        TEndPoint[] NamedEndPoints { get; }
+        IEndPoint[] NamedEndPoints { get; }
 
     }
 }

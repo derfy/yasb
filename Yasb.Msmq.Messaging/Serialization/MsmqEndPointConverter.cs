@@ -2,16 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yasb.Common.Messaging;
 using Yasb.Common.Serialization;
+using Yasb.Common.Messaging;
 
-namespace Yasb.Redis.Messaging.Serialization
+namespace Yasb.Msmq.Messaging.Serialization
 {
-    public class RedisEndPointConverter : EndPointConverter
+    public class MsmqEndPointConverter : EndPointConverter
     {
         protected override IEndPoint CreateEndPoint(string endPoint)
         {
-            return new RedisEndPoint(endPoint);
+            return new MsmqEndPoint(endPoint);
         }
     }
 }

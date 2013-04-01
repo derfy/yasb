@@ -5,11 +5,10 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public class SubscriptionMessage<TEndPoint> : IMessage
-        where TEndPoint : IEndPoint
+    public class SubscriptionMessage : IMessage
     {
        
         public string TypeName { get; set; }
-        public TEndPoint SubscriberEndPoint { get; set; }
+        public IEndPoint SubscriberEndPoint { get; set; }
     }
 }

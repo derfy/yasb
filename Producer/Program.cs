@@ -58,7 +58,7 @@ namespace Producer
             var configurator = new AutofacConfigurator();
             var bus = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128:6379:redis_producer")
                                              .WithEndPoint("192.168.127.128:6379:redis_consumer", conf => conf.WithName("consumer")))
-                                  .Resolver().InstanceOf<IServiceBus<RedisEndPoint>>();
+                                  .Resolver().InstanceOf<IServiceBus>();
            
             int i = 0;
             bus.Run();
@@ -68,12 +68,12 @@ namespace Producer
                 i++;
 
                 var message = new ExampleMessage(i, "I am Handler 1 ");
-                bus.Publish<ExampleMessage>(message);
+                bus.Publish(message);
                 i++;
                // bus.Send<ExampleMessage>("redis_consumer", message);
                 var message2 = new ExampleMessage2(i, "I am Handler 2");
-                bus.Publish<ExampleMessage>(message2);
-                bus.Send<ExampleMessage2>("consumer", message2);
+                bus.Publish(message2);
+               // bus.Send("consumer", message2);
                 Interlocked.Increment(ref _writeCount);
             }
             

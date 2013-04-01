@@ -12,6 +12,7 @@ using Newtonsoft.Json.Serialization;
 using Yasb.Redis.Messaging.Configuration;
 using Yasb.Redis.Messaging.Serialization;
 using Yasb.Tests.Common.Messaging;
+using Yasb.Redis.Messaging;
 
 namespace Yasb.Tests.Common.Serialization
 {
@@ -33,11 +34,11 @@ namespace Yasb.Tests.Common.Serialization
             JObject toEndPoint = new JObject(
                new JProperty("Value", "to:80:toQueue")
             );
-            var contentType = "Yasb.Tests.Common.Serialization.FooMessage, Yasb.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
+            var contentType = "Yasb.Tests.TestMessage, Yasb.Tests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
             var message = new JObject();
-            var id = Guid.NewGuid();
+            var id = Guid.NewGuid().ToString();
             JObject jsonObject = new JObject(
-               new JProperty("Id",id.ToString()),
+               new JProperty("Id",id),
                new JProperty("ContentType", contentType),
                new JProperty("Message", message),
                new JProperty("From", fromEndPoint),
@@ -49,7 +50,7 @@ namespace Yasb.Tests.Common.Serialization
             var sut = new MessageEnvelopeConverter<TestEndPoint>();
             var result = sut.ReadJson(reader, typeof(MessageEnvelope), null, serializer.Object) as MessageEnvelope;
             Assert.AreEqual(id, result.Id);
-            Assert.AreEqual(typeof(FooMessage), result.ContentType);
+            Assert.AreEqual(typeof(TestMessage), result.ContentType);
             Assert.AreEqual(typeof(TestEndPoint), result.From.GetType());
             Assert.AreEqual(typeof(TestEndPoint), result.To.GetType());
         }
