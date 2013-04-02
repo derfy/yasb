@@ -31,5 +31,11 @@ namespace Yasb.Common.Messaging
         public int RetriesNumber { get;set; }
 
         public long? StartTime { get; set; }
+
+        public DateTime? StartTimestamp { get {
+            if (!StartTime.HasValue)
+                return null;
+            return DateTime.MinValue.Add(new TimeSpan(StartTime.Value));
+        } }
     }
 }

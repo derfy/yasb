@@ -26,7 +26,7 @@ namespace Yasb.Redis.Messaging
             _connection = connection;
         }
         public void Initialize(){
-            var fileNames = new string[] { "TryGetEnvelope.lua",  "SetMessageError.lua", "SetMessageCompleted.lua" };
+            var fileNames = new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" };
             var type=this.GetType();
             foreach (var fileName in fileNames)
             {
@@ -40,7 +40,8 @@ namespace Yasb.Redis.Messaging
         public bool TryGetEnvelope(TimeSpan delta, out MessageEnvelope envelope)
         {
             envelope = null;
-            var bytes = EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, DateTime.Now.Subtract(delta).Ticks.ToString());
+            var now = DateTime.Now;
+            var bytes = EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(delta).Ticks.ToString(),now.Ticks.ToString());
             if (bytes == null)
                 return false;
             envelope = _serializer.Deserialize<MessageEnvelope>(bytes);

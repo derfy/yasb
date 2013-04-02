@@ -7,7 +7,7 @@ using Yasb.Redis.Messaging.Client;
 using System.Net;
 using Moq;
 
-namespace Yasb.Tests.Messaging
+namespace Yasb.Tests.Messaging.Redis
 {
     /// <summary>
     /// Summary description for ConcurrentQueueRedisSocketEventArgsPoolTest

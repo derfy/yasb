@@ -8,7 +8,7 @@ while length > 0 do
 			local modifiedQueued=queued
 			envelope.RetriesNumber=envelope.RetriesNumber+1
 			if not envelope.StartTime then
-				envelope.StartTime=ARGV[1]
+				envelope.StartTime=ARGV[2]
 				modifiedQueued = cjson.encode(envelope)
 				redis.call('LPUSH',KEYS[1],modifiedQueued)
 				return modifiedQueued
