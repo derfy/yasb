@@ -17,11 +17,15 @@ namespace Yasb.Common
         private int _runningTasksNumber = 0;
         private object _locker=new object();
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
-
-        public TaskRunner()
+        private TaskFactory _taskFactory;
+        public TaskRunner(TaskScheduler taskSheduler)
         {
+            _taskFactory = new TaskFactory(taskSheduler);
         }
+        public TaskRunner():this(TaskScheduler.Default)
+        {
 
+        }
         public void Run(IWorker worker)
         {
             CreateWorkersProducer(_tokenSource.Token,worker);
@@ -30,7 +34,7 @@ namespace Yasb.Common
 
         private void CreateWorkersConsumer(CancellationToken token)
         {
-            Task.Factory.StartNew(() =>
+            _taskFactory.StartNew(() =>
             {
                 foreach (var task in _runningTasks.GetConsumingEnumerable())
                 {
@@ -43,7 +47,7 @@ namespace Yasb.Common
 
         private void CreateWorkersProducer(CancellationToken token, IWorker worker)
         {
-            Task.Factory.StartNew(() =>
+            _taskFactory.StartNew(() =>
             {
                 while (true)
                 {

@@ -31,10 +31,12 @@ namespace Yasb.Common.Serialization
             var to = jsonObject.Property("To").Value.ToObject<TEndPoint>(serializer);
 
             var envelope = new MessageEnvelope(message, id, from, to);
-            if (jsonObject.Property("StartTime")!=null)
-                envelope.StartTime = jsonObject.Property("StartTime").Value.ToObject<long?>();
+            if (jsonObject.Property("StartTimestamp") != null)
+                envelope.StartTimestamp = jsonObject.Property("StartTimestamp").Value.ToObject<long?>();
             if (jsonObject.Property("RetriesNumber") != null)
                 envelope.RetriesNumber = jsonObject.Property("RetriesNumber").Value.ToObject<int>();
+            if (jsonObject.Property("LastErrorMessage") != null)
+                envelope.LastErrorMessage = jsonObject.Property("LastErrorMessage").Value.ToObject<string>();
             return envelope;
         }
 

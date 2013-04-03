@@ -64,6 +64,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\CurrentThreadTaskScheduler.cs" />
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
     <Compile Include="Common\Messaging\Configuration\ServiceBusConfigurationTest.cs" />

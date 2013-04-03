@@ -37,11 +37,10 @@ namespace Yasb.Redis.Messaging
                 }
             }
         }
-        public bool TryGetEnvelope(TimeSpan delta, out MessageEnvelope envelope)
+        public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            var now = DateTime.Now;
-            var bytes = EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(delta).Ticks.ToString(),now.Ticks.ToString());
+            var bytes = EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
             if (bytes == null)
                 return false;
             envelope = _serializer.Deserialize<MessageEnvelope>(bytes);

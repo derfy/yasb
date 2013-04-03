@@ -34,7 +34,7 @@ namespace Yasb.Msmq.Messaging
         }
 
 
-        public bool TryGetEnvelope(TimeSpan delta, out MessageEnvelope envelope)
+        public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             throw new NotImplementedException();
         }
