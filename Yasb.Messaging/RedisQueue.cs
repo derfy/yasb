@@ -20,7 +20,6 @@ namespace Yasb.Redis.Messaging
         private ScriptsCache _scriptsCache;
         private ISerializer _serializer;
         private RedisEndPoint _endPoint;
-        private int cacheInitialised = 0;
         public RedisQueue(RedisEndPoint endPoint, ISerializer serializer,  ScriptsCache scriptsCache)
         {
             _serializer = serializer;
@@ -31,7 +30,7 @@ namespace Yasb.Redis.Messaging
         
         public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
-            _scriptsCache.EnsureInitialised(new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" }, GetType());
+            _scriptsCache.EnsureScriptCached("TryGetEnvelope.lua", GetType());
             envelope = null;
             var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
             if (bytes == null)
@@ -45,7 +44,7 @@ namespace Yasb.Redis.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            _scriptsCache.EnsureInitialised(new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" }, GetType());
+            _scriptsCache.EnsureScriptCached( "SetMessageCompleted.lua" , GetType());
             _scriptsCache.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
         }
 
