@@ -9,6 +9,7 @@ using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Common.Messaging;
 using Yasb.Common.Serialization;
+using System.Threading;
 
 namespace Yasb.Redis.Messaging
 {
@@ -16,31 +17,23 @@ namespace Yasb.Redis.Messaging
     public class RedisQueue : IQueue, IDisposable
     {
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        private RedisClient _connection;
+        private ScriptsCache _scriptsCache;
         private ISerializer _serializer;
         private RedisEndPoint _endPoint;
-        public RedisQueue(RedisEndPoint endPoint, ISerializer serializer,  RedisClient connection)
+        private int cacheInitialised = 0;
+        public RedisQueue(RedisEndPoint endPoint, ISerializer serializer,  ScriptsCache scriptsCache)
         {
             _serializer = serializer;
             _endPoint = endPoint;
-            _connection = connection;
+            _scriptsCache = scriptsCache;
+            
         }
-        public void Initialize(){
-            var fileNames = new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" };
-            var type=this.GetType();
-            foreach (var fileName in fileNames)
-            {
-                using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.Scripts.{1}", type.Namespace,fileName))))
-                {
-                    string fileContent = reader.ReadToEnd();
-                    _internalCache[fileName] = _connection.Load(fileContent);
-                }
-            }
-        }
+        
         public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
+            _scriptsCache.EnsureInitialised(new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" }, GetType());
             envelope = null;
-            var bytes = EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
+            var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
             if (bytes == null)
                 return false;
             envelope = _serializer.Deserialize<MessageEnvelope>(bytes);
@@ -52,14 +45,15 @@ namespace Yasb.Redis.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
+            _scriptsCache.EnsureInitialised(new string[] { "TryGetEnvelope.lua", "SetMessageCompleted.lua" }, GetType());
+            _scriptsCache.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
         }
 
 
         public void Push(MessageEnvelope envelope)
         {
             var bytes = _serializer.Serialize(envelope);
-            _connection.LPush(_endPoint.QueueName, bytes);
+            Connection.LPush(_endPoint.QueueName, bytes);
         }
 
 
@@ -67,26 +61,20 @@ namespace Yasb.Redis.Messaging
         {
             return new MessageEnvelope(message, Guid.NewGuid().ToString(), fromEndPoint, LocalEndPoint);
         }
-
-        private byte[] EvalSha(string fileName,int noKeys, params string[] keys)
-        {
-            var scriptSha = _internalCache[fileName];
-            return _connection.EvalSha(scriptSha, noKeys, keys);
-        }
-
-
-
-
         public IEndPoint LocalEndPoint
         {
             get { return _endPoint; }
         }
+
+
+
+
+
+
         public void Dispose()
-        {
-        }
-
-
-
+        { }
+        
+        private RedisClient Connection { get { return _scriptsCache.Connection; } }
 
 
 

@@ -27,7 +27,6 @@ namespace Yasb.Common.Messaging
         {
             
             var delta = new TimeSpan(0, 0, 5);
-            _queue.Initialize();
             while (true)
             {
                 token.ThrowIfCancellationRequested();

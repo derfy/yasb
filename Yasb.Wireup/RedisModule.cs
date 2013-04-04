@@ -48,10 +48,16 @@ namespace Yasb.Wireup
                 return new RedisClient(componentScope.Resolve<RedisSocket>(parameters));
             }).As(typeof(RedisClient)).InstancePerLifetimeScope(); ;
 
+            builder.RegisterWithScope<ScriptsCache>((componentScope, parameters) =>
+            {
+                var endPoint = parameters.OfType<TypedParameter>().First().Value as RedisEndPoint;
+                return new ScriptsCache(componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
+            }).As(typeof(ScriptsCache)).InstancePerLifetimeScope(); ;
+
             builder.RegisterWithScope<IQueue>((componentScope, parameters) =>
             {
                 var endPoint = parameters.OfType<TypedParameter>().First().Value as RedisEndPoint;
-                return new RedisQueue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint())));
+                return new RedisQueue(endPoint, componentScope.Resolve<ISerializer>(), componentScope.Resolve<ScriptsCache>(parameters));
             }).As(typeof(IQueue));
 
             builder.RegisterWithScope<ISubscriptionService>(componentScope =>
