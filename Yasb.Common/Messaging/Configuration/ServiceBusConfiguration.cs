@@ -6,47 +6,49 @@ using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public  class ServiceBusConfiguration<TEndPoint, TEndPointConfiguration> //: IServiceBusConfiguration<TEndPoint, TEndPointConfiguration>
-        where TEndPoint : IEndPoint
-        where TEndPointConfiguration : EndPointConfiguration<TEndPoint>
+    public  class ServiceBusConfiguration
     {
-        private List<TEndPoint> _namedEndPointsList = new List<TEndPoint>();
+        private List<IEndPoint> _namedEndPointsList = new List<IEndPoint>();
       
         public ServiceBusConfiguration()
         {
         }
 
 
-        public TEndPoint LocalEndPoint { get; private set; }
+        public IEndPoint LocalEndPoint { get; private set; }
 
         public Assembly MessageHandlersAssembly { get; private set; }
 
-        public TEndPoint[] NamedEndPoints { get { return _namedEndPointsList.ToArray(); } }
+        public IEndPoint[] NamedEndPoints { get { return _namedEndPointsList.ToArray(); } }
 
-        public ServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithLocalEndPoint(string endPoint)
+        public ServiceBusConfiguration WithLocalEndPoint<TEndPointConfiguration>(string endPoint)
+            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
         {
-            var configuration = CreateEndPointConfiguration(endPoint);
+            var configuration = CreateEndPointConfiguration<TEndPointConfiguration>(endPoint);
             configuration.Built.Name = "local";
             LocalEndPoint = configuration.Built;
             _namedEndPointsList.Add(LocalEndPoint);
             return this;
         }
 
-        public ServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithEndPoint(string endPoint, Action<TEndPointConfiguration> configurer)
+        public ServiceBusConfiguration WithEndPoint<TEndPointConfiguration>(string endPoint, Action<TEndPointConfiguration> configurer)
+            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
         {
-            var configuration = CreateEndPointConfiguration(endPoint);
+            var configuration = CreateEndPointConfiguration<TEndPointConfiguration>(endPoint);
             configurer(configuration);
             _namedEndPointsList.Add(configuration.Built);
             return this;
         }
 
        
-        public ServiceBusConfiguration<TEndPoint, TEndPointConfiguration> WithMessageHandlersAssembly(Assembly assembly)
+        public ServiceBusConfiguration WithMessageHandlersAssembly(Assembly assembly)
         {
             MessageHandlersAssembly = assembly;
             return this;
         }
-        protected  TEndPointConfiguration CreateEndPointConfiguration(string endPoint) {
+        protected TEndPointConfiguration CreateEndPointConfiguration<TEndPointConfiguration>(string endPoint)
+            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
+        {
             var endPointConfiguration = Activator.CreateInstance<TEndPointConfiguration>();
             endPointConfiguration.Built = endPointConfiguration.CreateEndPoint(endPoint);
             return endPointConfiguration;

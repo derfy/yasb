@@ -12,8 +12,6 @@ namespace Yasb.Redis.Messaging
     {
         private ConcurrentDictionary<string, Lazy<byte[]>> _internalCache = new ConcurrentDictionary<string, Lazy<byte[]>>();
         private RedisClient _connection;
-        private object _lock=new object();
-        private volatile bool _initialised=false;
         public ScriptsCache(RedisClient connection)
         {
             _connection = connection;

@@ -13,10 +13,9 @@ namespace Yasb.Common.Messaging
 
         }
        
-        public MessageEnvelope(IMessage message, string id, IEndPoint from, IEndPoint to)
+        public MessageEnvelope(IMessage message, IEndPoint from, IEndPoint to)
         {
             Message = message;
-            Id = id;
             From = from;
             To = to;
         }
@@ -26,7 +25,7 @@ namespace Yasb.Common.Messaging
         public IEndPoint To { get; private set; }
         public Type ContentType { get { return Message.GetType(); } }
 
-        public string Id { get; private set; }
+        public string Id { get;  set; }
 
         public int RetriesNumber { get;set; }
 

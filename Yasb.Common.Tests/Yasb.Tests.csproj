@@ -84,10 +84,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Messaging\ServiceBusTests.cs" />
     <Compile Include="Common\Messaging\SubscriptionMessageHandlerTest.cs" />
-    <Compile Include="Wireup\RedisModuleTest.cs" />
+    <Compile Include="Wireup\RedisResolverTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Scripts\TestSetup.lua" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">

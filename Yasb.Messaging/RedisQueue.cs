@@ -19,11 +19,11 @@ namespace Yasb.Redis.Messaging
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
         private ScriptsCache _scriptsCache;
         private ISerializer _serializer;
-        private RedisEndPoint _endPoint;
-        public RedisQueue(RedisEndPoint endPoint, ISerializer serializer,  ScriptsCache scriptsCache)
+        private RedisEndPoint _localEndPoint;
+        public RedisQueue(RedisEndPoint localEndPoint, ISerializer serializer,  ScriptsCache scriptsCache)
         {
             _serializer = serializer;
-            _endPoint = endPoint;
+            _localEndPoint = localEndPoint;
             _scriptsCache = scriptsCache;
             
         }
@@ -32,7 +32,7 @@ namespace Yasb.Redis.Messaging
         {
             _scriptsCache.EnsureScriptCached("TryGetEnvelope.lua", GetType());
             envelope = null;
-            var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _endPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
+            var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _localEndPoint.QueueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
             if (bytes == null)
                 return false;
             envelope = _serializer.Deserialize<MessageEnvelope>(bytes);
@@ -51,18 +51,19 @@ namespace Yasb.Redis.Messaging
 
         public void Push(MessageEnvelope envelope)
         {
+            envelope.Id = Guid.NewGuid().ToString();
             var bytes = _serializer.Serialize(envelope);
-            Connection.LPush(_endPoint.QueueName, bytes);
+            Connection.LPush(_localEndPoint.QueueName, bytes);
         }
 
 
         public MessageEnvelope WrapInEnvelope(IMessage message, IEndPoint fromEndPoint)
         {
-            return new MessageEnvelope(message, Guid.NewGuid().ToString(), fromEndPoint, LocalEndPoint);
+            return new MessageEnvelope(message, fromEndPoint, LocalEndPoint);
         }
         public IEndPoint LocalEndPoint
         {
-            get { return _endPoint; }
+            get { return _localEndPoint; }
         }
 
 

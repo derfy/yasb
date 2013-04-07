@@ -25,7 +25,7 @@ namespace Yasb.Tests.Common.Messaging
         private  Mock<ISubscriptionService> _subscriptionService;
         private IServiceBus _sut;
         private Dictionary<IEndPoint, Mock<IQueue>> dict = new Dictionary<IEndPoint, Mock<IQueue>>();
-        private ServiceBusConfiguration<TestEndPoint, TestEndPointConfiguration> _configuration = new Mock<ServiceBusConfiguration<TestEndPoint, TestEndPointConfiguration>>().Object;
+        private ServiceBusConfiguration _configuration = new Mock<ServiceBusConfiguration>().Object;
         [TestInitialize]
         public void Setup()
         {
@@ -43,8 +43,8 @@ namespace Yasb.Tests.Common.Messaging
             dict[endPoint3] = repo.Create<IQueue>();
             dict[endPoint3].SetupGet(q => q.LocalEndPoint).Returns(endPoint3);
 
-            _configuration.WithLocalEndPoint("localhost:80:myQueue")
-                           .WithEndPoint("localhost:80:theirQueue", e => e.WithName("foo"));
+            _configuration.WithLocalEndPoint<TestEndPointConfiguration>("localhost:80:myQueue")
+                           .WithEndPoint<TestEndPointConfiguration>("localhost:80:theirQueue", e => e.WithName("foo"));
             _messagesReceiver = new Mock<IWorker>();
             _subscriptionService = new Mock<ISubscriptionService>();
             _workersManager=new Mock<ITaskRunner>();

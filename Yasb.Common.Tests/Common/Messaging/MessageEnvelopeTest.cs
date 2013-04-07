@@ -22,7 +22,7 @@ namespace Yasb.Tests.Common.Messaging
             var message=new TestMessage();
             var fromEndPoint = new TestEndPoint("myTestAddressFrom:80:myQueue");
             var toEndPoint = new TestEndPoint("myTestAddressTo:80:myQueue");
-            var envelope = new MessageEnvelope(message, Guid.NewGuid().ToString(), fromEndPoint, toEndPoint);
+            var envelope = new MessageEnvelope(message,  fromEndPoint, toEndPoint);
             Assert.AreEqual(typeof(TestMessage), envelope.ContentType);
         }
     }

@@ -16,16 +16,16 @@ namespace Yasb.Tests.Common.Messaging.Configuration
     [TestClass]
     public class RedisServiceBusConfigurationTest
     {
-        private ServiceBusConfiguration<TestEndPoint,TestEndPointConfiguration> _sut;
+        private ServiceBusConfiguration _sut;
         [TestInitialize]
         public void Setup() {
-            _sut = new ServiceBusConfiguration<TestEndPoint, TestEndPointConfiguration>();
+            _sut = new ServiceBusConfiguration();
         }
 
         [TestMethod]
         public void ShouldConfigureEndpoint()
         {
-            _sut.WithLocalEndPoint("localhost:80:queueName");
+            _sut.WithLocalEndPoint<TestEndPointConfiguration>("localhost:80:queueName");
             Assert.AreEqual("localhost:80:queueName", _sut.LocalEndPoint.Value);
         }
 

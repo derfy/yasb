@@ -7,13 +7,18 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Redis.Messaging.Configuration
 {
-    public class RedisEndPointConfiguration : EndPointConfiguration<RedisEndPoint>
+    public class RedisEndPointConfiguration : EndPointConfiguration<RedisEndPointConfiguration>
     {
 
        
-        protected override RedisEndPoint CreateEndPoint(string endPoint)
+        protected override IEndPoint CreateEndPoint(string endPoint)
         {
             return new RedisEndPoint(endPoint);
+        }
+
+        public override RedisEndPointConfiguration This
+        {
+            get { return new RedisEndPointConfiguration(); }
         }
     }
 }

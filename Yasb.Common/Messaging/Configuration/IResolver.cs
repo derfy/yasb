@@ -5,8 +5,11 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IResolver : IDisposable
+	public interface IResolver<TResolver>
+        where TResolver : IResolver<TResolver> 
     {
-        T InstanceOf<T>();
-    }
+        IServiceBus Bus();
+        IQueue GetQueueByName(string endPointName);
+        IQueue GetLocalQueue();
+	}
 }

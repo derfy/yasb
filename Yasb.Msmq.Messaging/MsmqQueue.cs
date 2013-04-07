@@ -30,18 +30,47 @@ namespace Yasb.Msmq.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            throw new NotImplementedException();
+            _internalQueue.ReceiveByCorrelationId(envelopeId);
         }
 
 
         public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
-            throw new NotImplementedException();
+            envelope = null;
+            using (MessageEnumerator enumerator = _internalQueue.GetMessageEnumerator2())
+            {
+                while (enumerator.MoveNext())
+                {
+                    var message = enumerator.Current;
+                    envelope = message.Body as MessageEnvelope;
+                    envelope.RetriesNumber++;
+                    if (envelope.StartTimestamp == null || now.Subtract(timoutWindow).Ticks > envelope.StartTimestamp)
+                    {
+                        envelope.Id = message.Id;
+                        envelope.StartTimestamp = now.Ticks;
+                        using (var tx = new TransactionScope())
+                        {
+                            message = _internalQueue.ReceiveById(envelope.Id);
+                            message.CorrelationId = envelope.Id;
+                            message.Body = envelope;
+                            _internalQueue.Send(message, MessageQueueTransactionType.Automatic);
+                            tx.Complete();
+                            return true;
+                        }
+                        
+                    }
+                    
+                }
+                return false;
+                
+            }
+           
         }
 
 
         public void Push(MessageEnvelope envelope)
         {
+            envelope.Id = Guid.NewGuid().ToString();
             var message = new Message(envelope) { Formatter = _formatter };
             using (var tx = new TransactionScope())
             {
@@ -51,7 +80,7 @@ namespace Yasb.Msmq.Messaging
         }
         public MessageEnvelope WrapInEnvelope(IMessage message, IEndPoint fromEndPoint)
         {
-            return new MessageEnvelope(message, Guid.NewGuid().ToString(), fromEndPoint, LocalEndPoint);
+            return new MessageEnvelope(message,  fromEndPoint, LocalEndPoint);
         }
 
 

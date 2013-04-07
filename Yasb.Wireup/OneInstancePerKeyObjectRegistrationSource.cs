@@ -15,11 +15,11 @@ using Autofac.Features.GeneratedFactories;
 
 namespace Yasb.Wireup
 {
-    public class RedisSocketRegistrationSource<TKeyObject, TInstance> : IRegistrationSource where TKeyObject : class
+    public class OneInstancePerKeyObjectRegistrationSource<TKeyObject, TInstance> : IRegistrationSource where TKeyObject : class
     {
         private ConcurrentDictionary<TKeyObject, TInstance> _internalDictionary = new ConcurrentDictionary<TKeyObject, TInstance>();
-        private Func<TKeyObject, TInstance> _instanceFactory;
-        public RedisSocketRegistrationSource(Func<TKeyObject,TInstance> instanceFactory)
+        private Func<TKeyObject, IComponentContext, TInstance> _instanceFactory;
+        public OneInstancePerKeyObjectRegistrationSource(Func<TKeyObject, IComponentContext,TInstance> instanceFactory)
         {
             _instanceFactory = instanceFactory;
         }
@@ -40,21 +40,21 @@ namespace Yasb.Wireup
                 {
                     var context = c.Resolve<IComponentContext>();
                     var keyObject = parameters.OfType<TypedParameter>().Where(p => p.Type == typeof(TKeyObject)).First().Value as TKeyObject;
-                    return GetInstanceFor(keyObject);
-                }).InstancePerLifetimeScope()
-                          .As(service);
+                    return GetInstanceFor(keyObject,context);
+                }).As(service);
 
                 yield return rb.CreateRegistration();
             }
            
         }
 
-        private TInstance GetInstanceFor(TKeyObject keyObject)
+        private TInstance GetInstanceFor(TKeyObject keyObject, IComponentContext context)
         {
             var component = default(TInstance);
             while (!_internalDictionary.TryGetValue(keyObject, out component))
             {
-                _internalDictionary.TryAdd(keyObject, _instanceFactory(keyObject));
+                component = _instanceFactory(keyObject,context);
+                _internalDictionary.TryAdd(keyObject, component);
             }
             return component;
         }

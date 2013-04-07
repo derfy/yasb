@@ -6,21 +6,18 @@ using System.Net;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public abstract class EndPointConfiguration<TEndPoint> 
-        where TEndPoint : IEndPoint
+    public abstract class EndPointConfiguration<TConfiguration>
     {
-        
+        protected internal abstract IEndPoint CreateEndPoint(string endPoint);
 
-        protected internal abstract TEndPoint CreateEndPoint(string endPoint);
-       
-        public EndPointConfiguration<TEndPoint> WithName(string name)
+        public TConfiguration WithName(string name)
         {
             Built.Name=name;
-            return this;
+            return This;
         }
 
+        public abstract TConfiguration This { get; }
 
-
-        internal TEndPoint Built { get;  set; }
+        internal IEndPoint Built { get;  set; }
     }
 }

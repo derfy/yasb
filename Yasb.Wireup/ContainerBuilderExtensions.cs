@@ -10,27 +10,27 @@ namespace Yasb.Wireup
 {
     public static class ContainerBuilderExtensions
     {
-        public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope,IEnumerable<Parameter>, T> func)
+        public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope, IEnumerable<Parameter>, T> func, object scope = null)
         {
             return builder.Register<T>((c,p)=>
             {
-                var lifetimeScope = c.Resolve<ILifetimeScope>();
-                return func(lifetimeScope.BeginLifetimeScope(),p);
+                var lifetimeScope = scope == null ? c.Resolve<ILifetimeScope>() : c.Resolve<ILifetimeScope>().BeginLifetimeScope(scope);
+                return func(lifetimeScope,p);
             });
         }
 
-        public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope,T> func)
+        public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope,T> func,object scope =null)
         {
             return builder.Register<T>((c) =>
             {
-                var lifetimeScope = c.Resolve<ILifetimeScope>();
-                return func(lifetimeScope.BeginLifetimeScope());
+                var lifetimeScope = scope==null ? c.Resolve<ILifetimeScope>() : c.Resolve<ILifetimeScope>().BeginLifetimeScope(scope);
+                return func(lifetimeScope);
             });
         }
-        public static void RegisterOneInstanceForObjectKey<TKeyObject, T>(this ContainerBuilder builder, Func<TKeyObject, T> func)
+        public static void RegisterOneInstanceForObjectKey<TKeyObject, T>(this ContainerBuilder builder, Func<TKeyObject, IComponentContext, T> func)
             where  TKeyObject : class
         {
-            builder.RegisterSource(new RedisSocketRegistrationSource<TKeyObject, T>(func));
+            builder.RegisterSource(new OneInstancePerKeyObjectRegistrationSource<TKeyObject, T>(func));
             
         }
        

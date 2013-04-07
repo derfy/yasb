@@ -20,47 +20,61 @@ using Yasb.Redis.Messaging.Client;
 
 namespace Yasb.Wireup
 {
-
-    public class AutofacConfigurator : IConfigurator<RedisEndPoint,RedisEndPointConfiguration>
+    public class RedisResolver : IResolver<RedisResolver>
     {
-        private class AutofacResolver : IResolver
+       
+        private ILifetimeScope _lifetimeScope;
+        private ServiceBusConfiguration _busConfiguration;
+        public RedisResolver(ILifetimeScope lifetimeScope,ServiceBusConfiguration busConfiguration)
         {
-            private IContainer _container;
-            public AutofacResolver(IContainer container)
-            {
-                _container = container;
-            }
-            public T InstanceOf<T>()
-            {
-                return _container.Resolve<T>();
-            }
-
-            public void Dispose()
-            {
-                _container.Dispose();
-            }
+            _lifetimeScope = lifetimeScope;
+            _busConfiguration = busConfiguration;
         }
+        public IServiceBus Bus()
+        {
+            return _lifetimeScope.Resolve<IServiceBus>();
+        }
+        public IQueue GetLocalQueue()
+        {
+            var factory = _lifetimeScope.Resolve<Func<IEndPoint, IQueue>>();
+            return factory(_busConfiguration.LocalEndPoint);
+        }
+        public IQueue GetQueueByName(string endPointName)
+        {
+            var endPoint=_busConfiguration.NamedEndPoints.Where(e=>e.Name==endPointName).FirstOrDefault();
+            if(endPoint==null)
+                throw new ApplicationException(string.Format("No endPoint with name {0}",endPointName));
+            var factory = _lifetimeScope.Resolve<Func<IEndPoint, IQueue>>();
+            return factory(endPoint);
+        }
+        public RedisClient GetRedisClientByEndPoint(RedisEndPoint endPoint)
+        {
+            return _lifetimeScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(endPoint.ToIPEndPoint()));
+        }
+        public ScriptsCache ScriptsCacheFor(IEndPoint endPoint)
+        {
+            return _lifetimeScope.Resolve<ScriptsCache>(TypedParameter.From<IEndPoint>(endPoint));
+        }
+    }
+    public class AutofacConfigurator : IConfigurator<RedisResolver>
+    {
+        
         private ContainerBuilder _builder;
         
         public AutofacConfigurator()
         {
             _builder = new ContainerBuilder();
         }
-        public IConfigurator<RedisEndPoint, RedisEndPointConfiguration> Bus(Action<ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration>> configurator)
+       
+
+        public RedisResolver Configure(Action<ServiceBusConfiguration> configurator)
         {
-            var configuration = new ServiceBusConfiguration<RedisEndPoint, RedisEndPointConfiguration>();
+            var configuration = new ServiceBusConfiguration();
             configurator(configuration);
-            _builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisSocketAsyncEventArgsPool>((endPoint) => new RedisSocketAsyncEventArgsPool(10, endPoint));
+            _builder.RegisterOneInstanceForObjectKey<EndPoint, RedisClient>((endPoint,context) => new RedisClient(context.Resolve<RedisSocket>(TypedParameter.From<EndPoint>(endPoint))));
             _builder.RegisterModule(new RedisModule(configuration));
-            return this;
+            _builder.Register<RedisResolver>(c => new RedisResolver(c.Resolve<ILifetimeScope>().BeginLifetimeScope("bus"), configuration));
+            return _builder.Build().Resolve<RedisResolver>();
         }
-        public IResolver Resolver()
-        {
-            return new AutofacResolver(_builder.Build());
-        }
-
-
-
-      
     }
 }

@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Wireup;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
+using Yasb.Redis.Messaging.Client;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -15,29 +17,37 @@ namespace Yasb.Tests.Messaging.Redis
     [TestClass]
     public class RedisQueueTest
     {
-       
-
+        private ScriptsCache _scriptsCache;
+        private IQueue _queue;
+        public RedisQueueTest()
+        {
+            var resolver = new AutofacConfigurator().Configure(c => c.WithLocalEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:queue_test")
+                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
+            _queue = resolver.GetLocalQueue();
+            _scriptsCache = resolver.ScriptsCacheFor(_queue.LocalEndPoint);
+            _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(TestMessage));
+            
+        }
+        [TestInitialize()]
+        public void BeforeTest()
+        {
+            _scriptsCache.EvalSha("TestSetup.lua", 0);
+            var message = new TestMessage();
+            var envelope = new MessageEnvelope(message,  _queue.LocalEndPoint, _queue.LocalEndPoint);
+            _queue.Push(envelope);
+        }
+        [Ignore]
         [TestMethod]
         public void ShouldGetMessageOnlyOnce()
         {
-            //var configurator = new AutofacConfigurator();
-            //var queueFactory = configurator.Bus(c => c.WithLocalEndPoint("192.168.127.128:6379:queue_test")
-            //                                 .WithMessageHandlersAssembly(typeof(TestMessage).Assembly))
-            //                       .Resolver().InstanceOf<Func<IEndPoint, IQueue>>();
-            //var endPoint = new RedisEndPoint("192.168.127.128:6379:queue_test");
-            //var queue = queueFactory(endPoint);
-            //var message = new TestMessage();
-            //var envelope = new MessageEnvelope(message, Guid.NewGuid().ToString(), queue.LocalEndPoint, queue.LocalEndPoint) ;
-            ////envelope.StartTimestamp = DateTime.Now.Ticks - new TimeSpan(0, 1, 0).Ticks;
-            //queue.Push(envelope);
 
-            //MessageEnvelope newEnvelope = null;
-            //queue.Initialize();
-            //queue.TryGetEnvelope(DateTime.Now,TimeSpan.FromSeconds(5), out newEnvelope);
-            //Assert.IsNotNull(newEnvelope);
-            //queue.TryGetEnvelope(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out newEnvelope);
 
-            //Assert.IsNotNull(newEnvelope);
+            MessageEnvelope newEnvelope = null;
+            _queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            Assert.IsNotNull(newEnvelope);
+            _queue.TryGetEnvelope(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out newEnvelope);
+
+            Assert.IsNotNull(newEnvelope);
             //Assert.IsNotNull(newEnvelope.LastErrorMessage);
             //queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             //queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
