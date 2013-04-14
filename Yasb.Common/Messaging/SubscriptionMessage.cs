@@ -9,6 +9,6 @@ namespace Yasb.Common.Messaging
     {
        
         public string TypeName { get; set; }
-        public IEndPoint SubscriberEndPoint { get; set; }
+        public BusEndPoint SubscriberEndPoint { get; set; }
     }
 }

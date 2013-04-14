@@ -7,6 +7,7 @@ using Yasb.Common.Serialization;
 using System.IO;
 using Yasb.Common.Messaging;
 using Newtonsoft.Json;
+using Yasb.Common.Tests;
 
 namespace Yasb.Tests.Common.Serialization
 {

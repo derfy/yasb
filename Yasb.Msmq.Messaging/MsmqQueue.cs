@@ -11,9 +11,9 @@ namespace Yasb.Msmq.Messaging
     public class MsmqQueue : IQueue
     {
         private MessageQueue _internalQueue;
-        private MsmqEndPoint _endPoint;
+        private BusEndPoint _endPoint;
         private IMessageFormatter _formatter;
-        public MsmqQueue(MsmqEndPoint endPoint,IMessageFormatter formatter)
+        public MsmqQueue(BusEndPoint endPoint,IMessageFormatter formatter)
         {
             _endPoint = endPoint;
             _formatter = formatter;
@@ -78,7 +78,7 @@ namespace Yasb.Msmq.Messaging
                 tx.Complete();
             }
         }
-        public MessageEnvelope WrapInEnvelope(IMessage message, IEndPoint fromEndPoint)
+        public MessageEnvelope WrapInEnvelope(IMessage message, BusEndPoint fromEndPoint)
         {
             return new MessageEnvelope(message,  fromEndPoint, LocalEndPoint);
         }
@@ -86,7 +86,7 @@ namespace Yasb.Msmq.Messaging
 
 
 
-        public IEndPoint LocalEndPoint
+        public BusEndPoint LocalEndPoint
         {
             get { return _endPoint; }
         }

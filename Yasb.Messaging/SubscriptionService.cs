@@ -5,27 +5,30 @@ using System.Text;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Extensions;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Redis.Messaging
 {
     public class SubscriptionService : ISubscriptionService
     {
         private RedisClient _connection;
-        private IEndPoint _localEndPoint;
-        public SubscriptionService(IEndPoint localEndPoint, RedisClient connection)
+        private BusEndPoint _localEndPoint;
+        public SubscriptionService(BusEndPoint localEndPoint, RedisClient connection)
         {
             _localEndPoint = localEndPoint;
             _connection = connection;
         }
-        public IEndPoint[] GetSubscriptionEndPoints(string typeName)
+        public BusEndPoint[] GetSubscriptionEndPoints(string typeName)
         {
             string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
-            return _connection.SMembers(set).Select(e => RedisEndPoint.Parse(e.FromUtf8Bytes())).ToArray();
+            return _connection.SMembers(set).Select(e => {
+                return new BusEndPoint(e.FromUtf8Bytes()); 
+            }).ToArray();
             
         }
 
 
-        public void AddSubscriberFor(string typeName, IEndPoint subscriberEndPoint) 
+        public void AddSubscriberFor(string typeName, BusEndPoint subscriberEndPoint) 
         {
             string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
             _connection.Sadd(set, subscriberEndPoint.Value);
@@ -33,7 +36,7 @@ namespace Yasb.Redis.Messaging
 
 
 
-        public void RemoveSubscriberFor(string typeName, IEndPoint subscriberEndPoint)
+        public void RemoveSubscriberFor(string typeName, BusEndPoint subscriberEndPoint)
         {
             string combinedValue = string.Format("{0}:{1}", subscriberEndPoint.Value, typeName);
         }

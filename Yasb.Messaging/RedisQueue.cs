@@ -19,15 +19,20 @@ namespace Yasb.Redis.Messaging
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
         private ScriptsCache _scriptsCache;
         private ISerializer _serializer;
-        private RedisEndPoint _localEndPoint;
-        public RedisQueue(RedisEndPoint localEndPoint, ISerializer serializer,  ScriptsCache scriptsCache)
+        private BusEndPoint _localEndPoint;
+
+        private RedisClient Connection { get { return _scriptsCache.Connection; } }
+        public RedisQueue(BusEndPoint localEndPoint, ISerializer serializer, ScriptsCache scriptsCache)
         {
             _serializer = serializer;
             _localEndPoint = localEndPoint;
             _scriptsCache = scriptsCache;
             
         }
-        
+        public BusEndPoint LocalEndPoint
+        {
+            get { return _localEndPoint; }
+        }
         public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             _scriptsCache.EnsureScriptCached("TryGetEnvelope.lua", GetType());
@@ -57,28 +62,18 @@ namespace Yasb.Redis.Messaging
         }
 
 
-        public MessageEnvelope WrapInEnvelope(IMessage message, IEndPoint fromEndPoint)
-        {
-            return new MessageEnvelope(message, fromEndPoint, LocalEndPoint);
-        }
-        public IEndPoint LocalEndPoint
-        {
-            get { return _localEndPoint; }
-        }
-
-
-
-
-
 
         public void Dispose()
         { }
-        
-        private RedisClient Connection { get { return _scriptsCache.Connection; } }
 
 
 
 
-        
+
+
+
+
+
+       
     }
 }

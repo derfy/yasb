@@ -7,9 +7,9 @@ namespace Yasb.Common.Messaging
 {
     public interface IServiceBus
     {
-        IEndPoint LocalEndPoint { get; }
+        BusEndPoint LocalEndPoint { get; }
         void Send(string endPointName, IMessage message);
-        void Send(IEndPoint endPoint, IMessage message);
+        void Send(BusEndPoint endPoint, IMessage message);
         void Publish(IMessage message) ;
         void Subscribe<TMessage>(string endPointName) where TMessage : IMessage;
         void Run();

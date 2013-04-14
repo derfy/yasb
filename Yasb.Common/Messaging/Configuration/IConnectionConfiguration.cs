@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface INamedEndPointConfiguration
+    public interface IConnectionConfiguration
     {
-        IServiceBusConfiguration WithName(string name);
+        
     }
 }

@@ -63,11 +63,10 @@
     <Compile Include="Client\RedisException.cs" />
     <Compile Include="Client\RedisSocket.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
-    <Compile Include="Configuration\RedisEndPointConfiguration.cs" />
+    <Compile Include="Configuration\FluentRedisConnectionConfigurer.cs" />
+    <Compile Include="Configuration\RedisServiceBusConfiguration.cs" />
     <Compile Include="IScriptCache.cs" />
-    <Compile Include="RedisEndPoint.cs" />
     <Compile Include="ScriptsCache.cs" />
-    <Compile Include="Serialization\RedisEndPointConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisQueue.cs" />
     <Compile Include="SubscriptionService.cs" />

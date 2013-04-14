@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Autofac;
-using Yasb.Wireup;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Configuration;
+using Yasb.Wireup;
 
 namespace Producer
 {
@@ -57,8 +57,9 @@ namespace Producer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Configure(c => c.WithLocalEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:redis_producer")
-                                             .WithEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:redis_consumer", conf => conf.WithName("consumer")))
+            var bus = configurator.ConfigureServiceBus(sb=>sb.WithEndPointConfiguration(c => c.WithLocalEndPoint("vmEndPoint", "redis_producer")
+                                             .WithEndPoint("vmEndPoint", "redis_consumer", "consumer"))
+                                             .ConfigureConnections<FluentRedisConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure()
                                   .Bus();
            
             int i = 0;

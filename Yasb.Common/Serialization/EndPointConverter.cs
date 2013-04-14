@@ -6,24 +6,27 @@ using Newtonsoft.Json;
 using System.Net;
 using Newtonsoft.Json.Linq;
 using Yasb.Common.Messaging;
+using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Common.Serialization
 {
-    public abstract class EndPointConverter : JsonConverter 
+    public class EndPointConverter: JsonConverter 
     {
+        public EndPointConverter()
+        {
+        }
         public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null)
                 return null;
-            var endPoint = JObject.Load(reader)["Value"].ToObject<string>();
-            return CreateEndPoint(endPoint);
+            var endPointValue = JObject.Load(reader)["Value"].ToObject<string>();
+            return new BusEndPoint(endPointValue);
         }
 
-        protected abstract IEndPoint CreateEndPoint(string endPoint);
-
+      
         public override bool CanConvert(Type objectType)
         {
-            return typeof(IEndPoint).IsAssignableFrom(objectType);
+            return typeof(BusEndPoint).IsAssignableFrom(objectType);
         }
 
 

@@ -9,8 +9,10 @@ using Moq;
 using System.Threading;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Redis.Messaging;
-using Yasb.Tests.Common.Messaging.Configuration;
 using Yasb.Tests.Common.Serialization;
+using Yasb.Common.Tests.Configuration;
+using Yasb.Wireup;
+using Yasb.Common.Tests;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -20,97 +22,78 @@ namespace Yasb.Tests.Common.Messaging
     [TestClass]
     public class ServiceBusTests
     {
-        private  Mock<IWorker> _messagesReceiver;
-        private Mock<ITaskRunner> _workersManager;
         private  Mock<ISubscriptionService> _subscriptionService;
         private IServiceBus _sut;
-        private Dictionary<IEndPoint, Mock<IQueue>> dict = new Dictionary<IEndPoint, Mock<IQueue>>();
-        private ServiceBusConfiguration _configuration = new Mock<ServiceBusConfiguration>().Object;
+        private Dictionary<BusEndPoint, Mock<IQueue>> _queueFactory = new Dictionary<BusEndPoint, Mock<IQueue>>();
+        private BusEndPoint _localEndPoint;
+        BusEndPoint _endPoint0= new BusEndPoint("vmEndPoint:consumer");
+        BusEndPoint _endPoint1 = new BusEndPoint("vmEndPoint:producer");
+        BusEndPoint _endPoint2 = new BusEndPoint("myConnection:myQueue");
+        BusEndPoint _endPoint3 = new BusEndPoint("myConnection:anotherQueue");
         [TestInitialize]
         public void Setup()
         {
-            var repo=new MockRepository(MockBehavior.Default);
-            var endPoint0 = new TestEndPoint("localhost:80:myQueue");
-            dict[endPoint0] = repo.Create<IQueue>();
-            dict[endPoint0].SetupGet(q => q.LocalEndPoint).Returns(endPoint0);
-            var endPoint1=new TestEndPoint("myTestAddress1:80:myQueue");
-            dict[endPoint1] = repo.Create<IQueue>();
-            dict[endPoint1].SetupGet(q => q.LocalEndPoint).Returns(endPoint1);
-            var endPoint2 = new TestEndPoint("myTestAddress2:80:myQueue");
-            dict[endPoint2] = repo.Create<IQueue>();
-            dict[endPoint2].SetupGet(q => q.LocalEndPoint).Returns(endPoint2);
-            var endPoint3 = new TestEndPoint("localhost:80:theirQueue");
-            dict[endPoint3] = repo.Create<IQueue>();
-            dict[endPoint3].SetupGet(q => q.LocalEndPoint).Returns(endPoint3);
+            
 
-            _configuration.WithLocalEndPoint<TestEndPointConfiguration>("localhost:80:myQueue")
-                           .WithEndPoint<TestEndPointConfiguration>("localhost:80:theirQueue", e => e.WithName("foo"));
-            _messagesReceiver = new Mock<IWorker>();
+            var repo = new MockRepository(MockBehavior.Default);
+            _queueFactory[_endPoint0] = repo.Create<IQueue>();
+            _queueFactory[_endPoint1] = repo.Create<IQueue>();
+            _queueFactory[_endPoint2] = repo.Create<IQueue>();
+            _queueFactory[_endPoint3] = repo.Create<IQueue>();
+            _localEndPoint = _endPoint0;
             _subscriptionService = new Mock<ISubscriptionService>();
-            _workersManager=new Mock<ITaskRunner>();
-            _sut = new ServiceBus(_configuration.NamedEndPoints, _messagesReceiver.Object, MapQueue, _subscriptionService.Object, _workersManager.Object);
+            var configurator = new TestConfigurator(_queueFactory, _subscriptionService);
+            _sut = configurator.ConfigureServiceBus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "consumer")
+                 .WithEndPoint("vmEndPoint", "producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
+                 .ConfigureConnections<FluentTestConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure().Bus();
+        
         }
         [TestMethod]
         public void LocalMessageEndPointShouldBeCorrect()
         {
-            Assert.AreEqual<IEndPoint>(_configuration.LocalEndPoint, _sut.LocalEndPoint);
+            Assert.AreEqual<BusEndPoint>(_localEndPoint, _sut.LocalEndPoint);
         }
         [TestMethod]
         public void WhenSendingMessageSenderShouldBeInvokedCorrectly()
         {
              var message=new TestMessage();
-             var endPoint = _configuration.NamedEndPoints.First(e=>e.Name=="foo");
-             _sut.Send("foo", message);
-             var testEnvelope = new TestEnvelope();
-             dict[endPoint].Verify(s => s.WrapInEnvelope(message, _configuration.LocalEndPoint), Times.Once());
+             _sut.Send("producer", message);
+             _queueFactory[_endPoint1].Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message == message && e.To.Equals(_endPoint1))), Times.Once());
+      
         }
         [TestMethod]
         public void ShouldBeAbleToSubscribe()
         {
-            var message = new SubscriptionMessage() { TypeName = typeof(TestMessage).FullName, SubscriberEndPoint = _configuration.LocalEndPoint };
-            var endPoint = _configuration.NamedEndPoints.First(e => e.Name == "foo");
-            _sut.Subscribe<TestMessage>("foo");
-            dict[endPoint].Verify(s => s.WrapInEnvelope(It.Is<SubscriptionMessage>(p => p.TypeName == typeof(TestMessage).FullName), _configuration.LocalEndPoint), Times.Once());
+            var message = new SubscriptionMessage() { TypeName = typeof(TestMessage).FullName, SubscriberEndPoint = _localEndPoint };
+            _sut.Subscribe<TestMessage>("producer");
+            _queueFactory[_endPoint1].Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message.GetType() == typeof(SubscriptionMessage) && e.To.Equals(_endPoint1))), Times.Once());
         }
 
         [TestMethod]
         public void ShouldBeAbleToPublish()
         {
+         
+            _subscriptionService.Setup(s => s.GetSubscriptionEndPoints(typeof(TestMessage).FullName)).Returns(new BusEndPoint[] { _endPoint0, _endPoint1 });
+          
             var message = new TestMessage();
-            var endPoint1 = new TestEndPoint("myTestAddress1:80:myQueue");
-            var endPoint2 = new TestEndPoint("myTestAddress2:80:myQueue");
-            _subscriptionService.Setup(s => s.GetSubscriptionEndPoints(typeof(TestMessage).FullName)).Returns(new TestEndPoint[] { endPoint1, endPoint2 });
-
-            var testEnvelope1 = new MessageEnvelope();
-            var testEnvelope2 = new MessageEnvelope();
-            dict[endPoint1].Setup(q => q.WrapInEnvelope(message, _configuration.LocalEndPoint)).Returns(testEnvelope1);
-            dict[endPoint2].Setup(q => q.WrapInEnvelope(message, _configuration.LocalEndPoint)).Returns(testEnvelope2);
-            _sut.Publish(message);
-            dict[endPoint1].Verify(q => q.WrapInEnvelope(message, _configuration.LocalEndPoint), Times.Once());
-
-            dict[endPoint2].Verify(q => q.WrapInEnvelope(message, _configuration.LocalEndPoint), Times.Once());
-            
-            dict[endPoint1].Verify(s => s.Push(testEnvelope1), Times.Once());
-            dict[endPoint2].Verify(s => s.Push(testEnvelope2), Times.Once());
+             _sut.Publish(message);
+             _queueFactory[_endPoint0].Verify(s => s.Push(It.Is<MessageEnvelope>(e=>e.Message==message && e.From.Equals(_localEndPoint) &&e.To.Equals(_endPoint0))), Times.Once());
+             _queueFactory[_endPoint1].Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message == message && e.From.Equals(_localEndPoint) && e.To.Equals(_endPoint1))), Times.Once());
+             _queueFactory[_endPoint2].Verify(s => s.Push(It.IsAny<MessageEnvelope>()), Times.Never());
         }
         [TestMethod]
         public void ShouldBeAbleToRun()
         {
-            var token = new CancellationToken();
-            _workersManager.Setup(w => w.Run(It.IsAny<IWorker>())).Callback((IWorker worker) => 
-            {
-                worker.Execute(token);
-            });
-            _sut.Run();
-            _messagesReceiver.Verify(r => r.Execute(token),Times.Once());
+            //var token = new CancellationToken();
+            //_workersManager.Setup(w => w.Run(It.IsAny<IWorker>())).Callback((IWorker worker) => 
+            //{
+            //    worker.Execute(token);
+            //});
+            //_sut.Run();
+            //_messagesReceiver.Verify(r => r.Execute(token),Times.Once());
            
         }
 
 
-
-        IQueue MapQueue(IEndPoint endPoint)
-        {
-            return dict[endPoint].Object;
-        }
     }
 }

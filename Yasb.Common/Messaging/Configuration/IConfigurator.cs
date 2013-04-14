@@ -2,11 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IConfigurator<TResolver>where TResolver : IResolver<TResolver>
+    public interface IConfigurator<TResolver, TConnectionConfiguration> 
+        where TResolver : IResolver<TResolver>
     {
-        TResolver Configure(Action<ServiceBusConfiguration> configurator);
+        IConfigurator<TResolver, TConnectionConfiguration> ConfigureServiceBus(Action<ServiceBusConfigurer<TConnectionConfiguration>> busConfigurer);
+        TResolver Configure();
     }
 }

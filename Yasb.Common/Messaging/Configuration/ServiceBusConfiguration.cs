@@ -6,53 +6,32 @@ using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public  class ServiceBusConfiguration
+    public interface IServiceBusConfiguration {
+        Assembly MessageHandlersAssembly { get; }
+        EndPointConfiguration EndPointConfiguration { get;}
+    }
+    public class ServiceBusConfiguration<TConnectionConfiguration> : IServiceBusConfiguration 
     {
-        private List<IEndPoint> _namedEndPointsList = new List<IEndPoint>();
-      
-        public ServiceBusConfiguration()
+        private Dictionary<string, TConnectionConfiguration> _connections = new Dictionary<string, TConnectionConfiguration>();
+        private List<BusEndPoint> _endPoints = new List<BusEndPoint>();
+        internal ServiceBusConfiguration()
         {
+
+        }
+        public Assembly MessageHandlersAssembly { get; internal set; }
+        public EndPointConfiguration EndPointConfiguration { get; internal set; }
+        internal void AddConnection(KeyValuePair<string,TConnectionConfiguration> connectionPair)
+        {
+            _connections.Add(connectionPair.Key,connectionPair.Value);
         }
 
-
-        public IEndPoint LocalEndPoint { get; private set; }
-
-        public Assembly MessageHandlersAssembly { get; private set; }
-
-        public IEndPoint[] NamedEndPoints { get { return _namedEndPointsList.ToArray(); } }
-
-        public ServiceBusConfiguration WithLocalEndPoint<TEndPointConfiguration>(string endPoint)
-            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
+        public TConnectionConfiguration GetConnectionByName(string connectionName)
         {
-            var configuration = CreateEndPointConfiguration<TEndPointConfiguration>(endPoint);
-            configuration.Built.Name = "local";
-            LocalEndPoint = configuration.Built;
-            _namedEndPointsList.Add(LocalEndPoint);
-            return this;
+            TConnectionConfiguration connection = default(TConnectionConfiguration);
+            if(!_connections.TryGetValue(connectionName,out connection))
+                throw new ApplicationException(string.Format("No connection named {0} has been configured", connectionName));
+            return connection;
         }
-
-        public ServiceBusConfiguration WithEndPoint<TEndPointConfiguration>(string endPoint, Action<TEndPointConfiguration> configurer)
-            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
-        {
-            var configuration = CreateEndPointConfiguration<TEndPointConfiguration>(endPoint);
-            configurer(configuration);
-            _namedEndPointsList.Add(configuration.Built);
-            return this;
-        }
-
        
-        public ServiceBusConfiguration WithMessageHandlersAssembly(Assembly assembly)
-        {
-            MessageHandlersAssembly = assembly;
-            return this;
-        }
-        protected TEndPointConfiguration CreateEndPointConfiguration<TEndPointConfiguration>(string endPoint)
-            where TEndPointConfiguration : EndPointConfiguration<TEndPointConfiguration>
-        {
-            var endPointConfiguration = Activator.CreateInstance<TEndPointConfiguration>();
-            endPointConfiguration.Built = endPointConfiguration.CreateEndPoint(endPoint);
-            return endPointConfiguration;
-        }
-
     }
 }

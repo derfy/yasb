@@ -51,11 +51,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\MsmqConnectionConfiguration.cs" />
     <Compile Include="Serialization\JsonMessageFormatter.cs" />
-    <Compile Include="MsmqEndPoint.cs" />
     <Compile Include="MsmqQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\MsmqEndPointConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">

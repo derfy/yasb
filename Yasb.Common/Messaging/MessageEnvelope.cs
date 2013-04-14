@@ -12,8 +12,8 @@ namespace Yasb.Common.Messaging
         {
 
         }
-       
-        public MessageEnvelope(IMessage message, IEndPoint from, IEndPoint to)
+
+        public MessageEnvelope(IMessage message, BusEndPoint from, BusEndPoint to)
         {
             Message = message;
             From = from;
@@ -21,8 +21,8 @@ namespace Yasb.Common.Messaging
         }
         public IMessage Message { get; private set; }
 
-        public IEndPoint From { get; private set; }
-        public IEndPoint To { get; private set; }
+        public BusEndPoint From { get; private set; }
+        public BusEndPoint To { get; private set; }
         public Type ContentType { get { return Message.GetType(); } }
 
         public string Id { get;  set; }

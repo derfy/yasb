@@ -11,12 +11,13 @@ using Yasb.Common;
 
 namespace Yasb.Common.Messaging
 {
+    public delegate IEnumerable<IHandleMessages> MessageHandlerFactory(Type type);
     public class MessagesReceiver : IWorker, IDisposable 
     {
-        Func<Type, IEnumerable<IHandleMessages>> _handlerRegistrar;
+        private MessageHandlerFactory _handlerRegistrar;
         private IQueue _queue;
         private MessageDispatcher _messageDispatcher;
-        public MessagesReceiver(IQueue queue, Func<Type, IEnumerable<IHandleMessages>> handlerRegistrar)
+        public MessagesReceiver(IQueue queue, MessageHandlerFactory handlerRegistrar)
         {
             _queue = queue;
             _handlerRegistrar = handlerRegistrar;

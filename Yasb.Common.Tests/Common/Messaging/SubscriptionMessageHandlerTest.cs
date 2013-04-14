@@ -24,7 +24,7 @@ namespace Yasb.Tests.Common.Messaging
             var subscriptionService = new Mock<ISubscriptionService>();
             var sut = new SubscriptionMessageHandler(subscriptionService.Object);
             sut.Handle(subscription);
-            subscriptionService.Verify(s => s.AddSubscriberFor("foo", It.IsAny<RedisEndPoint>()), Times.Once());
+            subscriptionService.Verify(s => s.AddSubscriberFor("foo", It.IsAny<BusEndPoint>()), Times.Once());
         }
     }
 }

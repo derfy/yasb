@@ -39,7 +39,7 @@ namespace Yasb.Wireup
                 var rb = RegistrationBuilder.ForDelegate(ts.ServiceType, (c, parameters) =>
                 {
                     var context = c.Resolve<IComponentContext>();
-                    var keyObject = parameters.OfType<TypedParameter>().Where(p => p.Type == typeof(TKeyObject)).First().Value as TKeyObject;
+                    var keyObject = parameters.TypedAs<TKeyObject>();
                     return GetInstanceFor(keyObject,context);
                 }).As(service);
 

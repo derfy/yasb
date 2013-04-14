@@ -9,7 +9,7 @@ using Yasb.Common.Messaging;
 
 namespace Yasb.Common.Serialization
 {
-    public  class MessageEnvelopeConverter<TEndPoint> : JsonConverter where TEndPoint : IEndPoint
+    public  class MessageEnvelopeConverter : JsonConverter 
     {
         
        
@@ -26,8 +26,8 @@ namespace Yasb.Common.Serialization
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
             var message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
 
-            var from = jsonObject.Property("From").Value.ToObject<TEndPoint>(serializer);
-            var to = jsonObject.Property("To").Value.ToObject<TEndPoint>(serializer);
+            var from = jsonObject.Property("From").Value.ToObject<BusEndPoint>(serializer);
+            var to = jsonObject.Property("To").Value.ToObject<BusEndPoint>(serializer);
 
             var envelope = new MessageEnvelope(message, from, to);
             if (jsonObject.Property("Id") != null)

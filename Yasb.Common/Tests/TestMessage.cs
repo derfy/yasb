@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging;
 
-namespace Yasb.Tests
+namespace Yasb.Common.Tests
 {
     public class TestMessage : IMessage
     {

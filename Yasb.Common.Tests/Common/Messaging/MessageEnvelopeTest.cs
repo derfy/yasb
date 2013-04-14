@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Tests.Common.Serialization;
+using Yasb.Common.Tests.Configuration;
+using Yasb.Common.Tests;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -20,8 +22,8 @@ namespace Yasb.Tests.Common.Messaging
         public void ShouldGetCorrectTypeName()
         {
             var message=new TestMessage();
-            var fromEndPoint = new TestEndPoint("myTestAddressFrom:80:myQueue");
-            var toEndPoint = new TestEndPoint("myTestAddressTo:80:myQueue");
+            var fromEndPoint = new BusEndPoint("myConnection:myQueue");
+            var toEndPoint = new BusEndPoint("myConnection:myQueue");
             var envelope = new MessageEnvelope(message,  fromEndPoint, toEndPoint);
             Assert.AreEqual(typeof(TestMessage), envelope.ContentType);
         }

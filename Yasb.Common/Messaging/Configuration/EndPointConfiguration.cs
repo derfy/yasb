@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Net;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public abstract class EndPointConfiguration<TConfiguration>
+    public class EndPointConfiguration
     {
-        protected internal abstract IEndPoint CreateEndPoint(string endPoint);
-
-        public TConfiguration WithName(string name)
+        private List<BusEndPoint> _endPoints = new List<BusEndPoint>();
+        public EndPointConfiguration()
         {
-            Built.Name=name;
-            return This;
+
         }
+        public BusEndPoint LocalEndPoint { get; internal set; }
 
-        public abstract TConfiguration This { get; }
+        public BusEndPoint[] NamedEndPoints { get { return _endPoints.ToArray(); } }
 
-        internal IEndPoint Built { get;  set; }
+        internal void AddNamedEndPoint(BusEndPoint endPoint)
+        {
+            _endPoints.Add(endPoint);
+        }
     }
 }

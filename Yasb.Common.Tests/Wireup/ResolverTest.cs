@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Wireup;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Configuration;
+using Yasb.Common.Tests;
+using Yasb.Common.Messaging;
 
 namespace Yasb.Tests.Wireup
 {
@@ -13,14 +15,15 @@ namespace Yasb.Tests.Wireup
     /// Summary description for RedisResolverTest
     /// </summary>
     [TestClass]
-    public class RedisResolverTest
+    public class ResolverTest
     {
-        private RedisResolver _sut;
-        public RedisResolverTest()
+        private Resolver _sut;
+        public ResolverTest()
         {
-            _sut = new AutofacConfigurator().Configure(c => c.WithLocalEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:localqueue")
-                                                .WithEndPoint<RedisEndPointConfiguration>("193.168.127.128:6379:queue_test", conf => conf.WithName("test"))
-                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
+            _sut = new AutofacConfigurator().ConfigureServiceBus(c => c.WithEndPointConfiguration(cfg => cfg.WithLocalEndPoint("local", "localQueue").WithEndPoint("myHost", "queue_test", "test"))
+                .ConfigureConnections<FluentRedisConnectionConfigurer>(conn => conn.WithConnection("local", "127.0.0.1").WithConnection("myHost", "127.0.0.1").WithConnection("myOtherHost","192.198.70.86"))
+                                                
+                                            .WithMessageHandlersAssembly(typeof(TestMessage).Assembly)).Configure();
         }
        
         [TestMethod]
@@ -34,20 +37,20 @@ namespace Yasb.Tests.Wireup
         public void shouldBeAbleToGetLocalQueue()
         {
             var localQueue = _sut.GetLocalQueue();
-            Assert.AreEqual(localQueue.LocalEndPoint, new RedisEndPoint("192.168.127.128:6379:localqueue"));
+            Assert.AreEqual(new BusEndPoint("local:localQueue"), localQueue.LocalEndPoint);
         }
         [TestMethod]
         public void shouldBeAbleToGetQueueByName()
         {
             var endPointName = "test";
             var queue = _sut.GetQueueByName(endPointName);
-            Assert.AreEqual(queue.LocalEndPoint, new RedisEndPoint("193.168.127.128:6379:queue_test"));
+            Assert.AreEqual(queue.LocalEndPoint, new BusEndPoint("myHost:queue_test"));
         }
 
         [TestMethod]
         public void shouldBeAbleToGetRedisClientByEndPoint()
         {
-            var endPoint = new RedisEndPoint("193.168.127.128:6379:queue_test");
+            var endPoint = new BusEndPoint("myHost:queue_test");
             var redisClient = _sut.GetRedisClientByEndPoint(endPoint);
             Assert.IsNotNull(redisClient);
         }
@@ -55,8 +58,8 @@ namespace Yasb.Tests.Wireup
         [TestMethod]
         public void shouldGetSameClientForSameAddress()
         {
-            var endPoint1 = new RedisEndPoint("193.168.127.128:6379:queue_test1");
-            var endPoint2 = new RedisEndPoint("193.168.127.128:6379:queue_test2");
+            var endPoint1 = new BusEndPoint("myHost:queue_test1");
+            var endPoint2 = new BusEndPoint("local:queue_test2");
             var redisClient1 = _sut.GetRedisClientByEndPoint(endPoint1);
             var redisClient2 = _sut.GetRedisClientByEndPoint(endPoint2);
             Assert.AreEqual(redisClient1, redisClient2);
@@ -64,8 +67,8 @@ namespace Yasb.Tests.Wireup
         [TestMethod]
         public void shouldGetDifferentClientsForDifferentAddress()
         {
-            var endPoint1 = new RedisEndPoint("192.168.127.128:6379:queue_test");
-            var endPoint2 = new RedisEndPoint("193.168.127.128:6379:queue_test");
+            var endPoint1 = new BusEndPoint("myHost:queue_test1");
+            var endPoint2 = new BusEndPoint("myOtherHost:queue_test1");
             var redisClient1 = _sut.GetRedisClientByEndPoint(endPoint1);
             var redisClient2 = _sut.GetRedisClientByEndPoint(endPoint2);
             Assert.AreNotEqual(redisClient1, redisClient2);

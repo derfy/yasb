@@ -9,11 +9,11 @@ namespace Yasb.Common.Messaging
     public class ServiceBus : IServiceBus 
     {
         private readonly IWorker _messagesReceiver;
-        private readonly Func<IEndPoint, IQueue> _queueFactory;
+        private readonly QueueFactory _queueFactory;
         private readonly ITaskRunner _taskRunner;
         private readonly ISubscriptionService _subscriptionService;
-        private readonly List<IEndPoint> _namedEndPointsList = new List<IEndPoint>();
-        public ServiceBus(IEndPoint[] namedEndPoints, IWorker messagesReceiver, Func<IEndPoint, IQueue> queueFactory, ISubscriptionService subscriptionService, ITaskRunner taskRunner)
+        private readonly List<BusEndPoint> _namedEndPointsList = new List<BusEndPoint>();
+        public ServiceBus(BusEndPoint[] namedEndPoints, IWorker messagesReceiver, QueueFactory queueFactory, ISubscriptionService subscriptionService, ITaskRunner taskRunner)
         {
             _queueFactory = queueFactory;
             _messagesReceiver = messagesReceiver;
@@ -22,7 +22,7 @@ namespace Yasb.Common.Messaging
             _namedEndPointsList.AddRange(namedEndPoints);
         }
 
-        public virtual IEndPoint LocalEndPoint { get { return GetEndPointByName("local"); } }
+        public virtual BusEndPoint LocalEndPoint { get { return GetEndPointByName("local"); } }
         
         public void Publish(IMessage message) 
         {
@@ -46,15 +46,16 @@ namespace Yasb.Common.Messaging
         }
 
 
-        public void Subscribe<TMessage>(IEndPoint endPoint) where TMessage : IMessage
+        public void Subscribe<TMessage>(BusEndPoint endPoint) where TMessage : IMessage
         {
             var subscriptionMessage = new SubscriptionMessage() { TypeName = typeof(TMessage).FullName, SubscriberEndPoint = LocalEndPoint };
             Send(endPoint, subscriptionMessage);
         }
-        public void Send(IEndPoint endPoint, IMessage message)
+
+        public void Send(BusEndPoint endPoint, IMessage message)
         {
             var queue = _queueFactory(endPoint);
-            var envelope = queue.WrapInEnvelope(message, LocalEndPoint);
+            var envelope = new MessageEnvelope(message, LocalEndPoint, endPoint);
             queue.Push(envelope);
         }
         
@@ -63,7 +64,7 @@ namespace Yasb.Common.Messaging
             _taskRunner.Run(_messagesReceiver);
         }
 
-        private IEndPoint GetEndPointByName(string endPointName)
+        private BusEndPoint GetEndPointByName(string endPointName)
         {
             var endPoint = _namedEndPointsList.FirstOrDefault(e => e.Name == endPointName);
             if (endPoint == null)

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Autofac;
-using Yasb.Wireup;
 using System.Threading;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Configuration;
+using Yasb.Wireup;
 
 namespace Consumer
 {
@@ -58,10 +58,11 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new AutofacConfigurator();
-            var bus = configurator.Configure(c => c.WithLocalEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:redis_consumer")
-                                             .WithEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:redis_producer", conf => conf.WithName("producer"))
-                                             .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly))
-                                   .Bus();
+            var bus = configurator.ConfigureServiceBus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "redis_consumer")
+                .WithEndPoint("vmEndPoint", "redis_producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
+                .ConfigureConnections<FluentRedisConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure().Bus();
+            
+            
 
 
             bus.Subscribe<ExampleMessage>("producer");

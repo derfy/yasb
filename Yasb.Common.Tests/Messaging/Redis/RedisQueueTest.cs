@@ -8,6 +8,7 @@ using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging.Configuration;
+using Yasb.Common.Tests;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -21,11 +22,11 @@ namespace Yasb.Tests.Messaging.Redis
         private IQueue _queue;
         public RedisQueueTest()
         {
-            var resolver = new AutofacConfigurator().Configure(c => c.WithLocalEndPoint<RedisEndPointConfiguration>("192.168.127.128:6379:queue_test")
-                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
-            _queue = resolver.GetLocalQueue();
-            _scriptsCache = resolver.ScriptsCacheFor(_queue.LocalEndPoint);
-            _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(TestMessage));
+            //var resolver = new AutofacConfigurator<TestConnectionConfiguration>().WithEndPointConfigurer(c => c.WithLocalEndPoint("myHost", "queue_test")
+            //                                 ).WithMessageHandlersAssembly(typeof(TestMessage).Assembly).Configure();
+            //_queue = resolver.GetLocalQueue();
+            //_scriptsCache = resolver.ScriptsCacheFor(_queue.LocalEndPoint);
+            //_scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(TestMessage));
             
         }
         [TestInitialize()]
@@ -33,8 +34,8 @@ namespace Yasb.Tests.Messaging.Redis
         {
             _scriptsCache.EvalSha("TestSetup.lua", 0);
             var message = new TestMessage();
-            var envelope = new MessageEnvelope(message,  _queue.LocalEndPoint, _queue.LocalEndPoint);
-            _queue.Push(envelope);
+            //var envelope = new MessageEnvelope(message,  _queue.LocalEndPoint, _queue.LocalEndPoint);
+            //_queue.Push(envelope);
         }
         [Ignore]
         [TestMethod]
