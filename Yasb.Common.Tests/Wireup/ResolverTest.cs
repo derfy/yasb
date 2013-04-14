@@ -8,6 +8,7 @@ using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Configuration;
 using Yasb.Common.Tests;
 using Yasb.Common.Messaging;
+using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 
 namespace Yasb.Tests.Wireup
 {
@@ -21,7 +22,7 @@ namespace Yasb.Tests.Wireup
         public ResolverTest()
         {
             _sut = new AutofacConfigurator().ConfigureServiceBus(c => c.WithEndPointConfiguration(cfg => cfg.WithLocalEndPoint("local", "localQueue").WithEndPoint("myHost", "queue_test", "test"))
-                .ConfigureConnections<FluentRedisConnectionConfigurer>(conn => conn.WithConnection("local", "127.0.0.1").WithConnection("myHost", "127.0.0.1").WithConnection("myOtherHost","192.198.70.86"))
+                .ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1").WithConnection("myHost", "127.0.0.1").WithConnection("myOtherHost", "192.198.70.86"))
                                                 
                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly)).Configure();
         }

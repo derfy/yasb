@@ -8,6 +8,7 @@ using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Configuration;
 using Yasb.Wireup;
+using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 
 namespace Consumer
 {
@@ -60,7 +61,7 @@ namespace Consumer
             var configurator = new AutofacConfigurator();
             var bus = configurator.ConfigureServiceBus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "redis_consumer")
                 .WithEndPoint("vmEndPoint", "redis_producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
-                .ConfigureConnections<FluentRedisConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure().Bus();
+                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure().Bus();
             
             
 
