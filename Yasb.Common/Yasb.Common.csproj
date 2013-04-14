@@ -53,7 +53,9 @@
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Guard.cs" />
-    <Compile Include="Messaging\Configuration\EndPointConfiguration.cs" />
+    <Compile Include="Messaging\Configuration\EndPointConfiguration.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Messaging\Configuration\IConfigurator.cs" />
     <Compile Include="Messaging\Configuration\IConnectionConfigurer.cs" />
     <Compile Include="Messaging\Configuration\ServiceBusConfiguration.cs" />
