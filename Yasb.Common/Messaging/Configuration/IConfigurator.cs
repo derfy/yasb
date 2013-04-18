@@ -9,7 +9,7 @@ namespace Yasb.Common.Messaging.Configuration
     public interface IConfigurator<TResolver, TConnectionConfiguration> 
         where TResolver : IResolver<TResolver>
     {
-        IConfigurator<TResolver, TConnectionConfiguration> ConfigureServiceBus(Action<ServiceBusConfigurer<TConnectionConfiguration>> busConfigurer);
-        TResolver Configure();
+        IConfigurator<TResolver, TConnectionConfiguration> Bus(Action<ServiceBusConfigurer<TConnectionConfiguration>> busConfigurer);
+        TResolver GetResolver();
     }
 }

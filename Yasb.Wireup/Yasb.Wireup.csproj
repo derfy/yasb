@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Messaging" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,13 +59,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutofacConfigurator.cs" />
+    <Compile Include="AbstractConfigurator.cs" />
+    <Compile Include="RedisConfigurator.cs" />
     <Compile Include="CommonModule.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="ExampleMessage.cs" />
+    <Compile Include="MsmqConfigurator.cs" />
+    <Compile Include="MsmqQueueModule.cs" />
+    <Compile Include="MsmqServiceBusModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="OneInstancePerKeyObjectRegistrationSource.cs" />
-    <Compile Include="RedisModule.cs" />
+    <Compile Include="QueueResolver.cs" />
+    <Compile Include="RedisServiceBusModule.cs" />
+    <Compile Include="RedisQueueModule.cs" />
+    <Compile Include="ServiceBusModule.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="TestConfigurator.cs" />
     <Compile Include="TestModule.cs" />
   </ItemGroup>
@@ -79,6 +89,10 @@
     <ProjectReference Include="..\Yasb.Messaging\Yasb.Redis.Messaging.csproj">
       <Project>{603CF365-A1F5-42C5-A78B-DA6EC1F61223}</Project>
       <Name>Yasb.Redis.Messaging</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yasb.Msmq.Messaging\Yasb.Msmq.Messaging.csproj">
+      <Project>{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}</Project>
+      <Name>Yasb.Msmq.Messaging</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

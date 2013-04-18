@@ -7,34 +7,34 @@ using System.Reflection;
 namespace Yasb.Common.Messaging.Configuration
 {
     
-    public  class ServiceBusConfigurer<TConnectionConfiguration> 
+    public  class ServiceBusConfigurer<TConnection> 
     {
         public ServiceBusConfigurer()
         {
-            Built = new ServiceBusConfiguration<TConnectionConfiguration>();
+            Built = new ServiceBusConfiguration<TConnection>();
         }
-        public ServiceBusConfigurer<TConnectionConfiguration> WithEndPointConfiguration(Action<EndPointConfigurer> action)
+        public ServiceBusConfigurer<TConnection> WithEndPointConfiguration(Action<ServiceBusEndPointConfigurer<TConnection>> action)
         {
-            var endPointConfigurer = new EndPointConfigurer();
+            var endPointConfigurer = new ServiceBusEndPointConfigurer<TConnection>();
             action(endPointConfigurer);
             Built.EndPointConfiguration = endPointConfigurer.Built;
             return this;
         }
-        public ServiceBusConfigurer<TConnectionConfiguration> WithMessageHandlersAssembly(Assembly assembly)
+        public ServiceBusConfigurer<TConnection> WithMessageHandlersAssembly(Assembly assembly)
         {
             Built.MessageHandlersAssembly = assembly;
             return this;
         }
-        public ServiceBusConfigurer<TConnectionConfiguration> ConfigureConnections<TConnectionConfigurer>(Action<TConnectionConfigurer> action)
-            where TConnectionConfigurer : IConnectionConfigurer<TConnectionConfiguration>
+        public ServiceBusConfigurer<TConnection> ConfigureConnections<TConnectionConfigurer>(Action<TConnectionConfigurer> action)
+            where TConnectionConfigurer : IConnectionConfigurer<TConnection>
         {
             var connectionConfigurer = Activator.CreateInstance<TConnectionConfigurer>();
             action(connectionConfigurer);
-            connectionConfigurer.Connections.ToList().ForEach(Built.AddConnection);
+            connectionConfigurer.Connections.ToList().ForEach(Built.EndPointConfiguration.AddConnection);
             return this;
         }
 
 
-        public ServiceBusConfiguration<TConnectionConfiguration> Built { get; private set; }
+        public ServiceBusConfiguration<TConnection> Built { get; private set; }
     }
 }

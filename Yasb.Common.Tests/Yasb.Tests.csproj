@@ -68,16 +68,19 @@
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
     <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
+    <Compile Include="Messaging\Msmq\MsmqFluentConnectionConfigurer.cs" />
     <Compile Include="Messaging\Redis\RedisQueueTest.cs" />
     <Compile Include="Common\Serialization\MessageEnvelopeConverterTest.cs" />
     <Compile Include="Common\Serialization\SerializerTest.cs" />
     <Compile Include="Common\TaskRunnerTest.cs" />
     <Compile Include="Messaging\Msmq\MsmqQueueTest.cs" />
     <Compile Include="Messaging\Redis\RedisSocketAsyncEventArgsPoolTest.cs" />
+    <Compile Include="Scripts\ProbeScripts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Messaging\ServiceBusTests.cs" />
     <Compile Include="Common\Messaging\SubscriptionMessageHandlerTest.cs" />
-    <Compile Include="Wireup\ResolverTest.cs" />
+    <Compile Include="Wireup\AutofacConfiguratorTest.cs" />
+    <Compile Include="Wireup\RegisterOneInstanceForObjectKeyTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

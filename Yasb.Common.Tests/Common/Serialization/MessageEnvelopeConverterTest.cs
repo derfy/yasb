@@ -9,7 +9,6 @@ using Yasb.Common.Serialization;
 using Moq;
 using Yasb.Common.Messaging;
 using Newtonsoft.Json.Serialization;
-using Yasb.Redis.Messaging.Configuration;
 using Yasb.Tests.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Common.Tests;

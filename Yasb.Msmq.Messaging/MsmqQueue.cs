@@ -11,18 +11,19 @@ namespace Yasb.Msmq.Messaging
     public class MsmqQueue : IQueue
     {
         private MessageQueue _internalQueue;
-        private BusEndPoint _endPoint;
+        private string _connectionString;
         private IMessageFormatter _formatter;
-        public MsmqQueue(BusEndPoint endPoint,IMessageFormatter formatter)
+        public MsmqQueue(string connectionString,IMessageFormatter formatter)
         {
-            _endPoint = endPoint;
+            _connectionString = connectionString;
             _formatter = formatter;
+            Initialize();
         }
         public void Initialize()
         {
-            if (!MessageQueue.Exists(_endPoint.Value))
-              MessageQueue.Create(_endPoint.Value, true);
-            _internalQueue = new MessageQueue(_endPoint.Value) { Formatter=_formatter};
+            if (!MessageQueue.Exists(_connectionString))
+              MessageQueue.Create(_connectionString, true);
+            _internalQueue = new MessageQueue(_connectionString) { Formatter=_formatter};
             _internalQueue.MessageReadPropertyFilter.SenderId = true;
         }
 
@@ -78,18 +79,8 @@ namespace Yasb.Msmq.Messaging
                 tx.Complete();
             }
         }
-        public MessageEnvelope WrapInEnvelope(IMessage message, BusEndPoint fromEndPoint)
-        {
-            return new MessageEnvelope(message,  fromEndPoint, LocalEndPoint);
-        }
+       
 
-
-
-
-        public BusEndPoint LocalEndPoint
-        {
-            get { return _endPoint; }
-        }
     }
     
 }

@@ -43,9 +43,9 @@ namespace Yasb.Tests.Common.Messaging
             _localEndPoint = _endPoint0;
             _subscriptionService = new Mock<ISubscriptionService>();
             var configurator = new TestConfigurator(_queueFactory, _subscriptionService);
-            _sut = configurator.ConfigureServiceBus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "consumer")
+            _sut = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "consumer")
                  .WithEndPoint("vmEndPoint", "producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
-                 .ConfigureConnections<FluentTestConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))).Configure().Bus();
+                 .ConfigureConnections<FluentTestConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
         
         }
         [TestMethod]

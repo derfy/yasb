@@ -54,6 +54,7 @@
     <Compile Include="Guard.cs" />
     <Compile Include="Messaging\BusEndPoint.cs" />
     <Compile Include="Messaging\Configuration\CommonConnectionConfigurers\FluentIPEndPointConfigurer.cs" />
+    <Compile Include="Messaging\Configuration\ConnectionsRepository.cs" />
     <Compile Include="Messaging\Configuration\EndPointConfiguration.cs">
       <SubType>Code</SubType>
     </Compile>

@@ -5,7 +5,6 @@ using System.Text;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Extensions;
-using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Redis.Messaging
 {
