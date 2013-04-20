@@ -32,7 +32,7 @@ namespace Yasb.Common.Messaging
             {
                 token.ThrowIfCancellationRequested();
                 MessageEnvelope envelope = null;
-                if (!_queue.TryGetEnvelope(DateTime.Now,delta, out envelope))
+                if (!_queue.TryDequeue(DateTime.Now, delta, out envelope))
                     continue;
                 try
                 {

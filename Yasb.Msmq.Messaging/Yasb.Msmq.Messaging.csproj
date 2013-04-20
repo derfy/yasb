@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\MsmqConnectionConfiguration.cs" />
+    <Compile Include="Configuration\MsmqFluentConnectionConfigurer.cs" />
     <Compile Include="Serialization\JsonMessageFormatter.cs" />
     <Compile Include="MsmqQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

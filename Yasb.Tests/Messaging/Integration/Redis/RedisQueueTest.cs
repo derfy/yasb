@@ -48,11 +48,11 @@ namespace Yasb.Tests.Messaging.Redis
 
             MessageEnvelope newEnvelope = null;
             //Get Message
-            _queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             //Wait 5 seconds and reget same message
             MessageEnvelope timeoutEnvelope = null;
-            _queue.TryGetEnvelope(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out timeoutEnvelope);
+            _queue.TryDequeue(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out timeoutEnvelope);
 
             Assert.IsNotNull(timeoutEnvelope);
             //Assert It's the same message
@@ -67,7 +67,7 @@ namespace Yasb.Tests.Messaging.Redis
 
 
             MessageEnvelope newEnvelope = null;
-            _queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
         }
         [Ignore]
@@ -77,10 +77,10 @@ namespace Yasb.Tests.Messaging.Redis
 
 
             MessageEnvelope newEnvelope = null;
-            _queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             _queue.SetMessageCompleted(newEnvelope.Id);
-            _queue.TryGetEnvelope(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNull(newEnvelope);
         }
 

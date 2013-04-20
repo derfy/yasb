@@ -5,8 +5,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Wireup", "Yasb.Wireup\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{D0587567-2196-4EA4-8BD1-1B57B896DBCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Producer\Producer.csproj", "{852BE587-E84A-4959-84C3-93EA7868E03B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C181B6DA-BBB7-489F-A595-610090288272}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
@@ -14,11 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{C181B6
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Consumer\Consumer.csproj", "{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{FE5F9150-412F-46CC-98CC-43B41AE7BD12}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Tests", "Yasb.Common.Tests\Yasb.Tests.csproj", "{AA996963-9884-4751-A688-0EF25622570C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A56B3C70-51BC-4C17-89BD-FED1702653B4}"
 	ProjectSection(SolutionItems) = preProject
@@ -29,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Common", "Yasb.Common\Yasb.Common.csproj", "{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Redis.Messaging", "Yasb.Messaging\Yasb.Redis.Messaging.csproj", "{603CF365-A1F5-42C5-A78B-DA6EC1F61223}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Msmq.Messaging", "Yasb.Msmq.Messaging\Yasb.Msmq.Messaging.csproj", "{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{0CA4EBBA-3633-41EC-875B-19B062853FFE}"
@@ -38,36 +30,60 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{0CA4EBBA-3
 		License.txt = License.txt
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redis", "Redis", "{FB571631-C2BD-4AFD-9593-832AFC2ED073}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Samples\Redis\Producer\Producer.csproj", "{852BE587-E84A-4959-84C3-93EA7868E03B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Samples\Redis\Consumer\Consumer.csproj", "{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Msmq", "Msmq", "{57E4AFD6-BDF3-461B-8E13-CED780B38877}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Samples\Msmq\Producer\Producer.csproj", "{6B3C7A16-E9A7-491E-993C-012174EDAE4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Samples\Msmq\Consumer\Consumer.csproj", "{77622DD5-059A-4223-B82D-D1509EFB5F19}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Tests", "Yasb.Tests\Yasb.Tests.csproj", "{AA996963-9884-4751-A688-0EF25622570C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Redis.Messaging", "Yasb.Redis.Messaging\Yasb.Redis.Messaging.csproj", "{603CF365-A1F5-42C5-A78B-DA6EC1F61223}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://derfy.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
-		SccProjectUniqueName1 = Consumer\\Consumer.csproj
-		SccProjectTopLevelParentUniqueName1 = Yasb.sln
-		SccProjectName1 = Consumer
-		SccLocalPath1 = Consumer
-		SccProjectUniqueName2 = Producer\\Producer.csproj
-		SccProjectTopLevelParentUniqueName2 = Yasb.sln
-		SccProjectName2 = Producer
-		SccLocalPath2 = Producer
-		SccProjectUniqueName3 = Yasb.Common.Tests\\Yasb.Tests.csproj
-		SccProjectTopLevelParentUniqueName3 = Yasb.sln
-		SccProjectName3 = Yasb.Common.Tests
-		SccLocalPath3 = Yasb.Common.Tests
-		SccProjectUniqueName4 = Yasb.Common\\Yasb.Common.csproj
-		SccProjectName4 = Yasb.Common
-		SccLocalPath4 = Yasb.Common
-		SccProjectUniqueName5 = Yasb.Messaging\\Yasb.Redis.Messaging.csproj
-		SccProjectName5 = Yasb.Messaging
-		SccLocalPath5 = Yasb.Messaging
-		SccProjectUniqueName6 = Yasb.Wireup\\Yasb.Wireup.csproj
-		SccProjectName6 = Yasb.Wireup
-		SccLocalPath6 = Yasb.Wireup
-		SccProjectUniqueName7 = Yasb.Msmq.Messaging\\Yasb.Msmq.Messaging.csproj
-		SccProjectName7 = Yasb.Msmq.Messaging
-		SccLocalPath7 = Yasb.Msmq.Messaging
+		SccProjectUniqueName1 = Yasb.Common\\Yasb.Common.csproj
+		SccProjectName1 = Yasb.Common
+		SccLocalPath1 = Yasb.Common
+		SccProjectUniqueName2 = Yasb.Wireup\\Yasb.Wireup.csproj
+		SccProjectName2 = Yasb.Wireup
+		SccLocalPath2 = Yasb.Wireup
+		SccProjectUniqueName3 = Yasb.Msmq.Messaging\\Yasb.Msmq.Messaging.csproj
+		SccProjectName3 = Yasb.Msmq.Messaging
+		SccLocalPath3 = Yasb.Msmq.Messaging
+		SccProjectUniqueName4 = Samples\\Redis\\Producer\\Producer.csproj
+		SccProjectTopLevelParentUniqueName4 = Yasb.sln
+		SccProjectName4 = Samples/Redis/Producer
+		SccLocalPath4 = Samples\\Redis\\Producer
+		SccProjectUniqueName5 = Samples\\Redis\\Consumer\\Consumer.csproj
+		SccProjectTopLevelParentUniqueName5 = Yasb.sln
+		SccProjectName5 = Samples/Redis/Consumer
+		SccLocalPath5 = Samples\\Redis\\Consumer
+		SccProjectUniqueName6 = Samples\\Msmq\\Producer\\Producer.csproj
+		SccProjectTopLevelParentUniqueName6 = Yasb.sln
+		SccProjectName6 = Samples/Msmq/Producer
+		SccLocalPath6 = Samples\\Msmq\\Producer
+		SccProjectUniqueName7 = Samples\\Msmq\\Consumer\\Consumer.csproj
+		SccProjectTopLevelParentUniqueName7 = Yasb.sln
+		SccProjectName7 = Samples/Msmq/Consumer
+		SccLocalPath7 = Samples\\Msmq\\Consumer
+		SccProjectUniqueName8 = Yasb.Tests\\Yasb.Tests.csproj
+		SccProjectTopLevelParentUniqueName8 = Yasb.sln
+		SccProjectName8 = Yasb.Tests
+		SccLocalPath8 = Yasb.Tests
+		SccProjectUniqueName9 = Yasb.Redis.Messaging\\Yasb.Redis.Messaging.csproj
+		SccProjectName9 = Yasb.Redis.Messaging
+		SccLocalPath9 = Yasb.Redis.Messaging
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Yasb.vsmdi
@@ -91,6 +107,26 @@ Global
 		{E90CB416-314A-4EA9-9B0A-1D6666644778}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E90CB416-314A-4EA9-9B0A-1D6666644778}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E90CB416-314A-4EA9-9B0A-1D6666644778}.Release|x86.ActiveCfg = Release|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|x86.ActiveCfg = Release|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|x86.ActiveCfg = Release|Any CPU
 		{852BE587-E84A-4959-84C3-93EA7868E03B}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{852BE587-E84A-4959-84C3-93EA7868E03B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{852BE587-E84A-4959-84C3-93EA7868E03B}.Debug|Mixed Platforms.Build.0 = Debug|x86
@@ -111,6 +147,26 @@ Global
 		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9}.Release|Mixed Platforms.Build.0 = Release|x86
 		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9}.Release|x86.ActiveCfg = Release|x86
 		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9}.Release|x86.Build.0 = Release|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Debug|x86.ActiveCfg = Debug|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Debug|x86.Build.0 = Debug|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Release|Any CPU.ActiveCfg = Release|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Release|Mixed Platforms.Build.0 = Release|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Release|x86.ActiveCfg = Release|x86
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F}.Release|x86.Build.0 = Release|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Debug|x86.ActiveCfg = Debug|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Debug|x86.Build.0 = Debug|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Release|Any CPU.ActiveCfg = Release|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Release|Mixed Platforms.Build.0 = Release|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Release|x86.ActiveCfg = Release|x86
+		{77622DD5-059A-4223-B82D-D1509EFB5F19}.Release|x86.Build.0 = Release|x86
 		{AA996963-9884-4751-A688-0EF25622570C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA996963-9884-4751-A688-0EF25622570C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA996963-9884-4751-A688-0EF25622570C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -121,16 +177,6 @@ Global
 		{AA996963-9884-4751-A688-0EF25622570C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AA996963-9884-4751-A688-0EF25622570C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AA996963-9884-4751-A688-0EF25622570C}.Release|x86.ActiveCfg = Release|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}.Release|x86.ActiveCfg = Release|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -141,24 +187,18 @@ Global
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|x86.ActiveCfg = Release|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{852BE587-E84A-4959-84C3-93EA7868E03B} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
-		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
-		{AA996963-9884-4751-A688-0EF25622570C} = {FE5F9150-412F-46CC-98CC-43B41AE7BD12}
+		{FB571631-C2BD-4AFD-9593-832AFC2ED073} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
+		{57E4AFD6-BDF3-461B-8E13-CED780B38877} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
 		{A56B3C70-51BC-4C17-89BD-FED1702653B4} = {FE5F9150-412F-46CC-98CC-43B41AE7BD12}
+		{AA996963-9884-4751-A688-0EF25622570C} = {FE5F9150-412F-46CC-98CC-43B41AE7BD12}
+		{852BE587-E84A-4959-84C3-93EA7868E03B} = {FB571631-C2BD-4AFD-9593-832AFC2ED073}
+		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9} = {FB571631-C2BD-4AFD-9593-832AFC2ED073}
+		{6B3C7A16-E9A7-491E-993C-012174EDAE4F} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
+		{77622DD5-059A-4223-B82D-D1509EFB5F19} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
 	EndGlobalSection
 EndGlobal

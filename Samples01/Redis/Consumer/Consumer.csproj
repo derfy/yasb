@@ -56,31 +56,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Samples\Redis\Consumer\Program.cs">
-      <Link>Program.cs</Link>
-    </Compile>
-    <Compile Include="..\Samples\Redis\Consumer\Properties\AssemblyInfo.cs">
-      <Link>AssemblyInfo.cs</Link>
-    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Samples\Redis\Consumer\app.config">
-      <Link>app.config</Link>
-    </None>
-    <None Include="..\Samples\Redis\Consumer\packages.config">
-      <Link>packages.config</Link>
-    </None>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">
+    <ProjectReference Include="..\..\..\Yasb.Common\Yasb.Common.csproj">
       <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
       <Name>Yasb.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yasb.Messaging\Yasb.Redis.Messaging.csproj">
-      <Project>{603CF365-A1F5-42C5-A78B-DA6EC1F61223}</Project>
-      <Name>Yasb.Redis.Messaging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yasb.Wireup\Yasb.Wireup.csproj">
+    <ProjectReference Include="..\..\..\Yasb.Wireup\Yasb.Wireup.csproj">
       <Project>{E90CB416-314A-4EA9-9B0A-1D6666644778}</Project>
       <Name>Yasb.Wireup</Name>
     </ProjectReference>

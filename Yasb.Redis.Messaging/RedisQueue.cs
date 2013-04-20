@@ -31,9 +31,9 @@ namespace Yasb.Redis.Messaging
             _scriptsCache = scriptsCache;
         }
 
-       
-       
-        public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
+
+
+        public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
             var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _queueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());

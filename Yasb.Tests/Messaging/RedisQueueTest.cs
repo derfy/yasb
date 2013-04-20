@@ -9,6 +9,7 @@ using Yasb.Redis.Messaging;
 using Yasb.Common.Serialization;
 using Yasb.Common.Messaging;
 using Yasb.Common.Tests;
+using Yasb.Redis.Messaging.Client.Interfaces;
 
 namespace Yasb.Tests.Messaging
 {

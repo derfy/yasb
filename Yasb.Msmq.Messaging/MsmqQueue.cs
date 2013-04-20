@@ -35,7 +35,7 @@ namespace Yasb.Msmq.Messaging
         }
 
 
-        public bool TryGetEnvelope(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
+        public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
             using (MessageEnumerator enumerator = _internalQueue.GetMessageEnumerator2())

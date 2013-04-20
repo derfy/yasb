@@ -7,7 +7,7 @@ namespace Yasb.Common.Messaging
 {
     public interface IQueue 
     {
-        bool TryGetEnvelope(DateTime now,TimeSpan timoutWindow,out MessageEnvelope envelope);
+        bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope);
         void SetMessageCompleted(string envelopeId);
         void Push(MessageEnvelope envelope);
     }

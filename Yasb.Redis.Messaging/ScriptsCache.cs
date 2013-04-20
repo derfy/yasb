@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging.Scripts;
+using Yasb.Redis.Messaging.Client.Interfaces;
 
 namespace Yasb.Redis.Messaging
 {
@@ -13,6 +14,10 @@ namespace Yasb.Redis.Messaging
     {
         private ConcurrentDictionary<string, Lazy<byte[]>> _internalCache = new ConcurrentDictionary<string, Lazy<byte[]>>();
         private RedisClient _connection;
+        public ScriptsCache()
+        {
+
+        }
         public ScriptsCache(RedisClient connection)
         {
             _connection = connection;

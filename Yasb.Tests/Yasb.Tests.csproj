@@ -3,15 +3,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
+    <ProductVersion>
+    </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E90CB416-314A-4EA9-9B0A-1D6666644778}</ProjectGuid>
+    <ProjectGuid>{AA996963-9884-4751-A688-0EF25622570C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Yasb.Wireup</RootNamespace>
-    <AssemblyName>Yasb.Wireup</AssemblyName>
+    <RootNamespace>Yasb.Tests</RootNamespace>
+    <AssemblyName>Yasb.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <SccProjectName>SAK</SccProjectName>
@@ -43,6 +45,7 @@
     <Reference Include="Autofac.Configuration">
       <HintPath>..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
@@ -50,36 +53,38 @@
       <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Messaging" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractConfigurator.cs" />
-    <Compile Include="RedisConfigurator.cs" />
-    <Compile Include="CommonModule.cs" />
-    <Compile Include="ContainerBuilderExtensions.cs" />
-    <Compile Include="ExampleMessage.cs" />
-    <Compile Include="MsmqConfigurator.cs" />
-    <Compile Include="MsmqQueueModule.cs" />
-    <Compile Include="MsmqServiceBusModule.cs" />
+    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
+      <Visible>False</Visible>
+    </CodeAnalysisDependentAssemblyPaths>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Common\CurrentThreadTaskScheduler.cs" />
+    <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
+    <Compile Include="Common\GuardTest.cs" />
+    <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
+    <Compile Include="Messaging\Integration\Msmq\MsmqFluentConnectionConfigurer.cs" />
+    <Compile Include="Messaging\Integration\Msmq\MsmqQueueTest.cs" />
+    <Compile Include="Messaging\Integration\Redis\RedisQueueTest.cs" />
+    <Compile Include="Messaging\Integration\Redis\RedisSocketAsyncEventArgsPoolTest.cs" />
+    <Compile Include="Common\Serialization\MessageEnvelopeConverterTest.cs" />
+    <Compile Include="Common\Serialization\SerializerTest.cs" />
+    <Compile Include="Common\TaskRunnerTest.cs" />
+    <Compile Include="Scripts\ProbeScripts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OneInstancePerKeyObjectRegistrationSource.cs" />
-    <Compile Include="QueueResolver.cs" />
-    <Compile Include="RedisServiceBusModule.cs" />
-    <Compile Include="RedisQueueModule.cs" />
-    <Compile Include="ServiceBusModule.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="TestConfigurator.cs" />
-    <Compile Include="TestModule.cs" />
+    <Compile Include="Common\Messaging\ServiceBusTests.cs" />
+    <Compile Include="Common\Messaging\SubscriptionMessageHandlerTest.cs" />
+    <Compile Include="Wireup\AutofacConfiguratorTest.cs" />
+    <Compile Include="Wireup\RegisterOneInstanceForObjectKeyTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Scripts\TestSetup.lua" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">
@@ -94,8 +99,13 @@
       <Project>{603CF365-A1F5-42C5-A78B-DA6EC1F61223}</Project>
       <Name>Yasb.Redis.Messaging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Yasb.Wireup\Yasb.Wireup.csproj">
+      <Project>{E90CB416-314A-4EA9-9B0A-1D6666644778}</Project>
+      <Name>Yasb.Wireup</Name>
+    </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup />
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
