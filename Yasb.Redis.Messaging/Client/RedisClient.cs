@@ -15,7 +15,7 @@ using System.Collections.Concurrent;
 
 namespace Yasb.Redis.Messaging.Client
 {
-    public class RedisClient : IDisposable
+    public class RedisClient : IRedisClient, IDisposable
     {
         internal const int Success = 1;
         private RedisSocket _socketClient;
@@ -71,7 +71,7 @@ namespace Yasb.Redis.Messaging.Client
             return SendCommand<byte[]>(RedisCommand.SAdd(set, value));
 
         }
-        internal byte[][] SMembers(string set)
+        public byte[][] SMembers(string set)
         {
             if (set == null)
                 throw new ArgumentNullException("set");

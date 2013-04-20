@@ -13,12 +13,12 @@ namespace Yasb.Redis.Messaging
     public class ScriptsCache 
     {
         private ConcurrentDictionary<string, Lazy<byte[]>> _internalCache = new ConcurrentDictionary<string, Lazy<byte[]>>();
-        private RedisClient _connection;
+        private IRedisClient _connection;
         public ScriptsCache()
         {
 
         }
-        public ScriptsCache(RedisClient connection)
+        public ScriptsCache(IRedisClient connection)
         {
             _connection = connection;
         }

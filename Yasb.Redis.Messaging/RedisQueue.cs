@@ -22,8 +22,8 @@ namespace Yasb.Redis.Messaging
         private ISerializer _serializer;
         private string _queueName;
 
-        private RedisClient _connection;
-        public RedisQueue(string queueName, ISerializer serializer,RedisClient connection, ScriptsCache scriptsCache)
+        private IRedisClient _connection;
+        public RedisQueue(string queueName, ISerializer serializer, IRedisClient connection, ScriptsCache scriptsCache)
         {
             _serializer = serializer;
             _queueName = queueName;

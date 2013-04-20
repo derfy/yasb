@@ -53,6 +53,7 @@
     <Compile Include="Client\BinaryUtils.cs" />
     <Compile Include="Client\Commands.cs" />
     <Compile Include="Client\CommandResultProcessor.cs" />
+    <Compile Include="Client\Interfaces\IRedisClient.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\IRedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />

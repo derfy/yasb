@@ -10,5 +10,7 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
         byte[] LPush(string listId, byte[] value);
         byte[] EvalSha(byte[] scriptSha, int noKeys, params string[] keys);
         byte[] Load(string script);
+        byte[] Sadd(string set, string value);
+        byte[][] SMembers(string set);
     }
 }

@@ -10,7 +10,6 @@ namespace Yasb.Msmq.Messaging
 {
     public class MsmqQueue : IQueue
     {
-        private MessageQueue _internalQueue;
         private string _connectionString;
         private IMessageFormatter _formatter;
         public MsmqQueue(string connectionString,IMessageFormatter formatter)
@@ -23,64 +22,85 @@ namespace Yasb.Msmq.Messaging
         {
             if (!MessageQueue.Exists(_connectionString))
               MessageQueue.Create(_connectionString, true);
-            _internalQueue = new MessageQueue(_connectionString) { Formatter=_formatter};
-            _internalQueue.MessageReadPropertyFilter.SenderId = true;
         }
 
 
 
         public void SetMessageCompleted(string envelopeId)
         {
-            _internalQueue.ReceiveByCorrelationId(envelopeId);
+            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
+            {
+                internalQueue.ReceiveByCorrelationId(envelopeId,MessageQueueTransactionType.Single);
+            }
         }
 
 
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            using (MessageEnumerator enumerator = _internalQueue.GetMessageEnumerator2())
+            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
             {
-                while (enumerator.MoveNext())
+                var message = internalQueue.Peek();
+                var newEnvelope = message.Body as MessageEnvelope;
+                newEnvelope.RetriesNumber++;
+                if (newEnvelope.StartTimestamp != null && now.Subtract(timoutWindow).Ticks > newEnvelope.StartTimestamp)
                 {
-                    var message = enumerator.Current;
-                    envelope = message.Body as MessageEnvelope;
-                    envelope.RetriesNumber++;
-                    if (envelope.StartTimestamp == null || now.Subtract(timoutWindow).Ticks > envelope.StartTimestamp)
-                    {
-                        envelope.Id = message.Id;
-                        envelope.StartTimestamp = now.Ticks;
-                        using (var tx = new TransactionScope())
-                        {
-                            message = _internalQueue.ReceiveById(envelope.Id);
-                            message.CorrelationId = envelope.Id;
-                            message.Body = envelope;
-                            _internalQueue.Send(message, MessageQueueTransactionType.Automatic);
-                            tx.Complete();
-                            return true;
-                        }
-                        
-                    }
-                    
+                    newEnvelope.LastErrorMessage = "Operation Timed Out";
                 }
-                return false;
+                else
+                {
+                    newEnvelope.Id = message.Id;
+                    newEnvelope.StartTimestamp = now.Ticks;
+                    envelope = WithMessageQueueTransaction(tx =>
+                    {
+                        var msg = internalQueue.ReceiveById(newEnvelope.Id,tx);
+                        if(newEnvelope.RetriesNumber>5)
+                        {
+                            return null;
+                        }
+                        msg.CorrelationId = newEnvelope.Id;
+                        msg.Body = newEnvelope;
+                        internalQueue.Send(msg, tx);
+                        return newEnvelope;
+                    });
+                }    
                 
             }
-           
+            return envelope!=null;
         }
 
-
+       
         public void Push(MessageEnvelope envelope)
         {
             envelope.Id = Guid.NewGuid().ToString();
             var message = new Message(envelope) { Formatter = _formatter };
-            using (var tx = new TransactionScope())
+            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
             {
-                _internalQueue.Send(message, MessageQueueTransactionType.Automatic);
-                tx.Complete();
+                internalQueue.Send(message, MessageQueueTransactionType.Single);
             }
         }
-       
 
+        private MessageEnvelope WithMessageQueueTransaction(Func<MessageQueueTransaction, MessageEnvelope> func)
+        {
+            using (var tx = new MessageQueueTransaction())
+            {
+                try
+                {
+                    tx.Begin();
+                    var result = func(tx);
+                    tx.Commit();
+                    return result;
+                }
+                catch (InvalidOperationException)
+                {
+                    if (tx.Status == MessageQueueTransactionStatus.Pending)
+                    {
+                        tx.Abort();
+                    }
+                }
+                return null;
+            }
+        }
     }
     
 }

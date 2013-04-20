@@ -5,14 +5,15 @@ using System.Text;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Extensions;
+using Yasb.Redis.Messaging.Client.Interfaces;
 
 namespace Yasb.Redis.Messaging
 {
     public class SubscriptionService : ISubscriptionService
     {
-        private RedisClient _connection;
+        private IRedisClient _connection;
         private BusEndPoint _localEndPoint;
-        public SubscriptionService(BusEndPoint localEndPoint, RedisClient connection)
+        public SubscriptionService(BusEndPoint localEndPoint, IRedisClient connection)
         {
             _localEndPoint = localEndPoint;
             _connection = connection;

@@ -25,7 +25,7 @@ namespace Yasb.Wireup
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterOneInstanceForObjectKey<EndPoint, RedisClient>((connection, context) => new RedisClient(context.Resolve<RedisSocket>(TypedParameter.From<EndPoint>(connection))));
+            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => new RedisClient(context.Resolve<RedisSocket>(TypedParameter.From<EndPoint>(connection))));
 
             builder.RegisterWithScope<RedisSocket>((componentScope, parameters) =>
             {
@@ -40,7 +40,7 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<ScriptsCache>((componentScope, parameters) =>
             {
-                return new ScriptsCache(componentScope.Resolve<RedisClient>(parameters));
+                return new ScriptsCache(componentScope.Resolve<IRedisClient>(parameters));
             });
 
 
@@ -49,7 +49,7 @@ namespace Yasb.Wireup
             {
                 var endPoint = parameters.Named<BusEndPoint>("endPoint");
                 var connection = Configuration.GetConnectionByName(endPoint.ConnectionName);
-                var redisClient = componentScope.Resolve<RedisClient>(TypedParameter.From<EndPoint>(connection));
+                var redisClient = componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection));
                 var scriptsCache = new ScriptsCache(redisClient);
                 scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
                 scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
