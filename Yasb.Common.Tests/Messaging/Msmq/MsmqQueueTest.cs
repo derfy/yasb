@@ -23,7 +23,7 @@ namespace Yasb.Tests.Messaging.Msmq
     public class MsmqQueueTest
     {
         
-       // [Ignore]
+        [Ignore]
         [TestMethod]
         public void TestMethod1()
         {
