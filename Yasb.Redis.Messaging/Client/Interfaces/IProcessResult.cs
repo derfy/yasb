@@ -5,9 +5,11 @@ using System.Text;
 
 namespace Yasb.Redis.Messaging.Client.Interfaces
 {
-    public interface IProcessResult<TResult> : IRedisCommand
+    public interface IProcessResult<TResult> 
     {
         TResult ProcessResponse(ICommandResultProcessor processor);
+
+        byte[][] ToBinary { get; }
     }
 
 }

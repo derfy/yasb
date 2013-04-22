@@ -8,7 +8,7 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 
 namespace Yasb.Redis.Messaging.Client
 {
-	public abstract class RedisCommand : IRedisCommand
+	public abstract class RedisCommand 
 	{
 		internal static IProcessResult<byte[]> Eval(string script, int noKeys, params string[] keys) { return new EvalCommand(script, noKeys, keys); }
 		internal static IProcessResult<byte[]> EvalSha(byte[] code, byte[][] args)
@@ -59,11 +59,11 @@ namespace Yasb.Redis.Messaging.Client
 		public static IProcessResult<byte[]> RPop(string listId) { return new RPopCommand(listId); }
 		public static IProcessResult<byte[][]> BRPopLPush(string fromListId, string toListId, int timeOutSec) { return new BRPopLPushCommand(fromListId, toListId, timeOutSec); }
 
-		public virtual void SendRequest(RedisSocketAsyncEventArgs e)
-		{
-			e.PrepareToSend();
-			e.WriteAllToSendBuffer(this.ToBinary);
-		}
+		//public virtual void SendRequest(RedisSocketAsyncEventArgs e)
+		//{
+		//    e.PrepareToSend();
+		//    e.WriteAllToSendBuffer(this.ToBinary);
+		//}
 
 
 

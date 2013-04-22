@@ -25,23 +25,26 @@ namespace Yasb.Wireup
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => new RedisClient(context.Resolve<RedisSocket>(TypedParameter.From<EndPoint>(connection))));
+            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => new RedisClient(context.Resolve<RedisConnectionManager>(TypedParameter.From<EndPoint>(connection))));
 
-            builder.RegisterWithScope<RedisSocket>((componentScope, parameters) =>
+            builder.RegisterWithScope<RedisConnectionManager>((componentScope, parameters) =>
             {
-                return new RedisSocket(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(parameters));
-            }).As(typeof(RedisSocket));
+                return new RedisConnectionManager(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(parameters));
+            }).As(typeof(RedisConnectionManager));
 
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 var endPoint = parameters.TypedAs<EndPoint>();
-                return new RedisSocketAsyncEventArgsPool(10, endPoint);
+                return new RedisSocketAsyncEventArgsPool(3, endPoint);
             });
 
             builder.RegisterWithScope<ScriptsCache>((componentScope, parameters) =>
             {
-                return new ScriptsCache(componentScope.Resolve<IRedisClient>(parameters));
-            });
+                var scriptsCache= new ScriptsCache(componentScope.Resolve<IRedisClient>(parameters));
+                scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
+                scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
+                return scriptsCache;
+            }).InstancePerMatchingLifetimeScope(Scope);
 
 
 
@@ -50,9 +53,8 @@ namespace Yasb.Wireup
                 var endPoint = parameters.Named<BusEndPoint>("endPoint");
                 var connection = Configuration.GetConnectionByName(endPoint.ConnectionName);
                 var redisClient = componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection));
-                var scriptsCache = new ScriptsCache(redisClient);
-                scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
-                scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
+                var scriptsCache = componentScope.Resolve<ScriptsCache>(TypedParameter.From<EndPoint>(connection)); //new ScriptsCache(redisClient);
+               
                 return new RedisQueue(endPoint.QueueName, componentScope.Resolve<ISerializer>(),redisClient, scriptsCache);
             });
         }

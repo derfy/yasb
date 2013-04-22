@@ -6,11 +6,11 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Msmq.Messaging.Configuration
 {
-    public class MsmqConnectionConfiguration
+    public class MsmqConnection
     {
         private string _host;
        
-        public MsmqConnectionConfiguration(string host, bool isPrivate=true)
+        public MsmqConnection(string host, bool isPrivate=true)
         {
             this._host = host;
             IsPrivate = isPrivate;

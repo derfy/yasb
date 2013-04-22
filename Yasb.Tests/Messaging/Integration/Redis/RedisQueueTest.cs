@@ -35,12 +35,12 @@ namespace Yasb.Tests.Messaging.Redis
         [Ignore]
         public void BeforeTest()
         {
-            _scriptsCache.EvalSha("TestSetup.lua", 0);
+            //_scriptsCache.EvalSha("TestSetup.lua", 0);
             var message = new TestMessage();
             MessageEnvelope envelope=null;// = new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
-            _queue.Push(envelope);
+           // _queue.Push(envelope);
         }
-        [Ignore]
+        //[Ignore]
         [TestMethod]
         public void ShouldSetTimeoutError()
         {

@@ -7,9 +7,9 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Wireup
 {
-    public class MsmqServiceBusModule : ServiceBusModule<ServiceBusConfiguration<MsmqConnectionConfiguration>, MsmqConnectionConfiguration> 
+    public class MsmqServiceBusModule : ServiceBusModule<ServiceBusConfiguration<MsmqConnection>, MsmqConnection> 
     {
-        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqConnectionConfiguration> serviceBusConfiguration):base(serviceBusConfiguration)
+        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqConnection> serviceBusConfiguration):base(serviceBusConfiguration)
         {
 
         }

@@ -43,7 +43,7 @@ namespace Yasb.Msmq.Messaging
                 var message = internalQueue.Peek();
                 var newEnvelope = message.Body as MessageEnvelope;
                 newEnvelope.RetriesNumber++;
-                if (newEnvelope.StartTimestamp != null && now.Subtract(timoutWindow).Ticks > newEnvelope.StartTimestamp)
+                if (newEnvelope.StartTime.HasValue && now.Subtract(newEnvelope.StartTime.Value) > timoutWindow)
                 {
                     newEnvelope.LastErrorMessage = "Operation Timed Out";
                 }

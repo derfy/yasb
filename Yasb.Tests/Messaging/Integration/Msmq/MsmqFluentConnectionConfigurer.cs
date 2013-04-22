@@ -7,11 +7,11 @@ using Yasb.Msmq.Messaging.Configuration;
 
 namespace Yasb.Tests.Messaging.Msmq
 {
-    public class MsmqFluentConnectionConfigurer : FluentConnectionConfigurer<MsmqConnectionConfiguration>
+    public class MsmqFluentConnectionConfigurer : FluentConnectionConfigurer<MsmqConnection>
     {
         public MsmqFluentConnectionConfigurer WithConnection(string connectionName, string host,bool isPrivate=true)
         {
-            var connection = new MsmqConnectionConfiguration(host,isPrivate);
+            var connection = new MsmqConnection(host,isPrivate);
             AddConnection(connectionName, connection);
             return this;
         }

@@ -36,7 +36,6 @@ namespace Yasb.Common.Messaging
         public void Send(string endPointName, IMessage message)
         {
             var endPoint = GetEndPointByName(endPointName);
-            
             Send(endPoint, message);
         }
         public void Subscribe<TMessage>(string endPointName) where TMessage : IMessage

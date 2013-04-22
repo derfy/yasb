@@ -62,7 +62,7 @@
     <Compile Include="Client\RedisClient.cs" />
     <Compile Include="Client\RedisCommand.cs" />
     <Compile Include="Client\RedisException.cs" />
-    <Compile Include="Client\RedisSocket.cs" />
+    <Compile Include="Client\RedisConnectionManager.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
     <Compile Include="IScriptCache.cs" />
     <Compile Include="ScriptsCache.cs" />

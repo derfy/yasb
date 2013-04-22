@@ -19,19 +19,19 @@ namespace Yasb.Wireup
             Builder = new ContainerBuilder();
         }
 
-        public IServiceBus ConfigureServiceBus(Action<ServiceBusConfigurer<MsmqConnectionConfiguration>> action)
+        public IServiceBus ConfigureServiceBus(Action<ServiceBusConfigurer<MsmqConnection>> action)
         {
-            var serviceBusConfigurer = new ServiceBusConfigurer<MsmqConnectionConfiguration>();
+            var serviceBusConfigurer = new ServiceBusConfigurer<MsmqConnection>();
             action(serviceBusConfigurer);
             Builder.RegisterModule(new MsmqServiceBusModule(serviceBusConfigurer.Built));
             return Builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus>();
         }
-        public QueueResolver<MsmqConnectionConfiguration> ConfigureQueue(Action<EndPointConfigurer<MsmqConnectionConfiguration>> action)
+        public QueueResolver<MsmqConnection> ConfigureQueue(Action<EndPointConfigurer<MsmqConnection>> action)
         {
-            var queueConfigurer = new EndPointConfigurer<MsmqConnectionConfiguration>();
+            var queueConfigurer = new EndPointConfigurer<MsmqConnection>();
             action(queueConfigurer);
             Builder.RegisterModule(new MsmqQueueModule(queueConfigurer.Built));
-            return new QueueResolver<MsmqConnectionConfiguration>(Builder.Build().BeginLifetimeScope("queue").Resolve<QueueFactory>(), queueConfigurer.Built);
+            return new QueueResolver<MsmqConnection>(Builder.Build().BeginLifetimeScope("queue").Resolve<QueueFactory>(), queueConfigurer.Built);
         }
        
     }

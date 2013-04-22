@@ -6,16 +6,25 @@ using System.Net.Sockets;
 using System.IO;
 using Yasb.Common.Extensions;
 using System.Collections.Concurrent;
+using System.Net;
 
 namespace Yasb.Redis.Messaging.Client
 {
     public class RedisSocketAsyncEventArgs : SocketAsyncEventArgs
     {
-
+        private Socket _socket;
         private readonly byte[] endData = new[] { (byte)'\r', (byte)'\n' };
 
         public RedisSocketAsyncEventArgs()
         {
+        }
+        internal static RedisSocketAsyncEventArgs CreateNew(EndPoint endPoint)
+        {
+            return new RedisSocketAsyncEventArgs()
+            {
+                RemoteEndPoint = endPoint,
+                _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+            };
         }
         public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
         {
@@ -30,27 +39,50 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
-        public void PrepareToSend()
-        {
-            if (Buffer == null)
-            {
-                SetBuffer(BufferPool.GetBuffer(), 0, 0);
-            }
-            else {
-                SetBuffer(0, 0);
-            }
-        }
-        public void PrepareToReceive()
-        {
-             SetBuffer(0, Buffer.Length);
-        }
+        
         public void Reset() {
             var buffer = Buffer;
             Array.Clear(buffer, 0, buffer.Length);
             BufferPool.ReleaseBufferToPool(ref buffer);
             SetBuffer(null, 0, 0);
+
         }
 
+        internal bool ConnectAsync()
+        {
+            if (_socket.Connected)
+                return false;
+            return _socket.ConnectAsync(this);
+        }
+       
+        internal bool SendAsync(params byte[][] data)
+        {
+            PrepareToSend();
+            WriteAllToSendBuffer(data);
+            return _socket.SendAsync(this);
+        }
+        internal bool ReceiveAsync()
+        {
+            PrepareToReceive();
+            return _socket.ReceiveAsync(this);
+        }
+
+        
+        private void PrepareToSend()
+        {
+            if (Buffer == null)
+            {
+                SetBuffer(BufferPool.GetBuffer(), 0, 0);
+            }
+            else
+            {
+                SetBuffer(0, 0);
+            }
+        }
+        private void PrepareToReceive()
+        {
+            SetBuffer(0, Buffer.Length);
+        }
         private void WriteToSendBuffer(byte[] cmdBytes)
         {
             int currentIndex = this.Count;
@@ -83,8 +115,14 @@ namespace Yasb.Redis.Messaging.Client
             return cmdBytes;
         }
 
-        
-       
+
+
+
+
+
+
+
+
     }
    
 }

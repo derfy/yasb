@@ -18,9 +18,9 @@ namespace Yasb.Redis.Messaging.Client
     public class RedisClient : IRedisClient, IDisposable
     {
         internal const int Success = 1;
-        private RedisSocket _socketClient;
+        private RedisConnectionManager _socketClient;
        
-        public RedisClient(RedisSocket socketClient)
+        public RedisClient(RedisConnectionManager socketClient)
         {
            _socketClient = socketClient;
         }

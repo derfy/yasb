@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class EndPointConfiguration<TConnectionConfiguration> : ConnectionsRepository<TConnectionConfiguration>
+    public class EndPointConfiguration<TConnection> : ConnectionsRepository<TConnection>
     {
         private List<BusEndPoint> _endPoints = new List<BusEndPoint>();
         public EndPointConfiguration()

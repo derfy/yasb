@@ -19,7 +19,7 @@ namespace Consumer
         private static readonly object Sync = new object();
 
         private static void Main(string[] args)
-        {
+    {
             Console.WriteLine("Subscriber");
             Console.WriteLine("Press 'R' to Run, 'P' to Pause, 'X' to Exit ...");
 
@@ -57,9 +57,9 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new RedisConfigurator();
-            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "redis_consumer")
-                .WithEndPoint("vmEndPoint", "redis_producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
-                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
+            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("ConsumerConnection", "redis_consumer")
+                .WithEndPoint("ConsumerConnection", "redis_producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
+                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("ConsumerConnection", "192.168.127.128")));
             
             
 

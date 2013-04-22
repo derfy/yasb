@@ -5,8 +5,8 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public interface IConnectionConfigurer<TConnectionConfiguration> 
+    public interface IConnectionConfigurer<TConnection> 
     {
-        IEnumerable<KeyValuePair<string,TConnectionConfiguration>> Connections { get; }
+        IEnumerable<KeyValuePair<string,TConnection>> Connections { get; }
     }
 }

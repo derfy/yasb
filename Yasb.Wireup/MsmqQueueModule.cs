@@ -13,9 +13,9 @@ using Yasb.Common.Serialization;
 
 namespace Yasb.Wireup
 {
-    public class MsmqQueueModule : CommonModule<EndPointConfiguration<MsmqConnectionConfiguration>>
+    public class MsmqQueueModule : CommonModule<EndPointConfiguration<MsmqConnection>>
     {
-        public MsmqQueueModule(EndPointConfiguration<MsmqConnectionConfiguration> queueConfiguration)
+        public MsmqQueueModule(EndPointConfiguration<MsmqConnection> queueConfiguration)
             : base(queueConfiguration,"queue")
         {
         }
