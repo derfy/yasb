@@ -6,16 +6,20 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Common.Tests.Configuration
 {
-    public class TestConnectionConfiguration 
+    public class TestConnection 
     {
         private string host;
         private int port;
 
-        public TestConnectionConfiguration(string host, int port)
+        public TestConnection(string host, int port)
         {
              this.host = host;
             this.port = port;
         }
-       
+
+        public override string ToString()
+        {
+            return string.Format("{0}:{1}",host,port);
+        }
     }
 }

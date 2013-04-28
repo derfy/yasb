@@ -25,6 +25,11 @@ namespace Yasb.Redis.Messaging.Client
            _socketClient = socketClient;
         }
 
+        public EndPoint Address
+        {
+            get { return _socketClient.Address; }
+        }
+
         public byte[] Load(string script){
             
             return SendCommand<byte[]>(RedisCommand.Load(script));
@@ -100,8 +105,8 @@ namespace Yasb.Redis.Messaging.Client
           
             var taskConnect = _socketClient.StartConnect();
             taskConnect.Wait();
-            var taskSend = _socketClient.SendAsync<TResult>(command,taskConnect.Result);
-            using (var commandProcessor = taskSend.Result)
+            var taskSend = _socketClient.SendAsync(command.ToBinary,taskConnect.Result);
+            using (var commandProcessor = new CommandResultProcessor(taskSend.Result))
             {
                 return command.ProcessResponse(commandProcessor);
             }
@@ -113,5 +118,8 @@ namespace Yasb.Redis.Messaging.Client
         {
             isDisposed = true;
         }
+
+
+        
     }
 }

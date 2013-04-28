@@ -10,7 +10,7 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 
 namespace Yasb.Redis.Messaging
 {
-    public class ScriptsCache 
+    public class ScriptsCache : IScriptCache
     {
         private ConcurrentDictionary<string, Lazy<byte[]>> _internalCache = new ConcurrentDictionary<string, Lazy<byte[]>>();
         private IRedisClient _connection;

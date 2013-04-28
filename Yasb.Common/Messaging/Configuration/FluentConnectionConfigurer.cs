@@ -7,18 +7,14 @@ namespace Yasb.Common.Messaging.Configuration
 {
     public class FluentConnectionConfigurer<TConnection> : IConnectionConfigurer<TConnection>
     {
-        private Dictionary<string, TConnection> _connections = new Dictionary<string, TConnection>();
-
-
-        public IEnumerable<KeyValuePair<string, TConnection>> Connections
-        {
-            get { return _connections.AsEnumerable<KeyValuePair<string, TConnection>>(); }
-        }
+        ConnectionsConfiguration<TConnection> _connections = new ConnectionsConfiguration<TConnection>();
 
         protected void AddConnection(string connectionName, TConnection connection)
         {
-            _connections[connectionName] = connection;
+            _connections.AddConnection(connectionName,connection);
         }
+
+        public ConnectionsConfiguration<TConnection> Built { get { return _connections; } }
        
     }
 }

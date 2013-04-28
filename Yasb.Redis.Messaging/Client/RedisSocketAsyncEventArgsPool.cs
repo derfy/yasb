@@ -14,20 +14,21 @@ namespace Yasb.Redis.Messaging.Client
     {
         private ConcurrentQueue<RedisSocketAsyncEventArgs> _internalQueue = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
        
-        private EndPoint _endPoint;
-        
-        public RedisSocketAsyncEventArgsPool(int size,EndPoint endPoint)
+         
+        public RedisSocketAsyncEventArgsPool(int size,EndPoint address)
         {
-            _endPoint = endPoint;
+            Address = address;
            
-            Initialise(size);
+            Initialise(size,address);
         }
 
-        private void Initialise(int size)
+        public EndPoint Address { get; private set; }
+
+        private void Initialise(int size, EndPoint endPoint)
         {
             for (int ii = 0; ii < size; ii++)
             {
-                _internalQueue.Enqueue(RedisSocketAsyncEventArgs.CreateNew(_endPoint));
+                _internalQueue.Enqueue(RedisSocketAsyncEventArgs.CreateNew(endPoint));
             }
         }
 
@@ -36,7 +37,7 @@ namespace Yasb.Redis.Messaging.Client
             RedisSocketAsyncEventArgs connectEventArgs=null;
             if (!_internalQueue.TryDequeue(out connectEventArgs))
             {
-                connectEventArgs = RedisSocketAsyncEventArgs.CreateNew(_endPoint);
+                connectEventArgs = RedisSocketAsyncEventArgs.CreateNew(Address);
             }
             return connectEventArgs;
         }

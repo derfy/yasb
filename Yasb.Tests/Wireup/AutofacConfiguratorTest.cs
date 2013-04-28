@@ -19,9 +19,9 @@ namespace Yasb.Tests.Wireup
         public void ShouldBeAbleToCreateServiceBus()
         {
             var serviceBus= _sut.Bus(c => c.WithEndPointConfiguration(cfg => cfg.WithLocalEndPoint("local", "localQueue").WithEndPoint("myHost", "queue_test", "test"))
-                .ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1")
-                                                                              .WithConnection("myHost", "127.0.0.1")
-                                                                              .WithConnection("myOtherHost", "192.198.70.86"))
+                                           .ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1")
+                                                                                    .WithConnection("myHost", "127.0.0.1")
+                                                                                    .WithConnection("myOtherHost", "192.198.70.86"))
                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
             Assert.IsNotNull(serviceBus);
         }
@@ -31,7 +31,7 @@ namespace Yasb.Tests.Wireup
         {
             var queue = _sut.ConfigureQueue(c => c.WithEndPoint("myHost", "queue_test", "test").ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1")
                                                                               .WithConnection("myHost", "127.0.0.1")
-                                                                              .WithConnection("myOtherHost", "192.198.70.86"))).GetQueueByName("test");
+                                                                              .WithConnection("myOtherHost", "192.198.70.86"))).CreateFromEndPointName("test");
             Assert.IsNotNull(queue);
             
         }

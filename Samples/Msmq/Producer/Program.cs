@@ -16,9 +16,9 @@ namespace Producer
         static void Main(string[] args)
         {
             var sut = new MsmqConfigurator().ConfigureQueue(e=>e.WithEndPoint("localConnection","test_msmq_local","queue1")
-                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).GetQueueByName("queue1");
-            var localEndPoint = new BusEndPoint("localConnection:test_msmq_local");
-            var remoteEndPoint = new BusEndPoint("localConnection:test_msmq_remote");
+                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).CreateFromEndPointName("queue1");
+            //var localEndPoint = new BusEndPoint("localConnection:test_msmq_local");
+            //var remoteEndPoint = new BusEndPoint("localConnection:test_msmq_remote");
 
             //for (int i = 0; i < 10000; i++)
             //{

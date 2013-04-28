@@ -10,5 +10,7 @@ namespace Yasb.Common.Messaging
         bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope);
         void SetMessageCompleted(string envelopeId);
         void Push(MessageEnvelope envelope);
+
+        string LocalEndPoint { get; }
     }
 }

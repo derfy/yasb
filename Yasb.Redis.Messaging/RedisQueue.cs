@@ -17,20 +17,19 @@ namespace Yasb.Redis.Messaging
 
     public class RedisQueue : IQueue, IDisposable
     {
-        private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        private ScriptsCache _scriptsCache;
         private ISerializer _serializer;
         private string _queueName;
+        private IRedisClient _redisClient;
+        private IScriptCache _scriptsCache;
 
-        private IRedisClient _connection;
-        public RedisQueue(string queueName, ISerializer serializer, IRedisClient connection, ScriptsCache scriptsCache)
+        public RedisQueue(string queueName, ISerializer serializer, IRedisClient redisClient,IScriptCache scriptsCache)
         {
             _serializer = serializer;
             _queueName = queueName;
-            _connection = connection;
+            _redisClient = redisClient;
             _scriptsCache = scriptsCache;
+          
         }
-
 
 
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
@@ -53,20 +52,16 @@ namespace Yasb.Redis.Messaging
         {
             envelope.Id = Guid.NewGuid().ToString();
             var bytes = _serializer.Serialize(envelope);
-            _connection.LPush(_queueName, bytes);
+            _redisClient.LPush(_queueName, bytes);
         }
 
-
+        public string LocalEndPoint
+        {
+            get { return string.Format("{0}:{1}",_redisClient.Address,_queueName); }
+        }
 
         public void Dispose()
         { }
-
-
-
-
-
-
-
 
 
        

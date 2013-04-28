@@ -6,48 +6,42 @@ using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-
-    public class EndPointConfigurer<TConnection>
+    public class QueueEndPointInfo
+    {
+        public QueueEndPointInfo(string connectionName,string queueName,string name)
+        {
+            ConnectionName = connectionName;
+            QueueName = queueName;
+            Name = name;
+        }
+        public string ConnectionName { get; private set; }
+        public string QueueName { get; private set; }
+        public string Name { get; private set; } 
+    }
+    public class EndPointConfigurer
     {
         
         public EndPointConfigurer()
         {
-            Built = new EndPointConfiguration<TConnection>();
+            Built = new EndPointConfiguration();
         }
 
-
-        public EndPointConfigurer<TConnection> WithLocalEndPoint(string connectionName, string queueName)
+        public EndPointConfigurer WithEndPoint(string connectionName, string queueName, string endPointName)
         {
-            Built.LocalEndPoint = new BusEndPoint(connectionName, queueName,"local");
-            Built.AddNamedEndPoint(Built.LocalEndPoint);
-            return this;
-        }
-
-        public EndPointConfigurer<TConnection> WithEndPoint(string connectionName, string queueName, string endPointName)
-        {
-            var endPoint = new BusEndPoint(connectionName, queueName, endPointName);
-            Built.AddNamedEndPoint(endPoint);
+            Built.AddNamedEndPoint(connectionName,queueName, endPointName);
             return this;
         }
 
 
-        public EndPointConfigurer<TConnection> ConfigureConnections<TConnectionConfigurer>(Action<TConnectionConfigurer> action)
-            where TConnectionConfigurer : IConnectionConfigurer<TConnection>
-        {
-            var connectionConfigurer = Activator.CreateInstance<TConnectionConfigurer>();
-            action(connectionConfigurer);
-            connectionConfigurer.Connections.ToList().ForEach(Built.AddConnection);
-            return this;
-        }
-        public EndPointConfiguration<TConnection> Built { get; private set; }
+        public EndPointConfiguration Built { get; private set; }
         
     }
-    public class ServiceBusEndPointConfigurer<TConnection>:EndPointConfigurer<TConnection>
+    public class ServiceBusEndPointConfigurer : EndPointConfigurer
     {
-        public ServiceBusEndPointConfigurer<TConnection> WithLocalEndPoint(string connectionName, string queueName)
+       
+        public ServiceBusEndPointConfigurer WithLocalEndPoint(string connectionName, string queueName)
         {
-            Built.LocalEndPoint = new BusEndPoint(connectionName, queueName, "local");
-            Built.AddNamedEndPoint(Built.LocalEndPoint);
+            WithEndPoint(connectionName,queueName,"local");
             return this;
         }
     }

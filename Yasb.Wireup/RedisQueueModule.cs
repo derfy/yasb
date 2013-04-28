@@ -9,23 +9,38 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Redis.Messaging;
 using Yasb.Common.Messaging;
 using Autofac;
+using Autofac.Core;
+using Autofac.Core.Registration;
+using Autofac.Core.Lifetime;
+using Autofac.Builder;
 using Yasb.Common.Serialization;
 using Yasb.Redis.Messaging.Scripts;
+using Newtonsoft.Json;
 
 namespace Yasb.Wireup
 {
-    public class RedisQueueModule : CommonModule<ConnectionsRepository<EndPoint>>
+    public class RedisQueueModule : CommonModule<QueueConfiguration<EndPoint>>
     {
-        public RedisQueueModule(ConnectionsRepository<EndPoint> queueConfiguration, string scope)
+        public RedisQueueModule(QueueConfiguration<EndPoint> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
         {
         }
-       
-
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => new RedisClient(context.Resolve<RedisConnectionManager>(TypedParameter.From<EndPoint>(connection))));
+            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => {
+                var connectionManager = new RedisConnectionManager(context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<EndPoint>(connection)));
+                return new RedisClient(connectionManager); 
+            });
+            builder.RegisterOneInstanceForObjectKey<EndPoint, IScriptCache>((connection, context) =>
+            {
+                var redisClientFactory = context.Resolve<RedisClientFactory>();
+                var redisClient = redisClientFactory(connection);
+                var scriptsCache = new ScriptsCache(redisClient);
+                scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
+                scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
+                return scriptsCache;
+            });
 
             builder.RegisterWithScope<RedisConnectionManager>((componentScope, parameters) =>
             {
@@ -35,28 +50,24 @@ namespace Yasb.Wireup
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 var endPoint = parameters.TypedAs<EndPoint>();
-                return new RedisSocketAsyncEventArgsPool(3, endPoint);
+                return new RedisSocketAsyncEventArgsPool(10, endPoint);
             });
 
-            builder.RegisterWithScope<ScriptsCache>((componentScope, parameters) =>
+            
+            builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
             {
-                var scriptsCache= new ScriptsCache(componentScope.Resolve<IRedisClient>(parameters));
-                scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
-                scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
-                return scriptsCache;
+                return new RedisQueueFactory(Configuration, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClientFactory>(), componentScope.Resolve<ScriptsCacheFactory>());
             }).InstancePerMatchingLifetimeScope(Scope);
 
-
-
-            builder.RegisterWithScope<IQueue>((componentScope, parameters) =>
+            builder.RegisterWithScope<RedisClientFactory>(componentScope =>
             {
-                var endPoint = parameters.Named<BusEndPoint>("endPoint");
-                var connection = Configuration.GetConnectionByName(endPoint.ConnectionName);
-                var redisClient = componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection));
-                var scriptsCache = componentScope.Resolve<ScriptsCache>(TypedParameter.From<EndPoint>(connection)); //new ScriptsCache(redisClient);
-               
-                return new RedisQueue(endPoint.QueueName, componentScope.Resolve<ISerializer>(),redisClient, scriptsCache);
-            });
+                 return endPoint => componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(endPoint));
+            }).InstancePerMatchingLifetimeScope(Scope);
+
+            builder.RegisterWithScope<ScriptsCacheFactory>(componentScope =>
+            {
+                return endPoint => componentScope.Resolve<IScriptCache>(TypedParameter.From<EndPoint>(endPoint));
+            }).InstancePerMatchingLifetimeScope(Scope);
         }
     }
 }

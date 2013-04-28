@@ -7,6 +7,6 @@ namespace Yasb.Common.Messaging.Configuration
 {
     public interface IConnectionConfigurer<TConnection> 
     {
-        IEnumerable<KeyValuePair<string,TConnection>> Connections { get; }
+        ConnectionsConfiguration<TConnection> Built { get; }
     }
 }

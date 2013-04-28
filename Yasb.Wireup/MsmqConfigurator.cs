@@ -6,33 +6,24 @@ using Yasb.Common.Messaging.Configuration;
 using Yasb.Msmq.Messaging.Configuration;
 using Autofac;
 using Yasb.Common.Messaging;
+using Yasb.Msmq.Messaging;
 
 namespace Yasb.Wireup
 {
-    
-    public class MsmqConfigurator 
+
+    public class MsmqConfigurator : AbstractConfigurator<MsmqConnection>
     {
-        protected ContainerBuilder Builder{get;private set;}
 
-        public MsmqConfigurator()
+     
+        protected override void RegisterServiceBusModule(ServiceBusConfiguration<MsmqConnection> serviceBusConfiguration)
         {
-            Builder = new ContainerBuilder();
+            //Builder.RegisterModule(new MsmqQueueModule(serviceBusConfiguration.EndPointConfiguration,"bus"));
         }
-
-        public IServiceBus ConfigureServiceBus(Action<ServiceBusConfigurer<MsmqConnection>> action)
+        protected override void RegisterQueueModule(QueueConfiguration<MsmqConnection> queueConfiguration)
         {
-            var serviceBusConfigurer = new ServiceBusConfigurer<MsmqConnection>();
-            action(serviceBusConfigurer);
-            Builder.RegisterModule(new MsmqServiceBusModule(serviceBusConfigurer.Built));
-            return Builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus>();
+            Builder.RegisterModule(new MsmqQueueModule(queueConfiguration,"queue"));
         }
-        public QueueResolver<MsmqConnection> ConfigureQueue(Action<EndPointConfigurer<MsmqConnection>> action)
-        {
-            var queueConfigurer = new EndPointConfigurer<MsmqConnection>();
-            action(queueConfigurer);
-            Builder.RegisterModule(new MsmqQueueModule(queueConfigurer.Built));
-            return new QueueResolver<MsmqConnection>(Builder.Build().BeginLifetimeScope("queue").Resolve<QueueFactory>(), queueConfigurer.Built);
-        }
+       
        
     }
 }

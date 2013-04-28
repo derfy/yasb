@@ -6,43 +6,41 @@ using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Extensions;
 using Yasb.Redis.Messaging.Client.Interfaces;
+using System.Net;
 
 namespace Yasb.Redis.Messaging
 {
     public class SubscriptionService : ISubscriptionService
     {
         private IRedisClient _connection;
-        private BusEndPoint _localEndPoint;
-        public SubscriptionService(BusEndPoint localEndPoint, IRedisClient connection)
+        private string _localEndPoint;
+        public SubscriptionService(IRedisClient connection,string localEndPoint)
         {
             _localEndPoint = localEndPoint;
-            _connection = connection;
+           _connection = connection;
         }
-        public BusEndPoint[] GetSubscriptionEndPoints(string typeName)
+        public string[] GetSubscriptionEndPoints(string typeName)
         {
-            string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
-            return _connection.SMembers(set).Select(e => {
-                return new BusEndPoint(e.FromUtf8Bytes()); 
-            }).ToArray();
+            string set = string.Format("{0}:{1}", _localEndPoint, typeName);
+            return _connection.SMembers(set).Select(e => e.FromUtf8Bytes()).ToArray();
             
         }
 
 
-        public void AddSubscriberFor(string typeName, BusEndPoint subscriberEndPoint) 
+        public void AddSubscriberFor(string typeName, string subscriberEndPoint)
         {
-            string set = string.Format("{0}:{1}", _localEndPoint.Value, typeName);
-            _connection.Sadd(set, subscriberEndPoint.Value);
+            string set = string.Format("{0}:{1}", _localEndPoint, typeName);
+            _connection.Sadd(set, subscriberEndPoint);
         }
 
 
-
-        public void RemoveSubscriberFor(string typeName, BusEndPoint subscriberEndPoint)
+        public void RemoveSubscriberFor(string typeName, string subscriberEndPoint)
         {
-            string combinedValue = string.Format("{0}:{1}", subscriberEndPoint.Value, typeName);
+            string combinedValue = string.Format("{0}:{1}", subscriberEndPoint, typeName);
         }
 
         public void Dispose()
         {
-         }
+        }
     }
 }

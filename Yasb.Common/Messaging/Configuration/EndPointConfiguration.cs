@@ -5,20 +5,26 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class EndPointConfiguration<TConnection> : ConnectionsRepository<TConnection>
+    public class EndPointConfiguration
     {
-        private List<BusEndPoint> _endPoints = new List<BusEndPoint>();
-        public EndPointConfiguration()
-        {
+        private List<QueueEndPointInfo> _endPointsInfoList = new List<QueueEndPointInfo>();
 
-        }
-        public BusEndPoint LocalEndPoint { get; internal set; }
-        public BusEndPoint[] NamedEndPoints { get { return _endPoints.ToArray(); } }
-
-        internal void AddNamedEndPoint(BusEndPoint endPoint)
+        public QueueEndPointInfo GetEndPointInfoByConnectionName(string connectionName)
         {
-            _endPoints.Add(endPoint);
+            return _endPointsInfoList.SingleOrDefault(e => e.ConnectionName == connectionName);
         }
+        public QueueEndPointInfo GetEndPointInfoByName(string name)
+        {
+            return _endPointsInfoList.SingleOrDefault(e => e.Name == name);
+        }
+     
+        internal void AddNamedEndPoint(string connectionName,string queueName,string endPointName)
+
+        {
+            var queueEndPointInfo=new  QueueEndPointInfo(connectionName,queueName, endPointName);
+            _endPointsInfoList.Add(queueEndPointInfo);
+        }
+        
     }
 
    

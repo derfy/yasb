@@ -24,6 +24,7 @@ namespace Yasb.Redis.Messaging.Client
             _connectionEventArgsPool = connectionEventArgsPool;
         }
 
+        public EndPoint Address { get { return _connectionEventArgsPool.Address; } }
 
 
         public Task<RedisSocketAsyncEventArgs> StartConnect()
@@ -39,13 +40,13 @@ namespace Yasb.Redis.Messaging.Client
             return tcs.Task;
         }
 
-       
-       
-        public Task<ICommandResultProcessor> SendAsync<TResult>(IProcessResult<TResult> redisCommand, RedisSocketAsyncEventArgs sendEventArgs)
+
+
+        public Task<byte[]> SendAsync(byte[][] data, RedisSocketAsyncEventArgs sendEventArgs)
         {
-            var tcs = new TaskCompletionSource<ICommandResultProcessor>();
+            var tcs = new TaskCompletionSource<byte[]>();
             sendEventArgs.UserToken = tcs;
-            if (!sendEventArgs.SendAsync(redisCommand.ToBinary))
+            if (!sendEventArgs.SendAsync(data))
             {
                 ProcessSend(sendEventArgs);
             }
@@ -77,12 +78,14 @@ namespace Yasb.Redis.Messaging.Client
 
         private void ProcessReceive(RedisSocketAsyncEventArgs socketAsyncEventArgs)
         {
-            var tcs = socketAsyncEventArgs.UserToken as TaskCompletionSource<ICommandResultProcessor>;
+            var tcs = socketAsyncEventArgs.UserToken as TaskCompletionSource<byte[]>;
             if (tcs != null)
             {
                 try
                 {
-                    tcs.SetResult(CommandResultProcessor.CreateFrom(socketAsyncEventArgs));
+                    byte[] array = null;
+                    socketAsyncEventArgs.CopyToArray(out array);
+                    tcs.SetResult(array);
                 }
                 catch (Exception)
                 {
@@ -118,7 +121,6 @@ namespace Yasb.Redis.Messaging.Client
 
                         ProcessReceive(completedArgs);
                         break;
-                    
                 }
                
             }

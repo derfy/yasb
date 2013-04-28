@@ -26,6 +26,9 @@ namespace Yasb.Redis.Messaging.Client
                 _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
             };
         }
+
+       
+
         public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
         {
             WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
@@ -48,6 +51,11 @@ namespace Yasb.Redis.Messaging.Client
 
         }
 
+        internal void CopyToArray(out byte[] array)
+        {
+            array = new byte[BytesTransferred];
+            Array.Copy(Buffer, array, BytesTransferred); ;
+        }
         internal bool ConnectAsync()
         {
             if (_socket.Connected)
@@ -115,14 +123,7 @@ namespace Yasb.Redis.Messaging.Client
             return cmdBytes;
         }
 
-
-
-
-
-
-
-
-
+        
     }
    
 }

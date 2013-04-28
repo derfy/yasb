@@ -5,16 +5,16 @@ using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class ConnectionsRepository<TConnection>
+    public class ConnectionsConfiguration<TConnection>
     {
         private Dictionary<string, TConnection> _connections = new Dictionary<string, TConnection>();
-        internal ConnectionsRepository()
+        internal ConnectionsConfiguration()
         {
 
         }
-        internal void AddConnection(KeyValuePair<string,TConnection> connectionPair)
+        internal void AddConnection(string connectionName,TConnection connection)
         {
-            _connections.Add(connectionPair.Key,connectionPair.Value);
+            _connections[connectionName]=connection;
         }
 
         public TConnection GetConnectionByName(string connectionName)
@@ -24,5 +24,6 @@ namespace Yasb.Common.Messaging.Configuration
                 throw new ApplicationException(string.Format("No connection named {0} has been configured", connectionName));
             return connection;
         }
+
     }
 }

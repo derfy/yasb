@@ -58,8 +58,9 @@ namespace Consumer
         {
             var configurator = new RedisConfigurator();
             var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("ConsumerConnection", "redis_consumer")
-                .WithEndPoint("ConsumerConnection", "redis_producer", "producer")).WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly)
-                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("ConsumerConnection", "192.168.127.128")));
+                                                                                  .WithEndPoint("ConsumerConnection", "redis_producer", "producer"))
+                                                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("ConsumerConnection", "192.168.127.128"))
+                                                .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly));
             
             
 

@@ -58,13 +58,13 @@
     <Compile Include="Client\Interfaces\IRedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />
     <Compile Include="Client\Interfaces\IProcessResult.cs" />
-    <Compile Include="Client\Interfaces\IRedisCommand.cs" />
     <Compile Include="Client\RedisClient.cs" />
     <Compile Include="Client\RedisCommand.cs" />
     <Compile Include="Client\RedisException.cs" />
     <Compile Include="Client\RedisConnectionManager.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
     <Compile Include="IScriptCache.cs" />
+    <Compile Include="RedisQueueFactory.cs" />
     <Compile Include="ScriptsCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisQueue.cs" />

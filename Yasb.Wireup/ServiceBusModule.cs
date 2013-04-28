@@ -10,13 +10,15 @@ using Autofac.Core.Lifetime;
 using Autofac.Builder;
 using Yasb.Common.Messaging;
 using Yasb.Common;
+using Newtonsoft.Json;
+using Yasb.Common.Serialization;
 
 namespace Yasb.Wireup
 {
-    public class ServiceBusModule<TConfiguration, TConnectionConfiguration> : CommonModule<TConfiguration>
-        where TConfiguration : ServiceBusConfiguration<TConnectionConfiguration>
+    public class ServiceBusModule<TConnection> : CommonModule<ServiceBusConfiguration< TConnection>>
     {
-        public ServiceBusModule(TConfiguration configuration):base(configuration,"bus")
+        public ServiceBusModule(ServiceBusConfiguration<TConnection> configuration)
+            : base(configuration, "bus")
         {
         }
 
@@ -40,8 +42,8 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<IWorker>((componentScope, parameters) =>
             {
-                var queueFactory = componentScope.Resolve<QueueFactory>();
-                var localQueue = queueFactory(Configuration.EndPointConfiguration.LocalEndPoint);
+                var queueFactory = componentScope.Resolve<IQueueFactory>();
+                var localQueue = queueFactory.CreateFromEndPointName("local");
                 return new MessagesReceiver(localQueue, componentScope.Resolve<MessageHandlerFactory>());
             }).InstancePerMatchingLifetimeScope(Scope);
 
@@ -53,8 +55,10 @@ namespace Yasb.Wireup
             }
             builder.RegisterWithScope<IServiceBus>((componentScope, parameters) =>
             {
-                return new ServiceBus(Configuration.EndPointConfiguration.NamedEndPoints, componentScope.Resolve<IWorker>(), componentScope.Resolve<QueueFactory>(), componentScope.Resolve<ISubscriptionService>(), componentScope.Resolve<ITaskRunner>());
+                return new ServiceBus(componentScope.Resolve<IWorker>(), componentScope.Resolve<IQueueFactory>(), componentScope.Resolve<ISubscriptionService>(), componentScope.Resolve<ITaskRunner>());
             }).InstancePerMatchingLifetimeScope(Scope);
+
+            builder.RegisterWithScope<JsonConverter>(componentScope => new MessageEnvelopeConverter());
         }
     }
 }

@@ -8,6 +8,8 @@ using Yasb.Redis.Messaging;
 using Yasb.Tests.Common.Serialization;
 using Yasb.Common.Tests.Configuration;
 using Yasb.Common.Tests;
+using System.Net;
+using Moq;
 
 namespace Yasb.Tests.Common.Messaging
 {
@@ -22,8 +24,8 @@ namespace Yasb.Tests.Common.Messaging
         public void ShouldGetCorrectTypeName()
         {
             var message=new TestMessage();
-            var fromEndPoint = new BusEndPoint("myConnection:myQueue");
-            var toEndPoint = new BusEndPoint("myConnection:myQueue");
+            var fromEndPoint = "myConnection:myQueue";
+            var toEndPoint = "myConnection:myQueue";
             var envelope = new MessageEnvelope(message,  fromEndPoint, toEndPoint);
             Assert.AreEqual(typeof(TestMessage), envelope.ContentType);
         }

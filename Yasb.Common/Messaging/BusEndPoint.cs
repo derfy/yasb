@@ -7,8 +7,26 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Common.Messaging
 {
-   
-    public  class BusEndPoint 
+    public class BusEndPoint<TConnection> : BusEndPoint
+    {
+       
+        public BusEndPoint(string connectionName, string queueName, string endPointName):base(connectionName,queueName,endPointName)
+        {
+          
+        }
+
+        public BusEndPoint(TConnection address, string queueName, string endPointName=null)
+        {
+
+        }
+        public TConnection Address { get; set; }
+
+        public override string Value
+        {
+            get { throw new NotImplementedException(); }
+        }
+    }
+    public abstract class BusEndPoint 
     {
         public BusEndPoint()
         {
@@ -20,22 +38,8 @@ namespace Yasb.Common.Messaging
             QueueName = queueName;
             Name = endPointName;
         }
-
-        public BusEndPoint(string endPointValue)
-        {
-            var endPoint = BusEndPoint.Parse(endPointValue);
-            ConnectionName = endPoint.ConnectionName;
-            QueueName = endPoint.QueueName;
-        }
-
-        private static BusEndPoint Parse(string endPointValue)
-        {
-            var endPointValues = endPointValue.Split(':');
-            if (endPointValues.Length != 2)
-                throw new ApplicationException("EndPoint is not valid");
-            return new BusEndPoint(endPointValues[0], endPointValues[1]);
-        }
-        public string Value { get { return string.Format("{0}:{1}", ConnectionName, QueueName); } }
+       
+        public abstract string Value { get ; }
         public string Name { get; private set; }
         public string ConnectionName { get; private set; }
         public string QueueName { get; private set; }

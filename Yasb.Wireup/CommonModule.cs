@@ -29,11 +29,11 @@ namespace Yasb.Wireup
         protected string Scope { get; private set; }
         protected override void Load(Autofac.ContainerBuilder builder)
         {
-            builder.RegisterGeneratedFactory<QueueFactory>().InstancePerMatchingLifetimeScope(Scope);
-
+          
+           
             builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
             {
-                return new Serializer(new JsonConverter[] { new EndPointConverter(), new MessageEnvelopeConverter() });
+                return new Serializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray() );
             }).InstancePerMatchingLifetimeScope(Scope);
             
             

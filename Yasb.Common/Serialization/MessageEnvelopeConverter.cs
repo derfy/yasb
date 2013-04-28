@@ -26,8 +26,8 @@ namespace Yasb.Common.Serialization
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
             var message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
 
-            var from = jsonObject.Property("From").Value.ToObject<BusEndPoint>(serializer);
-            var to = jsonObject.Property("To").Value.ToObject<BusEndPoint>(serializer);
+            var from = jsonObject.Property("From").Value.ToObject<string>(serializer);
+            var to = jsonObject.Property("To").Value.ToObject<string>(serializer);
 
             var envelope = new MessageEnvelope(message, from, to);
             if (jsonObject.Property("Id") != null)

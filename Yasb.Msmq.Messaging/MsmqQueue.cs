@@ -10,25 +10,24 @@ namespace Yasb.Msmq.Messaging
 {
     public class MsmqQueue : IQueue
     {
-        private string _connectionString;
         private IMessageFormatter _formatter;
-        public MsmqQueue(string connectionString,IMessageFormatter formatter)
+        public MsmqQueue(string localEndPoint,IMessageFormatter formatter)
         {
-            _connectionString = connectionString;
+            LocalEndPoint = localEndPoint;
             _formatter = formatter;
             Initialize();
         }
         public void Initialize()
         {
-            if (!MessageQueue.Exists(_connectionString))
-              MessageQueue.Create(_connectionString, true);
+            if (!MessageQueue.Exists(LocalEndPoint))
+                MessageQueue.Create(LocalEndPoint, true);
         }
 
 
 
         public void SetMessageCompleted(string envelopeId)
         {
-            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
                 internalQueue.ReceiveByCorrelationId(envelopeId,MessageQueueTransactionType.Single);
             }
@@ -38,7 +37,7 @@ namespace Yasb.Msmq.Messaging
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
                 var message = internalQueue.Peek();
                 var newEnvelope = message.Body as MessageEnvelope;
@@ -74,7 +73,7 @@ namespace Yasb.Msmq.Messaging
         {
             envelope.Id = Guid.NewGuid().ToString();
             var message = new Message(envelope) { Formatter = _formatter };
-            using (var internalQueue = new MessageQueue(_connectionString) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
                 internalQueue.Send(message, MessageQueueTransactionType.Single);
             }
@@ -101,6 +100,9 @@ namespace Yasb.Msmq.Messaging
                 return null;
             }
         }
+
+
+        public string LocalEndPoint { get; private set; }
     }
     
 }

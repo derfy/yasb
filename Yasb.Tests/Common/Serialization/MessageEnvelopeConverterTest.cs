@@ -12,6 +12,7 @@ using Newtonsoft.Json.Serialization;
 using Yasb.Tests.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Common.Tests;
+using System.Net;
 
 namespace Yasb.Tests.Common.Serialization
 {
@@ -22,13 +23,12 @@ namespace Yasb.Tests.Common.Serialization
     [TestClass]
     public class MessageEnvelopeConverterTest
     {
-
-        
+         
         [TestMethod]
         public void ShouldBeDeserialized()
         {
-            var fromEndPoint = new BusEndPoint("from:fromQueue");
-            var toEndPoint = new BusEndPoint("Value", "to:toQueue");
+            var fromEndPoint = "from:fromQueue";
+            var toEndPoint = "Value:to:toQueue";
             var contentType = "Yasb.Common.Tests.TestMessage, Yasb.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
             var message = new JObject();
             var id = Guid.NewGuid().ToString();
@@ -36,12 +36,8 @@ namespace Yasb.Tests.Common.Serialization
                new JProperty("Id",id),
                new JProperty("ContentType", contentType),
                new JProperty("Message", message),
-               new JProperty("From", new JObject(
-                   new JProperty("Value", fromEndPoint.Value)
-                )),
-               new JProperty("To", new JObject(
-                   new JProperty("Value", toEndPoint.Value)
-                ))
+               new JProperty("From", fromEndPoint),
+               new JProperty("To", toEndPoint)
             );
            
             var reader = new JTokenReader(jsonObject);
@@ -59,9 +55,6 @@ namespace Yasb.Tests.Common.Serialization
             var serializer = new Mock<JsonSerializer>();
             serializer.Setup(s => s.Binder).Returns(new DefaultSerializationBinder());
             serializer.Setup(s => s.ContractResolver).Returns(new DefaultContractResolver());
-            var converters=new JsonConverterCollection();
-            converters.Add(new EndPointConverter());
-            serializer.Setup(s => s.Converters).Returns(converters);
             return serializer;
         }
         [TestMethod]

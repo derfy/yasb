@@ -13,6 +13,7 @@ using System.Messaging;
 using Yasb.Tests.Common.Serialization;
 using Yasb.Wireup;
 using Yasb.Common.Tests;
+using Yasb.Msmq.Messaging.Configuration;
 
 namespace Yasb.Tests.Messaging.Msmq
 {
@@ -22,15 +23,14 @@ namespace Yasb.Tests.Messaging.Msmq
     [TestClass]
     public class MsmqQueueTest
     {
-        
         [Ignore]
         [TestMethod]
         public void TestMethod1()
         {
             var sut = new MsmqConfigurator().ConfigureQueue(e=>e.WithEndPoint("localConnection","test_msmq_local","queue1")
-                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).GetQueueByName("queue1");
-            var localEndPoint = new BusEndPoint("localConnection:test_msmq_local");
-            var remoteEndPoint = new BusEndPoint("localConnection:test_msmq_remote");
+                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).CreateFromEndPointName("queue1");
+            var localEndPoint = "localConnection:test_msmq_local";
+            var remoteEndPoint = "localConnection:test_msmq_remote";
             var message = new TestMessage();
             var messageEnvelope = new MessageEnvelope(message,  localEndPoint, remoteEndPoint);
            //var converters = new List<JsonConverter>() {  new MessageEnvelopeConverter<MsmqEndPoint>() }.ToArray();

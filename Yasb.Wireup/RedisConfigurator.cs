@@ -18,20 +18,20 @@ using Yasb.Redis.Messaging.Client;
 
 namespace Yasb.Wireup
 {
-    
+
 
     public class RedisConfigurator : AbstractConfigurator<EndPoint>
     {
-
+        
         protected override void RegisterServiceBusModule(ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
         {
-            Builder.RegisterModule(new RedisQueueModule(serviceBusConfiguration.EndPointConfiguration, "bus"));
+            Builder.RegisterModule(new RedisQueueModule(serviceBusConfiguration, "bus"));
             Builder.RegisterModule(new RedisServiceBusModule(serviceBusConfiguration));
         }
 
-        protected override void RegisterQueueModule(EndPointConfiguration<EndPoint> endPointConfiguration)
+        protected override void RegisterQueueModule(QueueConfiguration<EndPoint> queueConfiguration)
         {
-            Builder.RegisterModule(new RedisQueueModule(endPointConfiguration,"queue"));
+            Builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
         }
     }
 }

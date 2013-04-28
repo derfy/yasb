@@ -59,13 +59,7 @@ namespace Yasb.Redis.Messaging.Client
 		public static IProcessResult<byte[]> RPop(string listId) { return new RPopCommand(listId); }
 		public static IProcessResult<byte[][]> BRPopLPush(string fromListId, string toListId, int timeOutSec) { return new BRPopLPushCommand(fromListId, toListId, timeOutSec); }
 
-		//public virtual void SendRequest(RedisSocketAsyncEventArgs e)
-		//{
-		//    e.PrepareToSend();
-		//    e.WriteAllToSendBuffer(this.ToBinary);
-		//}
-
-
+		
 
 		public abstract byte[][] ToBinary { get; }
 

@@ -23,9 +23,10 @@ using Newtonsoft.Json;
 namespace Yasb.Wireup
 {
 
-    public class RedisServiceBusModule : ServiceBusModule<ServiceBusConfiguration<EndPoint>,EndPoint>
+    public class RedisServiceBusModule : ServiceBusModule<EndPoint>
     {
-        public RedisServiceBusModule(ServiceBusConfiguration<EndPoint> serviceBusConfiguration):base(serviceBusConfiguration)
+        public RedisServiceBusModule(ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
+            : base(serviceBusConfiguration)
         {
         }
         protected override void Load(ContainerBuilder builder)
@@ -33,10 +34,10 @@ namespace Yasb.Wireup
             base.Load(builder);
             builder.RegisterWithScope<ISubscriptionService>((componentScope, parameters) =>
             {
-                var endPointConfiguration = Configuration.EndPointConfiguration;
-                var localEndPoint = endPointConfiguration.LocalEndPoint;
-                var connection = endPointConfiguration.GetConnectionByName(localEndPoint.ConnectionName);
-                return new SubscriptionService(localEndPoint, componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection)));
+                var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
+                var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
+                var localEnPoint = string.Format("{0}:{1}",connection,localEndPointInfo.QueueName);
+                return new SubscriptionService(componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection)), localEnPoint);
             }).InstancePerMatchingLifetimeScope(Scope);
         }
     }

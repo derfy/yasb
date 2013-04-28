@@ -24,9 +24,9 @@ namespace Yasb.Tests.Messaging.Redis
         public RedisQueueTest()
         {
             var configurator = new RedisConfigurator();
-            var resolver = configurator.ConfigureQueue(q => q.WithEndPoint("vmEndPoint", "queue_test", "consumer")
+            var redisQueueFactory = configurator.ConfigureQueue(q => q.WithEndPoint("vmEndPoint", "queue_test", "consumer")
                                              .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
-            _queue = resolver.GetQueueByName("consumer") as RedisQueue;
+            _queue = redisQueueFactory.CreateFromEndPointName("consumer") as RedisQueue;
           //  _scriptsCache = resolver.ScriptsCacheFor(_queue.LocalEndPoint);
            // _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(ProbeScripts));
             
@@ -40,7 +40,8 @@ namespace Yasb.Tests.Messaging.Redis
             MessageEnvelope envelope=null;// = new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
            // _queue.Push(envelope);
         }
-        //[Ignore]
+        
+        [Ignore]
         [TestMethod]
         public void ShouldSetTimeoutError()
         {

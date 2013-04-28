@@ -10,6 +10,7 @@ using Yasb.Common.Serialization;
 using Yasb.Common.Messaging;
 using Yasb.Common.Tests;
 using Yasb.Redis.Messaging.Client.Interfaces;
+using System.Net;
 
 namespace Yasb.Tests.Messaging
 {
@@ -22,8 +23,7 @@ namespace Yasb.Tests.Messaging
         private RedisQueue _sut;
         private Mock<ISerializer> _serializerMock= new Mock<ISerializer>();
         private Mock<IRedisClient> _redisClientMock = new Mock<IRedisClient>();
-        private Mock<ScriptsCache> _scriptsCacheMock = new Mock<ScriptsCache>();
-       
+        private Mock<IScriptCache> _scriptsCacheMock = new Mock<IScriptCache>();
         public RedisQueueTest()
         {
             _sut = new RedisQueue("test", _serializerMock.Object, _redisClientMock.Object, _scriptsCacheMock.Object);
@@ -32,7 +32,8 @@ namespace Yasb.Tests.Messaging
         [TestMethod]
         public void ShouldBeAbleToPush()
         {
-            var envelope = new MessageEnvelope(new TestMessage(), new BusEndPoint("localConnection:foo"), new BusEndPoint("localConnection:bar"));
+            
+            var envelope = new MessageEnvelope(new TestMessage(), "localConnection:foo", "localConnection:bar");
             
             var bytes = Encoding.Default.GetBytes("foo");
             _serializerMock.Setup(c => c.Serialize(envelope)).Returns(bytes);
@@ -46,7 +47,7 @@ namespace Yasb.Tests.Messaging
         public void ShouldBeAbleToDequeue()
         {
             MessageEnvelope newEnvelope = null;
-            var envelope = new MessageEnvelope(new TestMessage(), new BusEndPoint("localConnection:foo"), new BusEndPoint("localConnection:bar"));
+            var envelope = new MessageEnvelope(new TestMessage(), "localConnection:foo", "localConnection:bar");
             byte[] script1 = Encoding.Default.GetBytes("foo");
             var now=DateTime.Now;
             var timoutWindow = new TimeSpan();

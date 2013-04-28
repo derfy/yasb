@@ -11,10 +11,10 @@ namespace Yasb.Wireup
     public abstract class AbstractConfigurator<TConnection>
     {
         protected ContainerBuilder Builder { get; private set; }
-
+      
         public AbstractConfigurator()
         {
-            Builder = new ContainerBuilder();
+             Builder = new ContainerBuilder();
         }
 
         public IServiceBus Bus(Action<ServiceBusConfigurer<TConnection>> action)
@@ -28,16 +28,16 @@ namespace Yasb.Wireup
         }
 
 
-        public QueueResolver<TConnection> ConfigureQueue(Action<EndPointConfigurer<TConnection>> action)
+        public IQueueFactory ConfigureQueue(Action<QueueConfigurer<TConnection>> action)
         {
-            var queueConfigurer = new EndPointConfigurer<TConnection>();
+            var queueConfigurer = new QueueConfigurer<TConnection>();
             action(queueConfigurer);
             RegisterQueueModule(queueConfigurer.Built);
-            return new QueueResolver<TConnection>(Builder.Build().BeginLifetimeScope("queue").Resolve<QueueFactory>(), queueConfigurer.Built);
+            return Builder.Build().BeginLifetimeScope("queue").Resolve<IQueueFactory>();
         }
 
 
         protected abstract void RegisterServiceBusModule(ServiceBusConfiguration<TConnection> serviceBusConfiguration);
-        protected abstract void RegisterQueueModule(EndPointConfiguration<TConnection> queueConfiguration);
+        protected abstract void RegisterQueueModule(QueueConfiguration<TConnection> queueConfiguration);
     }
 }

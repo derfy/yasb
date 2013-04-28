@@ -43,7 +43,7 @@ namespace Yasb.Tests.Common
                
             });
             _sut.Run(worker.Object);
-            Thread.Sleep(100);
+            Thread.Sleep(200);
             _sut.Stop();
             worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Exactly(calls));
         }

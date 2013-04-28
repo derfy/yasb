@@ -13,10 +13,10 @@ using Yasb.Common.Serialization;
 
 namespace Yasb.Wireup
 {
-    public class MsmqQueueModule : CommonModule<EndPointConfiguration<MsmqConnection>>
+    public class MsmqQueueModule : CommonModule<QueueConfiguration<MsmqConnection>>
     {
-        public MsmqQueueModule(EndPointConfiguration<MsmqConnection> queueConfiguration)
-            : base(queueConfiguration,"queue")
+        public MsmqQueueModule(QueueConfiguration<MsmqConnection> queueConfiguration, string scope)
+            : base(queueConfiguration,scope)
         {
         }
         
@@ -24,13 +24,13 @@ namespace Yasb.Wireup
         {
             base.Load(builder);
             builder.RegisterWithScope<IMessageFormatter>(componentScope => new JsonMessageFormatter<MessageEnvelope>(componentScope.Resolve<ISerializer>()));
-            builder.RegisterWithScope<IQueue>((componentScope, parameters) =>
+
+            builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
             {
-                var endPoint = parameters.Named<BusEndPoint>("endPoint");
-                var connection = Configuration.GetConnectionByName(endPoint.ConnectionName);
-                var connectionString = string.Format(@"{0}\{1}$\{2}", connection.Host, connection.IsPrivate ? "Private":"Public",endPoint.QueueName);
-                return new MsmqQueue(connectionString, componentScope.Resolve<IMessageFormatter>());
-            });
+                return new MsmqQueueFactory(Configuration, componentScope.Resolve<IMessageFormatter>());
+            }).InstancePerMatchingLifetimeScope(Scope);
+            
+         
         }
     }
 }

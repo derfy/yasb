@@ -20,11 +20,13 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldInvokeSubscriptionServiceAddOnHandle()
         {
-            var subscription = new SubscriptionMessage() { TypeName = "foo" };
+            var subscription = new Mock<SubscriptionMessage>();
+            subscription.Setup(s => s.SubscriberEndPoint).Returns("myId");
+            subscription.Setup(s => s.TypeName).Returns("myType");
             var subscriptionService = new Mock<ISubscriptionService>();
             var sut = new SubscriptionMessageHandler(subscriptionService.Object);
-            sut.Handle(subscription);
-            subscriptionService.Verify(s => s.AddSubscriberFor("foo", It.IsAny<BusEndPoint>()), Times.Once());
+            sut.Handle(subscription.Object);
+            subscriptionService.Verify(s => s.AddSubscriberFor("myType", "myId"), Times.Once());
         }
     }
 }

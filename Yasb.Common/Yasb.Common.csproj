@@ -52,19 +52,21 @@
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Guard.cs" />
+    <Compile Include="Messaging\AbstractQueueFactory.cs" />
     <Compile Include="Messaging\BusEndPoint.cs" />
     <Compile Include="Messaging\Configuration\CommonConnectionConfigurers\FluentIPEndPointConfigurer.cs" />
-    <Compile Include="Messaging\Configuration\ConnectionsRepository.cs" />
+    <Compile Include="Messaging\Configuration\ConnectionsConfiguration.cs" />
     <Compile Include="Messaging\Configuration\EndPointConfiguration.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\Configuration\FluentConnectionConfigurer.cs" />
-    <Compile Include="Messaging\Configuration\IConfigurator.cs" />
     <Compile Include="Messaging\Configuration\IConnectionConfigurer.cs" />
+    <Compile Include="Messaging\Configuration\QueueConfiguration.cs" />
+    <Compile Include="Messaging\Configuration\QueueConfigurer.cs" />
     <Compile Include="Messaging\Configuration\ServiceBusConfiguration.cs" />
     <Compile Include="Messaging\Configuration\ServiceBusConfigurer.cs" />
-    <Compile Include="Messaging\Configuration\IResolver.cs" />
     <Compile Include="Messaging\Configuration\EndPointConfigurer.cs" />
+    <Compile Include="Messaging\EndPointInfo.cs" />
     <Compile Include="Messaging\IBus.cs" />
     <Compile Include="Messaging\IEnvelope.cs" />
     <Compile Include="Messaging\IMessageHandler.cs" />
@@ -83,14 +85,13 @@
     <Compile Include="Messaging\ServiceBus.cs" />
     <Compile Include="Messaging\SubscriptionMessage.cs" />
     <Compile Include="Messaging\SubscriptionMessageHandler.cs" />
-    <Compile Include="Serialization\EndPointConverter.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
     <Compile Include="Serialization\MessageEnvelopeConverter.cs" />
     <Compile Include="Serialization\Serializer.cs" />
     <Compile Include="TaskRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\Configuration\FluentTestConnectionConfigurer.cs" />
-    <Compile Include="Tests\Configuration\TestConnectionConfiguration.cs" />
+    <Compile Include="Tests\Configuration\TestConnection.cs" />
     <Compile Include="Tests\TestMessage.cs" />
   </ItemGroup>
   <ItemGroup>

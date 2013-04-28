@@ -11,5 +11,6 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
         RedisSocketAsyncEventArgs Dequeue();
 
         void Enqueue(RedisSocketAsyncEventArgs socketAsyncEventArgs);
+        EndPoint Address { get; }
     }
 }

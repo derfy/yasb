@@ -12,20 +12,12 @@ namespace Yasb.Redis.Messaging.Client
     public class CommandResultProcessor : ICommandResultProcessor
     {
         private BufferedStream _bStream;
-        private int _bytesTansferred;
-        private byte[] _array;
-
-        internal static ICommandResultProcessor CreateFrom(RedisSocketAsyncEventArgs e)
+       
+        
+        internal CommandResultProcessor(byte[] buffer)
         {
-           return new CommandResultProcessor(e.Buffer,e.BytesTransferred);
-        }
-
-        private CommandResultProcessor(byte[] buffer,int bytesTansferred)
-        {
-            _bytesTansferred = bytesTansferred;
-            _array = new byte[_bytesTansferred];
-            Array.Copy(buffer, _array, _bytesTansferred);
-            _bStream = new BufferedStream(new MemoryStream(_array));
+             _bStream = new BufferedStream(new MemoryStream(buffer));
+     
         }
 
         public byte[] ExpectSingleLine()
@@ -64,7 +56,7 @@ namespace Yasb.Redis.Messaging.Client
         public byte[][] ExpectMultiLine()
         {
             var results = new List<byte[]>();
-            while (_bStream.Position < this._bytesTansferred - 1)
+            while (_bStream.Position < _bStream.Length - 1)
             {
                 results.Add(RetrieveLineFromBulkData());
             }

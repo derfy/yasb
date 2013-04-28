@@ -82,6 +82,8 @@
     <Compile Include="Common\Messaging\SubscriptionMessageHandlerTest.cs" />
     <Compile Include="Wireup\AutofacConfiguratorTest.cs" />
     <Compile Include="Wireup\RegisterOneInstanceForObjectKeyTest.cs" />
+    <Compile Include="Wireup\TestConfigurator.cs" />
+    <Compile Include="Wireup\TestQueueModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
