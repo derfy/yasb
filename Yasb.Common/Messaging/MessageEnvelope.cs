@@ -6,7 +6,7 @@ using System.Text;
 namespace Yasb.Common.Messaging
 {
    
-    public class MessageEnvelope :IEnvelope
+    public class MessageEnvelope 
     {
         public MessageEnvelope()
         {

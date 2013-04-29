@@ -53,7 +53,6 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Guard.cs" />
     <Compile Include="Messaging\AbstractQueueFactory.cs" />
-    <Compile Include="Messaging\BusEndPoint.cs" />
     <Compile Include="Messaging\Configuration\CommonConnectionConfigurers\FluentIPEndPointConfigurer.cs" />
     <Compile Include="Messaging\Configuration\ConnectionsConfiguration.cs" />
     <Compile Include="Messaging\Configuration\EndPointConfiguration.cs">
@@ -67,8 +66,6 @@
     <Compile Include="Messaging\Configuration\ServiceBusConfigurer.cs" />
     <Compile Include="Messaging\Configuration\EndPointConfigurer.cs" />
     <Compile Include="Messaging\EndPointInfo.cs" />
-    <Compile Include="Messaging\IBus.cs" />
-    <Compile Include="Messaging\IEnvelope.cs" />
     <Compile Include="Messaging\IMessageHandler.cs" />
     <Compile Include="Messaging\IHandleMessages.cs" />
     <Compile Include="Messaging\IMessage.cs" />

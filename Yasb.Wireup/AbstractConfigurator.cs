@@ -10,34 +10,33 @@ namespace Yasb.Wireup
 {
     public abstract class AbstractConfigurator<TConnection>
     {
-        protected ContainerBuilder Builder { get; private set; }
-      
         public AbstractConfigurator()
         {
-             Builder = new ContainerBuilder();
         }
 
         public IServiceBus Bus(Action<ServiceBusConfigurer<TConnection>> action)
         {
+            var builder = new ContainerBuilder();
             var serviceBusConfigurer = new ServiceBusConfigurer<TConnection>();
             action(serviceBusConfigurer);
             var serviceBusConfiguration = serviceBusConfigurer.Built;
             
-            RegisterServiceBusModule(serviceBusConfiguration);
-            return Builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus>();
+            RegisterServiceBusModule(builder,serviceBusConfiguration);
+            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus>();
         }
 
 
         public IQueueFactory ConfigureQueue(Action<QueueConfigurer<TConnection>> action)
         {
+            var builder = new ContainerBuilder();
             var queueConfigurer = new QueueConfigurer<TConnection>();
             action(queueConfigurer);
-            RegisterQueueModule(queueConfigurer.Built);
-            return Builder.Build().BeginLifetimeScope("queue").Resolve<IQueueFactory>();
+            RegisterQueueModule(builder,queueConfigurer.Built);
+            return builder.Build().BeginLifetimeScope("queue").Resolve<IQueueFactory>();
         }
 
 
-        protected abstract void RegisterServiceBusModule(ServiceBusConfiguration<TConnection> serviceBusConfiguration);
-        protected abstract void RegisterQueueModule(QueueConfiguration<TConnection> queueConfiguration);
+        protected abstract void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TConnection> serviceBusConfiguration);
+        protected abstract void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<TConnection> queueConfiguration);
     }
 }

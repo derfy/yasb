@@ -31,11 +31,11 @@ namespace Yasb.Redis.Messaging
         }
 
 
-        public void EnsureScriptCached(string fileName)
+        public void EnsureScriptCached(string fileName, Type probeType =null)
         {
             _internalCache.TryAdd(fileName, new Lazy<byte[]>(() =>
             {
-                var type = typeof(RedisScriptsProbe);
+                var type = probeType ?? typeof(RedisScriptsProbe);
                 using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.{1}", type.Namespace, fileName))))
                 {
                     string fileContent = reader.ReadToEnd();

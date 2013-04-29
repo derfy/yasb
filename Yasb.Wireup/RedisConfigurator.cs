@@ -23,15 +23,15 @@ namespace Yasb.Wireup
     public class RedisConfigurator : AbstractConfigurator<EndPoint>
     {
         
-        protected override void RegisterServiceBusModule(ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
+        protected override void RegisterServiceBusModule(ContainerBuilder builder,ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
         {
-            Builder.RegisterModule(new RedisQueueModule(serviceBusConfiguration, "bus"));
-            Builder.RegisterModule(new RedisServiceBusModule(serviceBusConfiguration));
+            builder.RegisterModule(new RedisQueueModule(serviceBusConfiguration, "bus"));
+            builder.RegisterModule(new RedisServiceBusModule(serviceBusConfiguration));
         }
 
-        protected override void RegisterQueueModule(QueueConfiguration<EndPoint> queueConfiguration)
+        protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<EndPoint> queueConfiguration)
         {
-            Builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
+            builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
         }
     }
 }

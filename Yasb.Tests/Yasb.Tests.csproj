@@ -68,8 +68,8 @@
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
     <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
-    <Compile Include="Messaging\Integration\Msmq\MsmqFluentConnectionConfigurer.cs" />
     <Compile Include="Messaging\Integration\Msmq\MsmqQueueTest.cs" />
+    <Compile Include="Messaging\Integration\Redis\RedisConfiguratorExtensions.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisQueueTest.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisSocketAsyncEventArgsPoolTest.cs" />
     <Compile Include="Common\Serialization\MessageEnvelopeConverterTest.cs" />

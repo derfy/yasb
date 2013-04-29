@@ -23,25 +23,20 @@ namespace Yasb.Tests.Messaging.Msmq
     [TestClass]
     public class MsmqQueueTest
     {
-        [Ignore]
+       // [Ignore]
         [TestMethod]
         public void TestMethod1()
         {
             var sut = new MsmqConfigurator().ConfigureQueue(e=>e.WithEndPoint("localConnection","test_msmq_local","queue1")
                 .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).CreateFromEndPointName("queue1");
-            var localEndPoint = "localConnection:test_msmq_local";
-            var remoteEndPoint = "localConnection:test_msmq_remote";
+            var localEndPoint = @".\Private$\test_msmq_local";
+            var remoteEndPoint = @".\Private$\test_msmq_remote";
             var message = new TestMessage();
             var messageEnvelope = new MessageEnvelope(message,  localEndPoint, remoteEndPoint);
-           //var converters = new List<JsonConverter>() {  new MessageEnvelopeConverter<MsmqEndPoint>() }.ToArray();
-           // var serializer = new Serializer(converters);
-           // var formatter = new JsonMessageFormatter<MessageEnvelope>(serializer);
-           // var sut = new MsmqQueue(localEndPoint, formatter);
-            // sut.Initialize();
-             sut.Push(messageEnvelope);
+           sut.Push(messageEnvelope);
 
-           // sut.TryGetEnvelope(DateTime.Now, new TimeSpan(0, 0, 50), out messageEnvelope);
-           // Assert.IsNotNull(messageEnvelope);
+            sut.TryDequeue(DateTime.Now, new TimeSpan(0, 0, 50), out messageEnvelope);
+            Assert.IsNotNull(messageEnvelope);
            // sut.SetMessageCompleted(messageEnvelope.Id);
            // sut.TryGetEnvelope(DateTime.Now, new TimeSpan(0, 0, 50), out messageEnvelope);
            // Assert.IsNull(messageEnvelope);

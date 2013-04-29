@@ -10,9 +10,14 @@ using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Tests;
 using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 using Yasb.Tests.Scripts;
+using Autofac;
+using System.Net;
+using Yasb.Redis.Messaging.Client.Interfaces;
+using Yasb.Tests.Messaging.Integration.Redis;
 
 namespace Yasb.Tests.Messaging.Redis
 {
+    
     /// <summary>
     /// Summary description for RedisQueueTest
     /// </summary>
@@ -27,21 +32,19 @@ namespace Yasb.Tests.Messaging.Redis
             var redisQueueFactory = configurator.ConfigureQueue(q => q.WithEndPoint("vmEndPoint", "queue_test", "consumer")
                                              .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
             _queue = redisQueueFactory.CreateFromEndPointName("consumer") as RedisQueue;
-          //  _scriptsCache = resolver.ScriptsCacheFor(_queue.LocalEndPoint);
-           // _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(ProbeScripts));
+            _scriptsCache=configurator.ConfigureScriptsCache("192.168.127.128") as ScriptsCache;
+            _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(ProbeScripts));
             
         }
         [TestInitialize()]
-        [Ignore]
         public void BeforeTest()
         {
-            //_scriptsCache.EvalSha("TestSetup.lua", 0);
+            _scriptsCache.EvalSha("TestSetup.lua", 0);
             var message = new TestMessage();
-            MessageEnvelope envelope=null;// = new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
-           // _queue.Push(envelope);
+            MessageEnvelope envelope= new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
+            _queue.Push(envelope);
         }
         
-        [Ignore]
         [TestMethod]
         public void ShouldSetTimeoutError()
         {
@@ -61,7 +64,7 @@ namespace Yasb.Tests.Messaging.Redis
             //Second retrieval should yield timeout
             Assert.AreEqual("Operation timed out", timeoutEnvelope.LastErrorMessage);
         }
-        [Ignore]
+      
         [TestMethod]
         public void ShouldRetrieveMessage()
         {
@@ -71,7 +74,7 @@ namespace Yasb.Tests.Messaging.Redis
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
         }
-        [Ignore]
+      //  [Ignore]
         [TestMethod]
         public void MarkAsCompleteShouldRemoveMessageFromQueue()
         {

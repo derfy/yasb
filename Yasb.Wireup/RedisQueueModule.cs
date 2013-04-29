@@ -42,11 +42,7 @@ namespace Yasb.Wireup
                 return scriptsCache;
             });
 
-            builder.RegisterWithScope<RedisConnectionManager>((componentScope, parameters) =>
-            {
-                return new RedisConnectionManager(componentScope.Resolve<IRedisSocketAsyncEventArgsPool>(parameters));
-            }).As(typeof(RedisConnectionManager));
-
+           
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 var endPoint = parameters.TypedAs<EndPoint>();

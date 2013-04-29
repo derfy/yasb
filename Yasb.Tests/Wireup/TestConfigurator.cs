@@ -15,17 +15,17 @@ namespace Yasb.Tests.Wireup
     {
         public TestQueueFactory QueueFactory { get; private set; }
         public Mock<ISubscriptionService> SubscriptionService { get;  set; }
-        protected override void RegisterQueueModule(QueueConfiguration<TestConnection> queueConfiguration)
+        protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<TestConnection> queueConfiguration)
         {
             QueueFactory = new TestQueueFactory(queueConfiguration);
-            Builder.RegisterModule(new TestQueueModule(QueueFactory,queueConfiguration, "queue"));
+            builder.RegisterModule(new TestQueueModule(QueueFactory,queueConfiguration, "queue"));
         }
 
-        protected override void RegisterServiceBusModule(ServiceBusConfiguration<TestConnection> serviceBusConfiguration)
+        protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TestConnection> serviceBusConfiguration)
         {
             QueueFactory = new TestQueueFactory(serviceBusConfiguration);
-            Builder.RegisterModule(new TestQueueModule(QueueFactory,serviceBusConfiguration, "bus"));
-            Builder.RegisterModule(new TestServiceBusModule(SubscriptionService,serviceBusConfiguration));
+            builder.RegisterModule(new TestQueueModule(QueueFactory,serviceBusConfiguration, "bus"));
+            builder.RegisterModule(new TestServiceBusModule(SubscriptionService,serviceBusConfiguration));
         }
     }
 }
