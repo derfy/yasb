@@ -60,14 +60,7 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
-        public byte[] Zadd(string set,int score, string value)
-        {
-            if (set == null)
-                throw new ArgumentNullException("set");
-
-            return SendCommand<byte[]>(RedisCommand.ZAdd(set,score, value));
-
-        }
+       
         public byte[] Sadd(string set, string value)
         {
             if (set == null)
@@ -76,6 +69,14 @@ namespace Yasb.Redis.Messaging.Client
             return SendCommand<byte[]>(RedisCommand.SAdd(set, value));
 
         }
+
+        public byte[] SRem(string set, string value)
+        {
+            if (set == null)
+                throw new ArgumentNullException("set");
+
+            return SendCommand<byte[]>(RedisCommand.SRem(set, value));
+        }
         public byte[][] SMembers(string set)
         {
             if (set == null)
@@ -83,21 +84,9 @@ namespace Yasb.Redis.Messaging.Client
 
             return SendCommand<byte[][]>(RedisCommand.SMembers(set));
         }
-        internal byte[][] ZRangeByScore(string set, string inf, string sup)
-        {
-            if (set == null)
-                throw new ArgumentNullException("set");
+       
 
-            return SendCommand<byte[][]>(RedisCommand.ZRangeByScore(set, inf, sup));
-        }
-
-
-        public bool Expire(string key, int seconds)
-        {
-            if (key == null)
-                throw new ArgumentNullException("key");
-            return SendCommand<byte[]>(RedisCommand.Expire(key, seconds)) == Success.ToUtf8Bytes();
-        }
+       
 
         
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
@@ -120,6 +109,9 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
-        
+
+
+
+       
     }
 }

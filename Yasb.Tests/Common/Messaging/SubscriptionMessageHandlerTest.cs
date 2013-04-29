@@ -26,7 +26,7 @@ namespace Yasb.Tests.Common.Messaging
             var subscriptionService = new Mock<ISubscriptionService>();
             var sut = new SubscriptionMessageHandler(subscriptionService.Object);
             sut.Handle(subscription.Object);
-            subscriptionService.Verify(s => s.AddSubscriberFor("myType", "myId"), Times.Once());
+            subscriptionService.Verify(s => s.Subscribe("myType", "myId"), Times.Once());
         }
     }
 }

@@ -12,7 +12,10 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
         byte[] EvalSha(byte[] scriptSha, int noKeys, params string[] keys);
         byte[] Load(string script);
         byte[] Sadd(string set, string value);
+        byte[] SRem(string set, string subscriberEndPoint);
         byte[][] SMembers(string set);
         EndPoint Address { get; }
+
+        
     }
 }

@@ -8,7 +8,7 @@ namespace Yasb.Common.Messaging
     public interface ISubscriptionService : IDisposable
     {
         string[] GetSubscriptionEndPoints(string typeName);
-        void AddSubscriberFor(string typeName, string subscriberEndPoint);
-        void RemoveSubscriberFor(string typeName, string subscriberEndPoint);
+        void Subscribe(string typeName, string subscriberEndPoint);
+        void UnSubscribe(string typeName, string subscriberEndPoint);
     }
 }

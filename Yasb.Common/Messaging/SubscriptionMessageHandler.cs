@@ -15,7 +15,7 @@ namespace Yasb.Common.Messaging
 
         public void Handle(SubscriptionMessage message)
         {
-            _subscriptionService.AddSubscriberFor(message.TypeName, message.SubscriberEndPoint);
+            _subscriptionService.Subscribe(message.TypeName, message.SubscriberEndPoint);
            
         }
 

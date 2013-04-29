@@ -44,7 +44,7 @@ namespace Yasb.Tests.Messaging.Redis
             MessageEnvelope envelope= new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
             _queue.Push(envelope);
         }
-        
+        [Ignore]
         [TestMethod]
         public void ShouldSetTimeoutError()
         {
@@ -64,7 +64,7 @@ namespace Yasb.Tests.Messaging.Redis
             //Second retrieval should yield timeout
             Assert.AreEqual("Operation timed out", timeoutEnvelope.LastErrorMessage);
         }
-      
+       [Ignore]
         [TestMethod]
         public void ShouldRetrieveMessage()
         {
@@ -74,7 +74,7 @@ namespace Yasb.Tests.Messaging.Redis
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
         }
-      //  [Ignore]
+        [Ignore]
         [TestMethod]
         public void MarkAsCompleteShouldRemoveMessageFromQueue()
         {
