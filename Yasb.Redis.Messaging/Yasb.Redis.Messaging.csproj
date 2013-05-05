@@ -63,14 +63,12 @@
     <Compile Include="Client\RedisException.cs" />
     <Compile Include="Client\RedisConnectionManager.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
-    <Compile Include="IScriptCache.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RedisQueueFactory.cs" />
-    <Compile Include="ScriptsCache.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisQueue.cs" />
     <Compile Include="Scripts\RedisScriptsProbe.cs" />
@@ -84,6 +82,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Scripts\TryGetEnvelope.lua" />
     <EmbeddedResource Include="Scripts\SetMessageCompleted.lua" />
+    <EmbeddedResource Include="Scripts\TestSetup.lua" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">

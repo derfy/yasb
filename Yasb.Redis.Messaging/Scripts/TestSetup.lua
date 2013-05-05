@@ -1,0 +1,1 @@
+﻿redis.call("del","queue_test")

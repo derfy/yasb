@@ -12,18 +12,15 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 namespace Yasb.Redis.Messaging
 {
     public delegate IRedisClient RedisClientFactory(EndPoint connection);
-    public delegate IScriptCache ScriptsCacheFactory(EndPoint connection);
 
     public class RedisQueueFactory : AbstractQueueFactory<EndPoint>
     {
         private RedisClientFactory _redisClientFactory;
-        private ScriptsCacheFactory _scriptsCacheFactory;
         private ISerializer _serializer;
-        public RedisQueueFactory(QueueConfiguration<EndPoint> queueConfiguration, ISerializer serializer, RedisClientFactory redisClientFactory,ScriptsCacheFactory scriptsCacheFactory)
+        public RedisQueueFactory(QueueConfiguration<EndPoint> queueConfiguration, ISerializer serializer, RedisClientFactory redisClientFactory)
             :base(queueConfiguration)
         {
             _serializer = serializer;
-            _scriptsCacheFactory = scriptsCacheFactory;
             _redisClientFactory = redisClientFactory;
         }
 
@@ -40,8 +37,7 @@ namespace Yasb.Redis.Messaging
         protected override IQueue CreateQueue(EndPoint connection, string queueName)
         {
             var redisClient = _redisClientFactory(connection);
-            var scriptsCache = _scriptsCacheFactory(connection);
-            return new RedisQueue(queueName, _serializer, redisClient,scriptsCache);
+            return new RedisQueue(queueName, _serializer, redisClient);
         }
 
     }

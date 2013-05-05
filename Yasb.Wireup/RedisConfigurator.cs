@@ -33,7 +33,6 @@ namespace Yasb.Wireup
         protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<EndPoint> queueConfiguration)
         {
             builder.RegisterModule(new CommonModule<QueueConfiguration<EndPoint>>(queueConfiguration, "queue"));
-          
             builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
         }
     }

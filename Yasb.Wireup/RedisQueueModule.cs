@@ -32,15 +32,7 @@ namespace Yasb.Wireup
                 var connectionManager = new RedisConnectionManager(context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<EndPoint>(connection)));
                 return new RedisClient(connectionManager); 
             });
-            builder.RegisterOneInstanceForObjectKey<EndPoint, IScriptCache>((connection, context) =>
-            {
-                var redisClientFactory = context.Resolve<RedisClientFactory>();
-                var redisClient = redisClientFactory(connection);
-                var scriptsCache = new ScriptsCache(redisClient);
-                scriptsCache.EnsureScriptsCached(new string[]{"TryGetEnvelope.lua", "SetMessageCompleted.lua"});
-                return scriptsCache;
-            });
-
+            
            
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
@@ -51,7 +43,7 @@ namespace Yasb.Wireup
             
             builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
             {
-                return new RedisQueueFactory(Configuration, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClientFactory>(), componentScope.Resolve<ScriptsCacheFactory>());
+                return new RedisQueueFactory(Configuration, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClientFactory>());
             }).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<RedisClientFactory>(componentScope =>
@@ -59,11 +51,7 @@ namespace Yasb.Wireup
                  return endPoint => componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(endPoint));
             }).InstancePerMatchingLifetimeScope(Scope);
 
-            builder.RegisterWithScope<ScriptsCacheFactory>(componentScope =>
-            {
-                return endPoint => componentScope.Resolve<IScriptCache>(TypedParameter.From<EndPoint>(endPoint));
-            }).InstancePerMatchingLifetimeScope(Scope);
-
+           
         }
     }
 }

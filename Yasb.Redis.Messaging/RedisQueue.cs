@@ -20,14 +20,12 @@ namespace Yasb.Redis.Messaging
         private ISerializer _serializer;
         private string _queueName;
         private IRedisClient _redisClient;
-        private IScriptCache _scriptsCache;
 
-        public RedisQueue(string queueName, ISerializer serializer, IRedisClient redisClient,IScriptCache scriptsCache)
+        public RedisQueue(string queueName, ISerializer serializer, IRedisClient redisClient)
         {
             _serializer = serializer;
             _queueName = queueName;
             _redisClient = redisClient;
-            _scriptsCache = scriptsCache;
           
         }
 
@@ -35,7 +33,7 @@ namespace Yasb.Redis.Messaging
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            var bytes = _scriptsCache.EvalSha("TryGetEnvelope.lua", 1, _queueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
+            var bytes = _redisClient.EvalSha("TryGetEnvelope.lua", 1, _queueName, now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString());
             if (bytes == null)
                 return false;
             envelope = _serializer.Deserialize<MessageEnvelope>(bytes);
@@ -44,7 +42,7 @@ namespace Yasb.Redis.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            _scriptsCache.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
+            _redisClient.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
         }
 
 

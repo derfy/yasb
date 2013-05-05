@@ -14,7 +14,7 @@ namespace Yasb.Tests.Wireup
     {
         private RedisConfigurator _sut =  new RedisConfigurator();
 
-        [Ignore]
+       // [Ignore]
         [TestMethod]
         public void ShouldBeAbleToCreateServiceBus()
         {
@@ -25,7 +25,7 @@ namespace Yasb.Tests.Wireup
                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
             Assert.IsNotNull(serviceBus);
         }
-        [Ignore]
+      //  [Ignore]
         [TestMethod]
         public void ShouldBeAbleToCreateQueue()
         {

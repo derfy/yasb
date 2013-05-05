@@ -9,10 +9,10 @@ using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Tests;
 using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
-using Yasb.Tests.Scripts;
 using Autofac;
 using System.Net;
 using Yasb.Redis.Messaging.Client.Interfaces;
+using System.Threading.Tasks;
 using Yasb.Tests.Messaging.Integration.Redis;
 using System.Threading.Tasks;
 
@@ -25,22 +25,20 @@ namespace Yasb.Tests.Messaging.Redis
     [TestClass]
     public class RedisQueueTest
     {
-        private ScriptsCache _scriptsCache;
         private IQueue _queue;
+        private IRedisClient _redisClient;
         public RedisQueueTest()
         {
             var configurator = new RedisConfigurator();
             var redisQueueFactory = configurator.ConfigureQueue(q => q.WithEndPoint("vmEndPoint", "queue_test", "consumer")
                                              .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
             _queue = redisQueueFactory.CreateFromEndPointName("consumer") as RedisQueue;
-            _scriptsCache=configurator.ConfigureScriptsCache("192.168.127.128") as ScriptsCache;
-            _scriptsCache.EnsureScriptsCached(new string[]{"TestSetup.lua"});
-            
+            _redisClient=configurator.ConfigureRedisClient("192.168.127.128");
         }
         [TestInitialize()]
         public void BeforeTest()
         {
-            _scriptsCache.EvalSha("TestSetup.lua", 0);
+           _redisClient.EvalSha("TestSetup.lua", 0);
             var message = new TestMessage();
             MessageEnvelope envelope= new MessageEnvelope(message, _queue.LocalEndPoint, _queue.LocalEndPoint);
             _queue.Push(envelope);
@@ -49,8 +47,6 @@ namespace Yasb.Tests.Messaging.Redis
         [TestMethod]
         public void ShouldSetTimeoutError()
         {
-
-
             MessageEnvelope newEnvelope = null;
             //Get Message
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
@@ -69,12 +65,11 @@ namespace Yasb.Tests.Messaging.Redis
         [TestMethod]
         public void ShouldRetrieveMessage()
         {
-
-
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
         }
+     
         [Ignore]
        [TestMethod]
        public void ShouldNotRetrieveSameMessageTwice()
@@ -88,6 +83,7 @@ namespace Yasb.Tests.Messaging.Redis
            Task.WaitAll(t1, t2, t3);
            Assert.IsTrue(t1.Result && !t2.Result && !t3.Result || t2.Result && !t1.Result && !t3.Result || t3.Result && !t1.Result && !t2.Result);
        }
+      
         [Ignore]
         [TestMethod]
         public void MarkAsCompleteShouldRemoveMessageFromQueue()
@@ -101,8 +97,5 @@ namespace Yasb.Tests.Messaging.Redis
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNull(newEnvelope);
         }
-
-
-
     }
 }

@@ -12,6 +12,7 @@ using Yasb.Common.Extensions;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Common.Messaging;
 using System.Collections.Concurrent;
+using Yasb.Redis.Messaging.Scripts;
 
 namespace Yasb.Redis.Messaging.Client
 {
@@ -19,7 +20,7 @@ namespace Yasb.Redis.Messaging.Client
     {
         internal const int Success = 1;
         private RedisConnectionManager _socketClient;
-       
+        private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
         public RedisClient(RedisConnectionManager socketClient)
         {
            _socketClient = socketClient;
@@ -30,24 +31,23 @@ namespace Yasb.Redis.Messaging.Client
             get { return _socketClient.Address; }
         }
 
-        public byte[] Load(string script){
+        private byte[] Load(string script){
             
             return SendCommand<byte[]>(RedisCommand.Load(script));
         }
 
-        public byte[] EvalSha(byte[] scriptSha, int noKeys, params string[] keys)
+        public virtual byte[] EvalSha(string fileName, int noKeys, params string[] keys)
         {
-            var mergedArray = new byte[keys.Length + 1][];
-
-            var multiByteKeys = keys.ToMultiByteArray();
-
-            mergedArray[0] = noKeys.ToUtf8Bytes();
-            for (int i = 0; i < keys.Length; i++)
+            byte[] scriptSha = null;
+            while(!_internalCache.TryGetValue(fileName,out scriptSha))
             {
-                mergedArray[i + 1] = multiByteKeys[i];
+                EnsureScriptIsCached(fileName);
             }
-            return SendCommand<byte[]>(RedisCommand.EvalSha(scriptSha, mergedArray));
+            return EvalSha(scriptSha, noKeys, keys);
         }
+
+
+       
 
 
         public byte[] LPush(string listId, byte[] value)
@@ -84,11 +84,32 @@ namespace Yasb.Redis.Messaging.Client
 
             return SendCommand<byte[][]>(RedisCommand.SMembers(set));
         }
-       
 
-       
 
-        
+
+        private byte[] EvalSha(byte[] scriptSha, int noKeys, params string[] keys)
+        {
+            var mergedArray = new byte[keys.Length + 1][];
+
+            var multiByteKeys = keys.ToMultiByteArray();
+
+            mergedArray[0] = noKeys.ToUtf8Bytes();
+            for (int i = 0; i < keys.Length; i++)
+            {
+                mergedArray[i + 1] = multiByteKeys[i];
+            }
+            return SendCommand<byte[]>(RedisCommand.EvalSha(scriptSha, mergedArray));
+        }
+
+        private void EnsureScriptIsCached(string fileName)
+        {
+            var type =typeof(RedisScriptsProbe);
+            using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.{1}", type.Namespace, fileName))))
+            {
+                var scriptSha=SendCommand<byte[]>(RedisCommand.Load(reader.ReadToEnd()));
+                _internalCache.TryAdd(fileName, scriptSha);
+            }
+        }
         private TResult SendCommand<TResult>(IProcessResult<TResult> command)
         {
           
