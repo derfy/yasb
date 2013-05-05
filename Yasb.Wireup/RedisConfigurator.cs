@@ -25,12 +25,15 @@ namespace Yasb.Wireup
         
         protected override void RegisterServiceBusModule(ContainerBuilder builder,ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
         {
+            builder.RegisterModule(new CommonModule<ServiceBusConfiguration<EndPoint>>(serviceBusConfiguration, "bus"));
             builder.RegisterModule(new RedisQueueModule(serviceBusConfiguration, "bus"));
             builder.RegisterModule(new RedisServiceBusModule(serviceBusConfiguration));
         }
 
         protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<EndPoint> queueConfiguration)
         {
+            builder.RegisterModule(new CommonModule<QueueConfiguration<EndPoint>>(queueConfiguration, "queue"));
+          
             builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
         }
     }

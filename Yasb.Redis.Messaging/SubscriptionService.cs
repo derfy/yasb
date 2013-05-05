@@ -13,31 +13,26 @@ namespace Yasb.Redis.Messaging
     public class SubscriptionService : ISubscriptionService
     {
         private IRedisClient _connection;
-        private string _queueName;
-        public SubscriptionService(IRedisClient connection,string queueName)
+      
+        public SubscriptionService(IRedisClient connection)
         {
-            _queueName = queueName;
            _connection = connection;
         }
         public string[] GetSubscriptionEndPoints(string typeName)
         {
-            string set = string.Format("{0}:{1}", _queueName, typeName);
-            return _connection.SMembers(set).Select(e => e.FromUtf8Bytes()).ToArray();
-            
+             return _connection.SMembers(typeName).Select(e => e.FromUtf8Bytes()).ToArray();
         }
 
 
         public void Subscribe(string typeName, string subscriberEndPoint)
         {
-            string set = string.Format("{0}:{1}", _queueName, typeName);
-            _connection.Sadd(set, subscriberEndPoint);
+            _connection.Sadd(typeName, subscriberEndPoint);
         }
 
 
         public void UnSubscribe(string typeName, string subscriberEndPoint)
         {
-            string set = string.Format("{0}:{1}", _queueName, typeName);
-            _connection.SRem(set, subscriberEndPoint);
+            _connection.SRem(typeName, subscriberEndPoint);
         }
 
         public void Dispose()

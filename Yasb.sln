@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Local.testsettings = Local.testsettings
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
-		Yasb.vsmdi = Yasb.vsmdi
+		Yasb1.vsmdi = Yasb1.vsmdi
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Common", "Yasb.Common\Yasb.Common.csproj", "{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}"
@@ -86,7 +86,7 @@ Global
 		SccLocalPath9 = Yasb.Redis.Messaging
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Yasb.vsmdi
+		CategoryFile = Yasb1.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

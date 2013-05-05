@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging.Configuration;
-using Yasb.Msmq.Messaging.Configuration;
 
-namespace Yasb.Msmq.Messaging.Configuration
+namespace Yasb.Common.Messaging.Configuration.Msmq
 {
     public class MsmqFluentConnectionConfigurer : FluentConnectionConfigurer<MsmqConnection>
     {

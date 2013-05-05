@@ -7,12 +7,16 @@ using System.IO;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging.Scripts;
 using Yasb.Redis.Messaging.Client.Interfaces;
+using Yasb.Redis.Messaging.Properties;
+using System.Globalization;
+using System.Resources;
+using System.Collections;
 
 namespace Yasb.Redis.Messaging
 {
     public class ScriptsCache : IScriptCache
     {
-        private ConcurrentDictionary<string, Lazy<byte[]>> _internalCache = new ConcurrentDictionary<string, Lazy<byte[]>>();
+        private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string,byte[]>();
         private IRedisClient _connection;
         public ScriptsCache()
         {
@@ -26,22 +30,21 @@ namespace Yasb.Redis.Messaging
 
         public virtual byte[] EvalSha(string fileName, int noKeys, params string[] keys)
         {
-            var scriptSha = _internalCache[fileName].Value;
+            var scriptSha = _internalCache[fileName];
             return _connection.EvalSha(scriptSha, noKeys, keys);
         }
 
 
-        public void EnsureScriptCached(string fileName, Type probeType =null)
+        public void EnsureScriptsCached(string[] fileNames,Type probeType=null)
         {
-            _internalCache.TryAdd(fileName, new Lazy<byte[]>(() =>
-            {
-                var type = probeType ?? typeof(RedisScriptsProbe);
+            var type = probeType ?? typeof(RedisScriptsProbe);
+            foreach(var fileName in fileNames){
                 using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.{1}", type.Namespace, fileName))))
                 {
                     string fileContent = reader.ReadToEnd();
-                    return _connection.Load(fileContent);
+                    _internalCache.TryAdd(fileName, _connection.Load(fileContent));
                 }
-            }, true));
+            }
         }
         
     }

@@ -14,6 +14,7 @@ using Autofac;
 using System.Net;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Tests.Messaging.Integration.Redis;
+using System.Threading.Tasks;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -33,7 +34,7 @@ namespace Yasb.Tests.Messaging.Redis
                                              .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
             _queue = redisQueueFactory.CreateFromEndPointName("consumer") as RedisQueue;
             _scriptsCache=configurator.ConfigureScriptsCache("192.168.127.128") as ScriptsCache;
-            _scriptsCache.EnsureScriptCached("TestSetup.lua", typeof(ProbeScripts));
+            _scriptsCache.EnsureScriptsCached(new string[]{"TestSetup.lua"});
             
         }
         [TestInitialize()]
@@ -62,7 +63,7 @@ namespace Yasb.Tests.Messaging.Redis
             //Assert It's the same message
             Assert.AreEqual(newEnvelope.Id, timeoutEnvelope.Id);
             //Second retrieval should yield timeout
-            Assert.AreEqual("Operation timed out", timeoutEnvelope.LastErrorMessage);
+            Assert.AreEqual("Operation Timed Out", timeoutEnvelope.LastErrorMessage);
         }
        [Ignore]
         [TestMethod]
@@ -74,6 +75,19 @@ namespace Yasb.Tests.Messaging.Redis
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
         }
+        [Ignore]
+       [TestMethod]
+       public void ShouldNotRetrieveSameMessageTwice()
+       {
+
+
+           MessageEnvelope newEnvelope = null;
+           var t1 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
+           var t2 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
+           var t3 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
+           Task.WaitAll(t1, t2, t3);
+           Assert.IsTrue(t1.Result && !t2.Result && !t3.Result || t2.Result && !t1.Result && !t3.Result || t3.Result && !t1.Result && !t2.Result);
+       }
         [Ignore]
         [TestMethod]
         public void MarkAsCompleteShouldRemoveMessageFromQueue()

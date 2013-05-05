@@ -5,6 +5,7 @@ using System.Text;
 using System.Messaging;
 using Yasb.Common.Messaging;
 using System.Transactions;
+using System.Threading.Tasks;
 
 namespace Yasb.Msmq.Messaging
 {
@@ -37,33 +38,48 @@ namespace Yasb.Msmq.Messaging
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
+            var tcs = new TaskCompletionSource<MessageEnvelope>();
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
-                var message = internalQueue.Peek();
-                var newEnvelope = message.Body as MessageEnvelope;
-                newEnvelope.RetriesNumber++;
-                if (newEnvelope.StartTime.HasValue && now.Subtract(newEnvelope.StartTime.Value) > timoutWindow)
+                Task<Message> ts = Task.Factory.FromAsync<Message>(internalQueue.BeginPeek(TimeSpan.FromMilliseconds(10)), internalQueue.EndPeek);
+                ts.ContinueWith(antecedent =>
                 {
-                    newEnvelope.LastErrorMessage = "Operation Timed Out";
-                }
-                else
-                {
-                    newEnvelope.Id = message.Id;
-                    newEnvelope.StartTimestamp = now.Ticks;
-                    envelope = WithMessageQueueTransaction(tx =>
+                    antecedent.Exception.Handle(e => {
+                        var mqe=e as MessageQueueException;
+                        return mqe!=null && mqe.MessageQueueErrorCode==MessageQueueErrorCode.IOTimeout; 
+                    });
+                    tcs.SetResult(null);
+                }, TaskContinuationOptions.OnlyOnFaulted);
+                ts.ContinueWith(t => {
+                    var message = t.Result;
+                    var newEnvelope = message.Body as MessageEnvelope;
+                    if (newEnvelope.StartTime.HasValue)
                     {
-                        var msg = internalQueue.ReceiveById(newEnvelope.Id,tx);
-                        if(newEnvelope.RetriesNumber>5)
+                        if (now.Subtract(newEnvelope.StartTime.Value) < timoutWindow)
                         {
-                            return null;
+                            tcs.SetResult(null);
+                            return;
                         }
+                        newEnvelope.LastErrorMessage = "Operation Timed Out";
+                    }
+                    else {
+                        newEnvelope.Id = message.Id;
+                    }
+                    tcs.SetResult(WithMessageQueueTransaction(tx =>
+                    {
+                        var msg = internalQueue.ReceiveById(message.Id, tx);
+                        if (newEnvelope.RetriesNumber >= 5) return null;
+                        newEnvelope.StartTimestamp = now.Ticks;
+                        newEnvelope.RetriesNumber++;
                         msg.CorrelationId = newEnvelope.Id;
                         msg.Body = newEnvelope;
                         internalQueue.Send(msg, tx);
                         return newEnvelope;
-                    });
-                }    
-                
+                    }));
+                }, TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                tcs.Task.Wait();
+                envelope = tcs.Task.Result;
             }
             return envelope!=null;
         }
@@ -71,14 +87,20 @@ namespace Yasb.Msmq.Messaging
        
         public void Push(MessageEnvelope envelope)
         {
-            envelope.Id = Guid.NewGuid().ToString();
+            envelope.Id = Guid.Empty.ToString();
             var message = new Message(envelope) { Formatter = _formatter };
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
                 internalQueue.Send(message, MessageQueueTransactionType.Single);
             }
         }
-
+        public void Clear()
+        {
+            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            {
+                internalQueue.Purge();
+            }
+        }
         private MessageEnvelope WithMessageQueueTransaction(Func<MessageQueueTransaction, MessageEnvelope> func)
         {
             using (var tx = new MessageQueueTransaction())

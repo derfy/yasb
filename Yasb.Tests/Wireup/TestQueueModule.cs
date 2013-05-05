@@ -43,7 +43,7 @@ namespace Yasb.Tests.Wireup
             return _queueFactory[string.Format("{0}:{1}", connection, queueName)].Object;
         }
     }
-    public class TestQueueModule : CommonModule<QueueConfiguration<TestConnection>>
+    public class TestQueueModule : ScopedModule<QueueConfiguration<TestConnection>>
     {
         private IQueueFactory _queueFactory;
         public TestQueueModule(IQueueFactory queueFactory,QueueConfiguration<TestConnection> queueConfiguration, string scope)

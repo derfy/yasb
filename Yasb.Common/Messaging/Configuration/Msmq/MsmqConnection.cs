@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging.Configuration;
 
-namespace Yasb.Msmq.Messaging
+namespace Yasb.Common.Messaging.Configuration.Msmq
 {
     public class MsmqConnection
     {

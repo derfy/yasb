@@ -36,8 +36,8 @@ namespace Yasb.Wireup
             {
                 var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
                 var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
-                return new SubscriptionService(componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection)), localEndPointInfo.QueueName);
-            }).InstancePerMatchingLifetimeScope(Scope);
+                return new SubscriptionService(componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection)));
+            });
         }
     }
    

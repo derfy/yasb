@@ -61,6 +61,16 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Yasb.Common\Yasb.Common.csproj">
+      <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
+      <Name>Yasb.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Yasb.Wireup\Yasb.Wireup.csproj">
+      <Project>{E90CB416-314A-4EA9-9B0A-1D6666644778}</Project>
+      <Name>Yasb.Wireup</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

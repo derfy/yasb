@@ -57,8 +57,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractConfigurator.cs" />
-    <Compile Include="RedisConfigurator.cs" />
     <Compile Include="CommonModule.cs" />
+    <Compile Include="RedisConfigurator.cs" />
+    <Compile Include="ScopedModule.cs" />
     <Compile Include="ContainerBuilderExtensions.cs" />
     <Compile Include="ExampleMessage.cs" />
     <Compile Include="MsmqConfigurator.cs" />

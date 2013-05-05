@@ -13,8 +13,8 @@ namespace Yasb.Tests.Wireup
     public class AutofacConfiguratorTest
     {
         private RedisConfigurator _sut =  new RedisConfigurator();
-        
-        
+
+        [Ignore]
         [TestMethod]
         public void ShouldBeAbleToCreateServiceBus()
         {
@@ -25,7 +25,7 @@ namespace Yasb.Tests.Wireup
                                             .WithMessageHandlersAssembly(typeof(TestMessage).Assembly));
             Assert.IsNotNull(serviceBus);
         }
-
+        [Ignore]
         [TestMethod]
         public void ShouldBeAbleToCreateQueue()
         {

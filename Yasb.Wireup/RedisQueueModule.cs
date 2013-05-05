@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 
 namespace Yasb.Wireup
 {
-    public class RedisQueueModule : CommonModule<QueueConfiguration<EndPoint>>
+    public class RedisQueueModule : ScopedModule<QueueConfiguration<EndPoint>>
     {
         public RedisQueueModule(QueueConfiguration<EndPoint> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
@@ -37,8 +37,7 @@ namespace Yasb.Wireup
                 var redisClientFactory = context.Resolve<RedisClientFactory>();
                 var redisClient = redisClientFactory(connection);
                 var scriptsCache = new ScriptsCache(redisClient);
-                scriptsCache.EnsureScriptCached("TryGetEnvelope.lua");
-                scriptsCache.EnsureScriptCached("SetMessageCompleted.lua");
+                scriptsCache.EnsureScriptsCached(new string[]{"TryGetEnvelope.lua", "SetMessageCompleted.lua"});
                 return scriptsCache;
             });
 
@@ -64,6 +63,7 @@ namespace Yasb.Wireup
             {
                 return endPoint => componentScope.Resolve<IScriptCache>(TypedParameter.From<EndPoint>(endPoint));
             }).InstancePerMatchingLifetimeScope(Scope);
+
         }
     }
 }

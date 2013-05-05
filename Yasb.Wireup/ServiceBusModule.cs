@@ -15,7 +15,7 @@ using Yasb.Common.Serialization;
 
 namespace Yasb.Wireup
 {
-    public class ServiceBusModule<TConnection> : CommonModule<ServiceBusConfiguration< TConnection>>
+    public class ServiceBusModule<TConnection> : ScopedModule<ServiceBusConfiguration< TConnection>>
     {
         public ServiceBusModule(ServiceBusConfiguration<TConnection> configuration)
             : base(configuration, "bus")
@@ -58,7 +58,7 @@ namespace Yasb.Wireup
                 return new ServiceBus(componentScope.Resolve<IWorker>(), componentScope.Resolve<IQueueFactory>(), componentScope.Resolve<ISubscriptionService>(), componentScope.Resolve<ITaskRunner>());
             }).InstancePerMatchingLifetimeScope(Scope);
 
-            builder.RegisterWithScope<JsonConverter>(componentScope => new MessageEnvelopeConverter());
+            
         }
     }
 }

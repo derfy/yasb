@@ -6,6 +6,7 @@ using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Serialization;
 using System.Messaging;
+using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {

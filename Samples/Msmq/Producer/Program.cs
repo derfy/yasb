@@ -3,73 +3,91 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yasb.Wireup;
-using Yasb.Msmq.Messaging.Configuration;
 using Yasb.Common.Messaging;
 using System.Threading.Tasks;
 using Yasb.Common.Tests;
 using System.Threading;
+using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Producer
 {
     class Program
     {
-        static void Main(string[] args)
+        private static readonly ManualResetEvent Reset = new ManualResetEvent(false);
+        private static long _lastWrite;
+        private static long _writeCount;
+        private static Timer _timer;
+        private static readonly object Sync = new object();
+
+        private static void Main(string[] args)
         {
-            var sut = new MsmqConfigurator().ConfigureQueue(e=>e.WithEndPoint("localConnection","test_msmq_local","queue1")
-                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost"))).CreateFromEndPointName("queue1");
-            //var localEndPoint = new BusEndPoint("localConnection:test_msmq_local");
-            //var remoteEndPoint = new BusEndPoint("localConnection:test_msmq_remote");
+            Console.WriteLine("Publisher");
+            Console.WriteLine("Press 'R' to Run, 'P' to Pause, 'X' to Exit ...");
 
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    var message = new TestMessage(i);
-            //    var messageEnvelope = new MessageEnvelope(message, localEndPoint, remoteEndPoint);
-            //    sut.Push(messageEnvelope);
-            //}
-           
-           //var converters = new List<JsonConverter>() {  new MessageEnvelopeConverter<MsmqEndPoint>() }.ToArray();
-           // var serializer = new Serializer(converters);
-           // var formatter = new JsonMessageFormatter<MessageEnvelope>(serializer);
-           // var sut = new MsmqQueue(localEndPoint, formatter);
-            // sut.Initialize();
-             
+            _timer = new Timer(TickTock, null, 1000, 1000);
 
-           // sut.TryGetEnvelope(DateTime.Now, new TimeSpan(0, 0, 50), out messageEnvelope);
-           // Assert.IsNotNull(messageEnvelope);
-           // sut.SetMessageCompleted(messageEnvelope.Id);
-           // sut.TryGetEnvelope(DateTime.Now, new TimeSpan(0, 0, 50), out messageEnvelope);
-           // Assert.IsNull(messageEnvelope);
-            var tasks = new Task[10000];
-            for (int i = 0; i < 10000; i++)
+            var t = new Thread(Run);
+            t.Start();
+
+            bool running = true;
+            while (running)
             {
-                tasks[i] = Task.Factory.StartNew((current) =>
+                if (!Console.KeyAvailable) continue;
+
+                ConsoleKeyInfo keypress = Console.ReadKey(true);
+                switch (keypress.Key)
                 {
-                    Thread.CurrentThread.Name = current.ToString();
-                    Dequeue(sut);
-                },i);
+                    case ConsoleKey.X:
+                        Reset.Reset();
+                        running = false;
+                        break;
+                    case ConsoleKey.P:
+                        Reset.Reset();
+                        Console.WriteLine("Paused ...");
+                        break;
+                    case ConsoleKey.R:
+                        Reset.Set();
+                        Console.WriteLine("Running ...");
+                        break;
+                }
             }
-            Task.WaitAll(tasks);
-            //Dequeue(sut);
-            //Task.Factory.StartNew(() =>
-            //{
-            //    Dequeue(sut);
-            //});
-            //Task.Factory.StartNew(() =>
-            //{
-            //    Dequeue(sut);
-            //});
+
+            t.Abort();
+        }
+        public static void Run()
+        {
+            var configurator = new MsmqConfigurator();
+            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(c => c.WithLocalEndPoint("LocalConnection", "msmq_producer")
+                                                                                .WithEndPoint("LocalConnection", "msmq_producer", "consumer"))
+                                               .ConfigureConnections<MsmqFluentConnectionConfigurer>(conn => conn.WithConnection("LocalConnection", "localhost")));
+
+            int i = 0;
+            bus.Run();
+            while (i < 5000)
+            {
+                Reset.WaitOne();
+                i++;
+
+                var message = new ExampleMessage(i, "I am Handler 1 ");
+                //bus.Send("consumer", message);
+                bus.Publish(message);
+                i++;
+                // bus.Send<ExampleMessage>("redis_consumer", message);
+                var message2 = new ExampleMessage2(i, "I am Handler 2");
+                bus.Publish(message2);
+                // bus.Send("consumer", message2);
+                Interlocked.Increment(ref _writeCount);
+            }
+
         }
 
-        private static void Dequeue(IQueue sut)
+        public static void TickTock(object state)
         {
-            MessageEnvelope env = null;
-            if (sut.TryDequeue(DateTime.Now, new TimeSpan(0, 0, 5), out env)) {
-                var message = env.Message as TestMessage;
-                Console.WriteLine(env.StartTimestamp);
-                sut.SetMessageCompleted(env.Id);
+            lock (Sync)
+            {
+                Console.WriteLine("Sent {0} (total {1})", _writeCount - _lastWrite, _writeCount);
+                _lastWrite = _writeCount;
             }
-           
         }
-        
     }
 }

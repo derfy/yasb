@@ -4,19 +4,21 @@ if queued then
 	local results = redis.call("HMGET","hqueue",envelope.Id..":completedTime",envelope.Id..":lastErrorMessage")
 	local completedTime=results[1] local lastErrorMessage=results[2]
 	if not completedTime then
-		envelope.RetriesNumber=envelope.RetriesNumber+1
-		envelope.LastErrorMessage=nil
-		if lastErrorMessage then
-			envelope.LastErrorMessage=lastErrorMessage
-		elseif envelope.StartTimestamp and tonumber(ARGV[1]) >  tonumber(envelope.StartTimestamp) then
-			envelope.LastErrorMessage="Operation timed out"
+		envelope.LastErrorMessage=lastErrorMessage
+		if envelope.StartTimestamp then 
+			if tonumber(ARGV[1]) >  tonumber(envelope.StartTimestamp) then
+				envelope.LastErrorMessage="Operation Timed Out"
+			else
+				redis.call('LPUSH',KEYS[1],queued)
+				return nil
+			end
 		end
-		if not envelope.StartTimestamp or envelope.LastErrorMessage then
+		if envelope.RetriesNumber < 5 then
+			envelope.RetriesNumber=envelope.RetriesNumber+1
 			envelope.StartTimestamp=ARGV[2]
 			local modifiedQueued = cjson.encode(envelope)
 			redis.call('LPUSH',KEYS[1],modifiedQueued)
 			return modifiedQueued
 		end
-		redis.call('LPUSH',KEYS[1],queued)
 	end
 end

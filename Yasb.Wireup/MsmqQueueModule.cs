@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using Autofac;
 using Yasb.Common.Messaging.Configuration;
-using Yasb.Msmq.Messaging.Configuration;
 using Yasb.Common.Messaging;
 using Yasb.Msmq.Messaging;
 using System.Messaging;
 using Yasb.Msmq.Messaging.Serialization;
 using Yasb.Common.Serialization;
+using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Wireup
 {
-    public class MsmqQueueModule : CommonModule<QueueConfiguration<MsmqConnection>>
+    public class MsmqQueueModule : ScopedModule<QueueConfiguration<MsmqConnection>>
     {
         public MsmqQueueModule(QueueConfiguration<MsmqConnection> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
