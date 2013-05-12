@@ -13,11 +13,10 @@ namespace Yasb.Common
     public class TaskRunner : ITaskRunner
     {
         private const int MaxRunningTasksNumber=3;
-        private BlockingCollection<Task> _runningTasks = new BlockingCollection<Task>(MaxRunningTasksNumber);
-        private int _runningTasksNumber = 0;
-        private object _locker=new object();
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private TaskFactory _taskFactory;
+
+        private SemaphoreSlim _resourcePool = new SemaphoreSlim(MaxRunningTasksNumber, MaxRunningTasksNumber);
         public TaskRunner(TaskScheduler taskSheduler)
         {
             _taskFactory = new TaskFactory(taskSheduler);
@@ -28,72 +27,65 @@ namespace Yasb.Common
         }
         public void Run(IWorker worker)
         {
-            CreateWorkersProducer(_tokenSource.Token,worker);
-            CreateWorkersConsumer(_tokenSource.Token);
-        }
-
-        private void CreateWorkersConsumer(CancellationToken token)
-        {
-            _taskFactory.StartNew(() =>
-            {
-                foreach (var task in _runningTasks.GetConsumingEnumerable())
-                {
-                    if (token.IsCancellationRequested)
-                        return;
-                    task.Start();
-                }
-            }, TaskCreationOptions.LongRunning);
-        }
-
-        private void CreateWorkersProducer(CancellationToken token, IWorker worker)
-        {
+            var token = _tokenSource.Token;
             _taskFactory.StartNew(() =>
             {
                 while (true)
                 {
                     if (token.IsCancellationRequested)
                         return;
-                    lock (_locker)
-                    {
-                        while (_runningTasksNumber < MaxRunningTasksNumber)
-                        {
-                            _runningTasks.Add(CreateRunningTask(token,worker));
-                            _runningTasksNumber++;
-                        }
-                        Monitor.Wait(_locker);
-                    }
-
+                    if(_resourcePool.CurrentCount==0)
+                        continue;
+                    StartWorker(worker);
+                   
                 }
-            }, TaskCreationOptions.LongRunning);
+            }, _tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+           
         }
 
-        private Task CreateRunningTask(CancellationToken token, IWorker worker)
+
+        public void StartWorker(IWorker worker)
         {
-            Task task = new Task(() =>
+            var token = _tokenSource.Token;
+            _taskFactory.StartNew(() =>
             {
-                worker.Execute(token);
-            }, token, TaskCreationOptions.LongRunning);
-            task.ContinueWith(faultedTask =>
+                try
+                {
+                    Console.WriteLine("Before  Wait " + _resourcePool.CurrentCount);
+                    _resourcePool.Wait(token);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                try
+                {
+                    worker.Execute(token);
+                }
+                finally
+                {
+
+                    _resourcePool.Release();
+                    Console.WriteLine("After  Release " + _resourcePool.CurrentCount);
+                }
+            }).ContinueWith(faultedTask =>
             {
-                faultedTask.Exception.Handle(ex => 
+                faultedTask.Exception.Handle(ex =>
                 {
                     worker.OnException(ex);
                     return true;
                 });
-               
-                lock (_locker)
-                {
-                    _runningTasksNumber--;
-                    Monitor.Pulse(_locker);
-                }
-            },TaskContinuationOptions.OnlyOnFaulted);
-            return task;
+            }, TaskContinuationOptions.OnlyOnFaulted); ;
         }
 
+
+      
 
         public void Stop()
         {
             _tokenSource.Cancel();
         }
+       
     }
 }
