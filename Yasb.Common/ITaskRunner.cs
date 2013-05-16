@@ -8,7 +8,7 @@ namespace Yasb.Common
 {
     public interface ITaskRunner
     {
-        void Run(IWorker worker);
+        void Run(Action<CancellationToken> workerAction, Action<Exception> faultedAction = null);
         void Stop();
     }
 }

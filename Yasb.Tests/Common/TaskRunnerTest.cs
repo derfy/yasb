@@ -22,36 +22,40 @@ namespace Yasb.Tests.Common
         [TestMethod]
         public void OnlyThreeWorkersShouldBeExecutedAtSameTime()
         {
-        
-            _sut = new TaskRunner();
-            var worker1 = new Mock<IWorker>();
-            worker1.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
-            {
 
+            CountdownEvent cde = new CountdownEvent(3);
+            _sut = new TaskRunner();
+            var worker = new Mock<IWorker>();
+            worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
+            {
+                cde.Signal();
                 while (true) { }
 
             });
-            _sut.StartWorker(worker1.Object);
-            _sut.StartWorker(worker1.Object);
-            _sut.StartWorker(worker1.Object);
-
-            _sut.StartWorker(worker1.Object);
-            Thread.Sleep(100);
-            worker1.Verify(w => w.Execute(It.IsAny<CancellationToken>()), Times.Exactly(3));
+            _sut.Run(worker.Object.Execute,worker.Object.OnException);
+            cde.Wait();
+            worker.Verify(w => w.Execute(It.IsAny<CancellationToken>()), Times.Exactly(3));
            
         }
 
         [TestMethod]
         public void WorkerShouldHandleException()
         {
-            var taskScheduler = new CurrentThreadTaskScheduler();
-            _sut = new TaskRunner(taskScheduler);
+            var mre = new ManualResetEventSlim();
+            _sut = new TaskRunner();
             var worker = new Mock<IWorker>();
             worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
             {
                 throw new Exception();
             });
-            _sut.StartWorker(worker.Object);
+            worker.Setup(w => w.OnException(It.IsAny<Exception>())).Callback((Exception t) =>
+            {
+                Console.WriteLine("jhfg");
+                mre.Set();
+                while (true) { }
+            });
+            _sut.CreateWorkerTask(worker.Object.Execute,worker.Object.OnException);
+            mre.Wait();
             worker.Verify(w=>w.Execute(It.IsAny<CancellationToken>()), Times.Once());
             worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Once());
         }
@@ -59,17 +63,18 @@ namespace Yasb.Tests.Common
         public void ShouldBeToStop()
         {
             _sut = new TaskRunner();
-            int calls = 0;
+            var mre = new ManualResetEventSlim();
             var worker = new Mock<IWorker>();
             worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
             {
-                calls++;
+                if (t.IsCancellationRequested)
+                    mre.Set();
 
             });
-            _sut.Run(worker.Object);
+            _sut.Run(worker.Object.Execute,worker.Object.OnException);
            _sut.Stop();
-            Thread.Sleep(500);
-            worker.Verify(w => w.Execute(It.IsAny<CancellationToken>()), Times.Exactly(calls));
+           mre.Wait();
+           Assert.IsTrue(mre.IsSet);
         }
     }
 }

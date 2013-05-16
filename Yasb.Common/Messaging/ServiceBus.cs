@@ -65,7 +65,7 @@ namespace Yasb.Common.Messaging
         
         public void Run()
         {
-            _taskRunner.Run(_messagesReceiver);
+            _taskRunner.Run(_messagesReceiver.Execute,_messagesReceiver.OnException);
         }
 
        

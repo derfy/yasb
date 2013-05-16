@@ -14,71 +14,34 @@ namespace Yasb.Common
     {
         private const int MaxRunningTasksNumber=3;
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
-        private TaskFactory _taskFactory;
+        private TaskFactory _taskFactory=new TaskFactory();
 
-        private SemaphoreSlim _resourcePool = new SemaphoreSlim(MaxRunningTasksNumber, MaxRunningTasksNumber);
-        public TaskRunner(TaskScheduler taskSheduler)
+        public void Run(Action<CancellationToken> workerAction, Action<Exception> faultedAction = null)
         {
-            _taskFactory = new TaskFactory(taskSheduler);
+            Parallel.For(0, MaxRunningTasksNumber, index => CreateWorkerTask(workerAction, faultedAction));
+               
         }
-        public TaskRunner():this(TaskScheduler.Default)
-        {
 
-        }
-        public void Run(IWorker worker)
+
+        public void CreateWorkerTask(Action<CancellationToken> workerAction, Action<Exception> faultedAction = null)
         {
             var token = _tokenSource.Token;
-            _taskFactory.StartNew(() =>
-            {
-                while (true)
-                {
-                    if (token.IsCancellationRequested)
-                        return;
-                    if(_resourcePool.CurrentCount==0)
-                        continue;
-                    StartWorker(worker);
-                   
-                }
-            }, _tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-           
-        }
-
-
-        public void StartWorker(IWorker worker)
-        {
-            var token = _tokenSource.Token;
-            _taskFactory.StartNew(() =>
-            {
-                try
-                {
-                    Console.WriteLine("Before  Wait " + _resourcePool.CurrentCount);
-                    _resourcePool.Wait(token);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-
-                try
-                {
-                    worker.Execute(token);
-                }
-                finally
-                {
-
-                    _resourcePool.Release();
-                    Console.WriteLine("After  Release " + _resourcePool.CurrentCount);
-                }
-            }).ContinueWith(faultedTask =>
+            if (token.IsCancellationRequested)
+                return;
+            _taskFactory.StartNew(() =>workerAction(token), token)
+            .ContinueWith(faultedTask =>
             {
                 faultedTask.Exception.Handle(ex =>
                 {
-                    worker.OnException(ex);
+                    if (faultedAction != null)
+                    {
+                        faultedAction(ex);
+                    }
                     return true;
                 });
-            }, TaskContinuationOptions.OnlyOnFaulted); ;
+            }, TaskContinuationOptions.OnlyOnFaulted)
+            .ContinueWith(t => CreateWorkerTask(workerAction,faultedAction), token);
         }
-
 
       
 
