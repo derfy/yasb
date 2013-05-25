@@ -8,8 +8,11 @@ namespace Yasb.Common.Tests
 {
     public class TestMessage : IMessage
     {
-        public TestMessage()
+        public TestMessage(string value)
         {
+            Value = value;
         }
+
+        public string Value { get; set; }
     }
 }

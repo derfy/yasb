@@ -31,8 +31,8 @@ namespace Yasb.Tests.Messaging
         [TestMethod]
         public void ShouldBeAbleToPush()
         {
-            
-            var envelope = new MessageEnvelope(new TestMessage(), "localConnection:foo", "localConnection:bar");
+
+            var envelope = new MessageEnvelope(new TestMessage("This is a test"), "localConnection:foo", "localConnection:bar",DateTimeOffset.UtcNow.Ticks);
             
             var bytes = Encoding.Default.GetBytes("foo");
             _serializerMock.Setup(c => c.Serialize(envelope)).Returns(bytes);
@@ -46,7 +46,7 @@ namespace Yasb.Tests.Messaging
         public void ShouldBeAbleToDequeue()
         {
             MessageEnvelope newEnvelope = null;
-            var envelope = new MessageEnvelope(new TestMessage(), "localConnection:foo", "localConnection:bar");
+            var envelope = new MessageEnvelope(new TestMessage("This is a test"), "localConnection:foo", "localConnection:bar", DateTimeOffset.UtcNow.Ticks);
             byte[] script1 = Encoding.Default.GetBytes("foo");
             var now=DateTime.Now;
             var timoutWindow = new TimeSpan();

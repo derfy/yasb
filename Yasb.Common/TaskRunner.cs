@@ -40,10 +40,8 @@ namespace Yasb.Common
                     return true;
                 });
             }, TaskContinuationOptions.OnlyOnFaulted)
-            .ContinueWith(t => CreateWorkerTask(workerAction,faultedAction), token);
+            .ContinueWith(t => CreateWorkerTask(workerAction,faultedAction), token,TaskContinuationOptions.ExecuteSynchronously,TaskScheduler.Default);
         }
-
-      
 
         public void Stop()
         {

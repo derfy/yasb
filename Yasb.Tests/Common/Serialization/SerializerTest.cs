@@ -22,10 +22,10 @@ namespace Yasb.Tests.Common.Serialization
         public void CanSerialize()
         {
             var sut = new Serializer(new JsonConverter[]{});
-            var graph = new TestMessage();
+            var graph = new TestMessage("foo");
             Byte[] array = sut.Serialize<TestMessage>(graph);
             var result=System.Text.Encoding.Default.GetString(array);
-            Assert.AreEqual("{}", result);
+            Assert.AreEqual("{\"Value\":\"foo\"}", result);
         }
 
 

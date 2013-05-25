@@ -13,11 +13,12 @@ namespace Yasb.Common.Messaging
 
         }
 
-        public MessageEnvelope(IMessage message, string from, string to)
+        public MessageEnvelope(IMessage message, string from, string to, long lastCreateOrUpdateTimestamp)
         {
             Message = message;
             From = from;
             To = to;
+            LastCreateOrUpdateTimestamp = lastCreateOrUpdateTimestamp;
         }
         public IMessage Message { get; private set; }
 
@@ -33,6 +34,8 @@ namespace Yasb.Common.Messaging
 
         public string LastErrorMessage { get; set; }
 
+        public long LastCreateOrUpdateTimestamp { get; set; }
+        
         public DateTime? StartTime { get {
             if (!StartTimestamp.HasValue)
                 return null;

@@ -68,6 +68,7 @@
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
     <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
+    <Compile Include="Messaging\Integration\MongoDb\MongoDbQueueTest.cs" />
     <Compile Include="Messaging\Integration\Msmq\MsmqQueueTest.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisConfiguratorExtensions.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisQueueTest.cs" />
@@ -91,6 +92,10 @@
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">
       <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
       <Name>Yasb.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Yasb.MongoDb.Messaging\Yasb.MongoDb.Messaging.csproj">
+      <Project>{631706D4-455A-480D-8C3D-B37F5702F174}</Project>
+      <Name>Yasb.MongoDb.Messaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\Yasb.Msmq.Messaging\Yasb.Msmq.Messaging.csproj">
       <Project>{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}</Project>

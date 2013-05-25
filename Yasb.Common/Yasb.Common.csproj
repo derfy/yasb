@@ -60,6 +60,8 @@
     </Compile>
     <Compile Include="Messaging\Configuration\FluentConnectionConfigurer.cs" />
     <Compile Include="Messaging\Configuration\IConnectionConfigurer.cs" />
+    <Compile Include="Messaging\Configuration\MongoDb\MongoDbConnection.cs" />
+    <Compile Include="Messaging\Configuration\MongoDb\MongoDbFluentConnectionConfigurer.cs" />
     <Compile Include="Messaging\Configuration\Msmq\MsmqConnection.cs" />
     <Compile Include="Messaging\Configuration\Msmq\MsmqFluentConnectionConfigurer.cs" />
     <Compile Include="Messaging\Configuration\QueueConfiguration.cs" />

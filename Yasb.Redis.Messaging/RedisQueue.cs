@@ -45,6 +45,10 @@ namespace Yasb.Redis.Messaging
             _redisClient.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
         }
 
+        public void SetMessageInError(string envelopeId,string errorMessage)
+        {
+            throw new NotImplementedException();
+        }
 
         public void Push(MessageEnvelope envelope)
         {
@@ -62,6 +66,9 @@ namespace Yasb.Redis.Messaging
         { }
 
 
-       
+
+
+
+        
     }
 }

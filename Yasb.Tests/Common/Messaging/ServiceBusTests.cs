@@ -49,7 +49,7 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void WhenSendingMessageSenderShouldBeInvokedCorrectly()
         {
-             var message=new TestMessage();
+             var message=new TestMessage("foo");
              _sut.Send("producer", message);
              _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message == message && e.To.Equals("192.168.127.128:6379:producer"))), Times.Once());
       
@@ -67,7 +67,7 @@ namespace Yasb.Tests.Common.Messaging
 
             _subscriptionService.Setup(s => s.GetSubscriptionEndPoints(typeof(TestMessage).FullName)).Returns(new string[] { "192.168.127.128:6379:consumer", "192.168.127.128:6379:producer" });
           
-            var message = new TestMessage();
+            var message = new TestMessage("foo");
              _sut.Publish(message);
              _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message == message && e.From.Equals("192.168.127.128:6379:consumer") && e.To.Equals("192.168.127.128:6379:consumer"))), Times.Once());
              _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(It.Is<MessageEnvelope>(e => e.Message == message && e.From.Equals("192.168.127.128:6379:consumer") && e.To.Equals("192.168.127.128:6379:producer"))), Times.Once());

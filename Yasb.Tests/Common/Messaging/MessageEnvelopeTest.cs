@@ -23,10 +23,10 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldGetCorrectTypeName()
         {
-            var message=new TestMessage();
+            var message=new TestMessage("foo");
             var fromEndPoint = "myConnection:myQueue";
             var toEndPoint = "myConnection:myQueue";
-            var envelope = new MessageEnvelope(message,  fromEndPoint, toEndPoint);
+            var envelope = new MessageEnvelope(message,  fromEndPoint, toEndPoint,DateTimeOffset.UtcNow.Ticks);
             Assert.AreEqual(typeof(TestMessage), envelope.ContentType);
         }
     }

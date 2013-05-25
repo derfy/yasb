@@ -27,6 +27,7 @@ namespace Yasb.Tests.Common.Serialization
         [TestMethod]
         public void ShouldBeDeserialized()
         {
+            var lastCreateOrUpdateTimestamp = DateTimeOffset.Now.Ticks;
             var fromEndPoint = "from:fromQueue";
             var toEndPoint = "Value:to:toQueue";
             var contentType = "Yasb.Common.Tests.TestMessage, Yasb.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null";
@@ -37,7 +38,8 @@ namespace Yasb.Tests.Common.Serialization
                new JProperty("ContentType", contentType),
                new JProperty("Message", message),
                new JProperty("From", fromEndPoint),
-               new JProperty("To", toEndPoint)
+               new JProperty("To", toEndPoint),
+               new JProperty("LastCreateOrUpdateTimestamp", lastCreateOrUpdateTimestamp)
             );
            
             var reader = new JTokenReader(jsonObject);
@@ -46,8 +48,9 @@ namespace Yasb.Tests.Common.Serialization
             var result = sut.ReadJson(reader, typeof(MessageEnvelope), null, serializer.Object) as MessageEnvelope;
             Assert.AreEqual(id, result.Id);
             Assert.AreEqual(typeof(TestMessage), result.ContentType);
-            Assert.AreEqual(fromEndPoint.GetType(), result.From.GetType());
-            Assert.AreEqual(toEndPoint.GetType(), result.To.GetType());
+            Assert.AreEqual(fromEndPoint, result.From);
+            Assert.AreEqual(toEndPoint, result.To);
+            Assert.AreEqual(lastCreateOrUpdateTimestamp, result.LastCreateOrUpdateTimestamp);
         }
 
         private static Mock<JsonSerializer> CreateSerializerMock()

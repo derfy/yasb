@@ -63,14 +63,16 @@ namespace Producer
 
             int i = 0;
             bus.Run();
+            
+
+           
             while (i < 5000)
             {
                 Reset.WaitOne();
                 i++;
-
                 var message = new ExampleMessage(i, "I am Handler 1 ");
                 //bus.Send("consumer", message);
-                bus.Publish(message);
+                bus.Publish(message); 
                 i++;
                 // bus.Send<ExampleMessage>("redis_consumer", message);
                 var message2 = new ExampleMessage2(i, "I am Handler 2");

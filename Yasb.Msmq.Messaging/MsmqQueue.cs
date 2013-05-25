@@ -30,56 +30,86 @@ namespace Yasb.Msmq.Messaging
         {
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
-                internalQueue.ReceiveByCorrelationId(envelopeId,MessageQueueTransactionType.Single);
+                WithMessageQueueTransaction(tx =>
+                {
+                    //Console.WriteLine("Completing " + envelopeId);
+                    var msg=internalQueue.ReceiveByCorrelationId(envelopeId, tx);
+                    var env=msg.Body as MessageEnvelope;
+                    //Console.WriteLine(string.Format("Completed {0} after number of retries {1} ", envelopeId, env.RetriesNumber));
+                    return null;
+                });
             }
         }
 
-
+        public void SetMessageInError(string envelopeId,string errorMessage)
+        {
+            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            {
+                WithMessageQueueTransaction(tx =>
+                {
+                    var msg = internalQueue.ReceiveByCorrelationId(envelopeId, tx);
+                    var env = msg.Body as MessageEnvelope;
+                    env.StartTimestamp = null;
+                    env.LastErrorMessage = errorMessage;
+                    internalQueue.Send(msg, tx);
+                    Console.WriteLine(string.Format("Set error message for {0} after number of retries {1} ", envelopeId,env.RetriesNumber));
+                    return null;
+                });
+            }
+        }
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            var tcs = new TaskCompletionSource<MessageEnvelope>();
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
                 Task<Message> ts = Task.Factory.FromAsync<Message>(internalQueue.BeginPeek(TimeSpan.FromMilliseconds(10)), internalQueue.EndPeek);
-                ts.ContinueWith(antecedent =>
+                var onCompletionTask = ts.ContinueWith<MessageEnvelope>(t =>
                 {
-                    antecedent.Exception.Handle(e => {
-                        var mqe=e as MessageQueueException;
-                        return mqe!=null && mqe.MessageQueueErrorCode==MessageQueueErrorCode.IOTimeout; 
-                    });
-                    tcs.SetResult(null);
-                }, TaskContinuationOptions.OnlyOnFaulted);
-                ts.ContinueWith(t => {
-                    var message = t.Result;
-                    var newEnvelope = message.Body as MessageEnvelope;
-                    if (newEnvelope.StartTime.HasValue)
+                    if (t.Exception != null)
                     {
-                        if (now.Subtract(newEnvelope.StartTime.Value) < timoutWindow)
+                        t.Exception.Handle(e =>
                         {
-                            tcs.SetResult(null);
-                            return;
+                            var mqe = e as MessageQueueException;
+                            return mqe != null && mqe.MessageQueueErrorCode == MessageQueueErrorCode.IOTimeout;
+                        });
+                        return null;
+                    }
+                    var message = t.Result;
+                    var env = message.Body as MessageEnvelope;
+
+
+                    if (env.StartTime.HasValue)
+                    {
+                        if (now.Subtract(env.StartTime.Value) < timoutWindow)
+                        {
+                            return WithMessageQueueTransaction(tx =>
+                            {
+                                internalQueue.Send(message, tx);
+                                internalQueue.ReceiveById(message.Id, tx);
+                                return null;
+                            });
                         }
-                        newEnvelope.LastErrorMessage = "Operation Timed Out";
+                        env.LastErrorMessage = "Operation Timed Out";
                     }
-                    else {
-                        newEnvelope.Id = message.Id;
-                    }
-                    tcs.SetResult(WithMessageQueueTransaction(tx =>
+
+                    env.StartTimestamp = now.Ticks;
+                    env.RetriesNumber++;
+                    return WithMessageQueueTransaction(tx =>
                     {
                         var msg = internalQueue.ReceiveById(message.Id, tx);
-                        if (newEnvelope.RetriesNumber >= 5) return null;
-                        newEnvelope.StartTimestamp = now.Ticks;
-                        newEnvelope.RetriesNumber++;
-                        msg.CorrelationId = newEnvelope.Id;
-                        msg.Body = newEnvelope;
+                        if (env.RetriesNumber >= 5) {
+                            Console.WriteLine("Thrashing " + env.Id);
+                            return null; 
+                        }
+                        msg.CorrelationId = env.Id;
+                        msg.Body = env;
                         internalQueue.Send(msg, tx);
-                        return newEnvelope;
-                    }));
-                }, TaskContinuationOptions.OnlyOnRanToCompletion);
-
-                tcs.Task.Wait();
-                envelope = tcs.Task.Result;
+                        return env;
+                    });
+                });
+                onCompletionTask.Wait();
+                envelope = onCompletionTask.Result;
+               
             }
             return envelope!=null;
         }
@@ -87,10 +117,11 @@ namespace Yasb.Msmq.Messaging
        
         public void Push(MessageEnvelope envelope)
         {
-            envelope.Id = Guid.Empty.ToString();
+            envelope.Id = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
             var message = new Message(envelope) { Formatter = _formatter };
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
+               
                 internalQueue.Send(message, MessageQueueTransactionType.Single);
             }
         }
@@ -125,6 +156,9 @@ namespace Yasb.Msmq.Messaging
 
 
         public string LocalEndPoint { get; private set; }
+
+
+        
     }
     
 }

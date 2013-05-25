@@ -57,7 +57,7 @@ namespace Yasb.Common.Messaging
             var handlerException = ex as MessageHandlerException;
             if (handlerException == null)
                 return;
-            Console.WriteLine("error on processing message : " + handlerException.Message);
+            _queue.SetMessageInError(handlerException.EnvelopeId,handlerException.StackTrace);
         }
 
         public void Dispose()

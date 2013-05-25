@@ -5,19 +5,19 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{E90CB416-314A-4EA9-9B0A-1D6666644778}</ProjectGuid>
+    <ProjectGuid>{631706D4-455A-480D-8C3D-B37F5702F174}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Yasb.Wireup</RootNamespace>
-    <AssemblyName>Yasb.Wireup</AssemblyName>
+    <RootNamespace>Yasb.MongoDb.Messaging</RootNamespace>
+    <AssemblyName>Yasb.MongoDb.Messaging</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,18 +37,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac">
-      <HintPath>..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\mongocsharpdriver.1.8.1\lib\net35\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Configuration">
-      <HintPath>..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\mongocsharpdriver.1.8.1\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Messaging" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -56,25 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractConfigurator.cs" />
-    <Compile Include="MongoDbConfigurator.cs" />
-    <Compile Include="CommonModule.cs" />
-    <Compile Include="MongoDbQueueModule.cs" />
-    <Compile Include="MongoDbServiceBusModule.cs" />
-    <Compile Include="RedisConfigurator.cs" />
-    <Compile Include="ScopedModule.cs" />
-    <Compile Include="ContainerBuilderExtensions.cs" />
-    <Compile Include="ExampleMessage.cs" />
-    <Compile Include="MsmqConfigurator.cs" />
-    <Compile Include="MsmqQueueModule.cs" />
-    <Compile Include="MsmqServiceBusModule.cs" />
+    <Compile Include="MongoDbMessageEnvelope.cs" />
+    <Compile Include="MongoDbQueue.cs" />
+    <Compile Include="MongoDbQueueFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="OneInstancePerKeyObjectRegistrationSource.cs" />
-    <Compile Include="RedisServiceBusModule.cs" />
-    <Compile Include="RedisQueueModule.cs" />
-    <Compile Include="ServiceBusModule.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Serialization\MongoDbSerializer.cs" />
+    <Compile Include="Serialization\SerializerRegisterer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -84,21 +67,9 @@
       <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
       <Name>Yasb.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Yasb.MongoDb.Messaging\Yasb.MongoDb.Messaging.csproj">
-      <Project>{631706D4-455A-480D-8C3D-B37F5702F174}</Project>
-      <Name>Yasb.MongoDb.Messaging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yasb.Msmq.Messaging\Yasb.Msmq.Messaging.csproj">
-      <Project>{BC69B03F-AB3C-40D9-85F3-94BA03D4A38C}</Project>
-      <Name>Yasb.Msmq.Messaging</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Yasb.Redis.Messaging\Yasb.Redis.Messaging.csproj">
-      <Project>{603CF365-A1F5-42C5-A78B-DA6EC1F61223}</Project>
-      <Name>Yasb.Redis.Messaging</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

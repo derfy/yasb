@@ -33,12 +33,12 @@ namespace Yasb.Wireup
             Console.WriteLine(string.Format("{0} {1}",message.Name,message.Number));
 
             Interlocked.Increment(ref _readCount);
-          //  throw new Exception("bla bla");
         }
 
         public void Handle(ExampleMessage2 message)
         {
             Thread.Sleep(5);
+           // throw new Exception("bu bu");
             Console.WriteLine(string.Format("{0} {1}", message.Name, message.Number));
             Interlocked.Increment(ref _readCount);
         }

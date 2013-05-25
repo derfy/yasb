@@ -46,9 +46,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Tests", "Yasb.Tests\Ya
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.Redis.Messaging", "Yasb.Redis.Messaging\Yasb.Redis.Messaging.csproj", "{603CF365-A1F5-42C5-A78B-DA6EC1F61223}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yasb.MongoDb.Messaging", "Yasb.MongoDb.Messaging\Yasb.MongoDb.Messaging.csproj", "{631706D4-455A-480D-8C3D-B37F5702F174}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MongoDb", "MongoDb", "{D34EB102-92B4-4ACE-95A8-E738A6C9C1A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Consumer\Consumer.csproj", "{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 10
+		SccNumberOfProjects = 12
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://derfy.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -84,6 +90,13 @@ Global
 		SccProjectUniqueName9 = Yasb.Redis.Messaging\\Yasb.Redis.Messaging.csproj
 		SccProjectName9 = Yasb.Redis.Messaging
 		SccLocalPath9 = Yasb.Redis.Messaging
+		SccProjectUniqueName10 = Yasb.MongoDb.Messaging\\Yasb.MongoDb.Messaging.csproj
+		SccProjectName10 = Yasb.MongoDb.Messaging
+		SccLocalPath10 = Yasb.MongoDb.Messaging
+		SccProjectUniqueName11 = Consumer\\Consumer.csproj
+		SccProjectTopLevelParentUniqueName11 = Yasb.sln
+		SccProjectName11 = Consumer
+		SccLocalPath11 = Consumer
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Yasb1.vsmdi
@@ -187,6 +200,26 @@ Global
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{603CF365-A1F5-42C5-A78B-DA6EC1F61223}.Release|x86.ActiveCfg = Release|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{631706D4-455A-480D-8C3D-B37F5702F174}.Release|x86.ActiveCfg = Release|Any CPU
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Debug|x86.ActiveCfg = Debug|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Debug|x86.Build.0 = Debug|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|Any CPU.ActiveCfg = Release|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|Mixed Platforms.Build.0 = Release|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|x86.ActiveCfg = Release|x86
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,11 +227,13 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{FB571631-C2BD-4AFD-9593-832AFC2ED073} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
 		{57E4AFD6-BDF3-461B-8E13-CED780B38877} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
+		{D34EB102-92B4-4ACE-95A8-E738A6C9C1A4} = {D0587567-2196-4EA4-8BD1-1B57B896DBCE}
 		{A56B3C70-51BC-4C17-89BD-FED1702653B4} = {FE5F9150-412F-46CC-98CC-43B41AE7BD12}
 		{AA996963-9884-4751-A688-0EF25622570C} = {FE5F9150-412F-46CC-98CC-43B41AE7BD12}
 		{852BE587-E84A-4959-84C3-93EA7868E03B} = {FB571631-C2BD-4AFD-9593-832AFC2ED073}
 		{1B172FFE-B08B-4BE9-85B7-7F44F0CBDAC9} = {FB571631-C2BD-4AFD-9593-832AFC2ED073}
 		{6B3C7A16-E9A7-491E-993C-012174EDAE4F} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
 		{77622DD5-059A-4223-B82D-D1509EFB5F19} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
+		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE} = {D34EB102-92B4-4ACE-95A8-E738A6C9C1A4}
 	EndGlobalSection
 EndGlobal
