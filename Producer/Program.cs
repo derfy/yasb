@@ -6,19 +6,19 @@ using System.Threading;
 using Yasb.Wireup;
 using Yasb.Common.Messaging.Configuration.MongoDb;
 
-namespace Consumer
+namespace Producer
 {
     class Program
     {
         private static readonly ManualResetEvent Reset = new ManualResetEvent(false);
-        private static long _lastRead;
-        private static long _readCount;
-        private static System.Threading.Timer _timer;
+        private static long _lastWrite;
+        private static long _writeCount;
+        private static Timer _timer;
         private static readonly object Sync = new object();
 
         private static void Main(string[] args)
         {
-            Console.WriteLine("Subscriber");
+            Console.WriteLine("Publisher");
             Console.WriteLine("Press 'R' to Run, 'P' to Pause, 'X' to Exit ...");
 
             _timer = new Timer(TickTock, null, 1000, 1000);
@@ -51,28 +51,41 @@ namespace Consumer
 
             t.Abort();
         }
-
         public static void Run()
         {
             var configurator = new MongoDbConfigurator();
-            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ep => ep.WithLocalEndPoint("vmEndPoint", "msmq_consumer")
-                                                                                  .WithEndPoint("vmEndPoint", "msmq_producer", "producer"))
-                                               .ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test"))
-                                               .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly));
+            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(c => c.WithLocalEndPoint("vmEndPoint", "msmq_producer")
+                                                                                .WithEndPoint("vmEndPoint", "msmq_producer", "consumer"))
+                                               .ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test")));
 
-
-
-            bus.Subscribe<ExampleMessage>("producer");
-            bus.Subscribe<ExampleMessage2>("producer");
+            int i = 0;
             bus.Run();
+
+
+
+            while (i < 5000)
+            {
+                Reset.WaitOne();
+                i++;
+                var message = new ExampleMessage(i, "I am Handler 1 ");
+                //bus.Send("consumer", message);
+                bus.Publish(message);
+                i++;
+                // bus.Send<ExampleMessage>("redis_consumer", message);
+                var message2 = new ExampleMessage2(i, "I am Handler 2");
+                bus.Publish(message2);
+                // bus.Send("consumer", message2);
+                Interlocked.Increment(ref _writeCount);
+            }
+
         }
 
         public static void TickTock(object state)
         {
             lock (Sync)
             {
-                Console.WriteLine("Received {0} (total {1})", ExampleMessageHandler.ReadCount - _lastRead, ExampleMessageHandler.ReadCount);
-                _lastRead = ExampleMessageHandler.ReadCount;
+                Console.WriteLine("Sent {0} (total {1})", _writeCount - _lastWrite, _writeCount);
+                _lastWrite = _writeCount;
             }
         }
     }

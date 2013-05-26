@@ -52,9 +52,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MongoDb", "MongoDb", "{D34E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer", "Consumer\Consumer.csproj", "{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Producer", "Producer\Producer.csproj", "{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 12
+		SccNumberOfProjects = 13
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://derfy.visualstudio.com/defaultcollection
 		SccLocalPath0 = .
@@ -97,6 +99,10 @@ Global
 		SccProjectTopLevelParentUniqueName11 = Yasb.sln
 		SccProjectName11 = Consumer
 		SccLocalPath11 = Consumer
+		SccProjectUniqueName12 = Producer\\Producer.csproj
+		SccProjectTopLevelParentUniqueName12 = Yasb.sln
+		SccProjectName12 = Producer
+		SccLocalPath12 = Producer
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Yasb1.vsmdi
@@ -220,6 +226,16 @@ Global
 		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|Mixed Platforms.Build.0 = Release|x86
 		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|x86.ActiveCfg = Release|x86
 		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE}.Release|x86.Build.0 = Release|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Debug|x86.ActiveCfg = Debug|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Debug|x86.Build.0 = Debug|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Release|Any CPU.ActiveCfg = Release|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Release|x86.ActiveCfg = Release|x86
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -235,5 +251,6 @@ Global
 		{6B3C7A16-E9A7-491E-993C-012174EDAE4F} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
 		{77622DD5-059A-4223-B82D-D1509EFB5F19} = {57E4AFD6-BDF3-461B-8E13-CED780B38877}
 		{67A2FF54-FBB3-4518-936E-3CD14F6C8ADE} = {D34EB102-92B4-4ACE-95A8-E738A6C9C1A4}
+		{9972F50E-6E1C-4F4A-8A18-90B64207BD5D} = {D34EB102-92B4-4ACE-95A8-E738A6C9C1A4}
 	EndGlobalSection
 EndGlobal

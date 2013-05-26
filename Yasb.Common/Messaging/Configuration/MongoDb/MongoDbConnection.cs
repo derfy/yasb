@@ -7,7 +7,7 @@ namespace Yasb.Common.Messaging.Configuration.MongoDb
 {
     public class MongoDbConnection
     {
-        public MongoDbConnection(string host,string database, int port)
+        public MongoDbConnection(string host,string database, int port=27017)
         {
             Database = database;
             this.Host = host;

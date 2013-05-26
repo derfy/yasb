@@ -52,7 +52,6 @@ namespace Yasb.Msmq.Messaging
                     env.StartTimestamp = null;
                     env.LastErrorMessage = errorMessage;
                     internalQueue.Send(msg, tx);
-                    Console.WriteLine(string.Format("Set error message for {0} after number of retries {1} ", envelopeId,env.RetriesNumber));
                     return null;
                 });
             }
@@ -98,7 +97,6 @@ namespace Yasb.Msmq.Messaging
                     {
                         var msg = internalQueue.ReceiveById(message.Id, tx);
                         if (env.RetriesNumber >= 5) {
-                            Console.WriteLine("Thrashing " + env.Id);
                             return null; 
                         }
                         msg.CorrelationId = env.Id;

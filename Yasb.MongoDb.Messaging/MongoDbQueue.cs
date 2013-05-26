@@ -7,6 +7,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson.Serialization;
+using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
@@ -15,15 +16,11 @@ namespace Yasb.MongoDb.Messaging
        
         private MongoCollection<BsonDocument> _collection;
         private const string TimeOutError = "Operation Timed Out";
-        private MongoDatabase _database;
-        private string _queueName;
-      
-        public MongoDbQueue(MongoDatabase database, string queueName)
+
+        public MongoDbQueue(MongoDbConnection connection, string queueName)
         {
-            this._database = database;
-            this._queueName = queueName;
-            InitializeCollection();
-            LocalEndPoint = _collection.FullName;
+            InitializeCollection(connection,queueName);
+            LocalEndPoint = string.Format("{0}:{1}:{2}",connection.Host,connection.Database,queueName);
         }
 
        
@@ -56,7 +53,7 @@ namespace Yasb.MongoDb.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            throw new NotImplementedException();
+            _collection.Remove(Query.EQ("_id", envelopeId));
         }
         public void SetMessageInError(string envelopeId, string errorMessage)
         {
@@ -71,18 +68,18 @@ namespace Yasb.MongoDb.Messaging
         }
         public void Clear()
         {
-            _collection.Drop();
-            InitializeCollection();
+            _collection.RemoveAll();
         }
         public string LocalEndPoint { get; private set; }
-        
-        private void InitializeCollection()
+
+        private void InitializeCollection(MongoDbConnection connection, string queueName)
         {
-            if (!_database.CollectionExists(_queueName))
+            var database = MongoDbFactory.CreateDatabase(connection);
+            if (!database.CollectionExists(queueName))
             {
-                _database.CreateCollection(_queueName);
+               database.CreateCollection(queueName);
             }
-            _collection = _database.GetCollection(_queueName);
+            _collection = database.GetCollection(queueName);
         }
 
 
