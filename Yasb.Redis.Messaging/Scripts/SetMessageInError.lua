@@ -1,0 +1,1 @@
+﻿redis.call("HSET","hqueue",KEYS[1]..":lastErrorMessage",ARGV[1])

@@ -11,9 +11,7 @@ namespace Yasb.Common.Messaging
         void SetMessageCompleted(string envelopeId);
         void SetMessageInError(string envelopeId,string errorMessage);
         void Push(MessageEnvelope envelope);
-
+        void Clear();
         string LocalEndPoint { get; }
-
-        
     }
 }

@@ -31,10 +31,7 @@ namespace Yasb.Redis.Messaging.Client
             get { return _socketClient.Address; }
         }
 
-        private byte[] Load(string script){
-            
-            return SendCommand<byte[]>(RedisCommand.Load(script));
-        }
+       
 
         public virtual byte[] EvalSha(string fileName, int noKeys, params string[] keys)
         {
@@ -46,7 +43,12 @@ namespace Yasb.Redis.Messaging.Client
             return EvalSha(scriptSha, noKeys, keys);
         }
 
-
+        public byte[] Del(string key)
+        {
+            if (key == null)
+                throw new ArgumentNullException("key");
+            return SendCommand<byte[]>(RedisCommand.Del(key));
+        }
        
 
 

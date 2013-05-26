@@ -38,7 +38,7 @@ namespace Yasb.Tests.Messaging.Redis
         [TestInitialize()]
         public void BeforeTest()
         {
-           _redisClient.EvalSha("TestSetup.lua", 0);
+            _redisClient.Del("queue_test");
             
         }
         [Ignore]

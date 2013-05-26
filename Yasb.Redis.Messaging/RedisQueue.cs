@@ -47,7 +47,7 @@ namespace Yasb.Redis.Messaging
 
         public void SetMessageInError(string envelopeId,string errorMessage)
         {
-            throw new NotImplementedException();
+            _redisClient.EvalSha("SetMessageInError.lua", 1, envelopeId, errorMessage);
         }
 
         public void Push(MessageEnvelope envelope)
@@ -60,6 +60,10 @@ namespace Yasb.Redis.Messaging
         public string LocalEndPoint
         {
             get { return string.Format("{0}:{1}",_redisClient.Address,_queueName); }
+        }
+
+        public void Clear() {
+            _redisClient.Del(_queueName);
         }
 
         public void Dispose()

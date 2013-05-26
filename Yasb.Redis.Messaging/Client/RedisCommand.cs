@@ -24,9 +24,25 @@ namespace Yasb.Redis.Messaging.Client
 		
 		internal static IProcessResult<byte[]> LPush(string listId, byte[] value){return new LPushCommand(listId, value);}
 
+        internal static IProcessResult<byte[]> Del(string key) { return new DelCommand(key); }
 
 		public abstract byte[][] ToBinary { get; }
-
+		private class DelCommand : RedisCommand, IProcessResult<byte[]>
+		{
+			private byte[] _key;
+			public DelCommand(string key)
+			{
+				_key = key.ToUtf8Bytes();
+			}
+			public byte[] ProcessResponse(ICommandResultProcessor processor)
+			{
+				return processor.ExpectInt();
+			}
+			public override byte[][] ToBinary
+			{
+				get { return new byte[2][] { Commands.Del, _key }; }
+			}
+		}
 		private class SAddCommand : RedisCommand, IProcessResult<byte[]>
 		{
 			private byte[] _set;

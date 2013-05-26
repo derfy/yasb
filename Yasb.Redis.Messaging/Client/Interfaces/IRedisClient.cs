@@ -13,6 +13,7 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
         byte[] Sadd(string set, string value);
         byte[] SRem(string set, string subscriberEndPoint);
         byte[][] SMembers(string set);
+        byte[] Del(string key);
         EndPoint Address { get; }
 
         
