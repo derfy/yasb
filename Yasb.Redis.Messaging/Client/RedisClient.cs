@@ -13,6 +13,7 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Common.Messaging;
 using System.Collections.Concurrent;
 using Yasb.Redis.Messaging.Scripts;
+using Yasb.Redis.Messaging.Client.Commands;
 
 namespace Yasb.Redis.Messaging.Client
 {
@@ -47,7 +48,7 @@ namespace Yasb.Redis.Messaging.Client
         {
             if (key == null)
                 throw new ArgumentNullException("key");
-            return SendCommand<byte[]>(RedisCommand.Del(key));
+            return SendCommand<byte[]>(RedisCommandFactory.Del(key));
         }
        
 
@@ -58,7 +59,7 @@ namespace Yasb.Redis.Messaging.Client
                 throw new ArgumentNullException("listId");
             if (value == null)
                 throw new ArgumentNullException("value");
-            return SendCommand<byte[]>(RedisCommand.LPush(listId, value));
+            return SendCommand<byte[]>(RedisCommandFactory.LPush(listId, value));
         }
 
 
@@ -68,7 +69,7 @@ namespace Yasb.Redis.Messaging.Client
             if (set == null)
                 throw new ArgumentNullException("set");
 
-            return SendCommand<byte[]>(RedisCommand.SAdd(set, value));
+            return SendCommand<byte[]>(RedisCommandFactory.SAdd(set, value));
 
         }
 
@@ -77,14 +78,14 @@ namespace Yasb.Redis.Messaging.Client
             if (set == null)
                 throw new ArgumentNullException("set");
 
-            return SendCommand<byte[]>(RedisCommand.SRem(set, value));
+            return SendCommand<byte[]>(RedisCommandFactory.SRem(set, value));
         }
         public byte[][] SMembers(string set)
         {
             if (set == null)
                 throw new ArgumentNullException("set");
 
-            return SendCommand<byte[][]>(RedisCommand.SMembers(set));
+            return SendCommand<byte[][]>(RedisCommandFactory.SMembers(set));
         }
 
 
@@ -100,7 +101,7 @@ namespace Yasb.Redis.Messaging.Client
             {
                 mergedArray[i + 1] = multiByteKeys[i];
             }
-            return SendCommand<byte[]>(RedisCommand.EvalSha(scriptSha, mergedArray));
+            return SendCommand<byte[]>(RedisCommandFactory.EvalSha(scriptSha, mergedArray));
         }
 
         private void EnsureScriptIsCached(string fileName)
@@ -108,11 +109,11 @@ namespace Yasb.Redis.Messaging.Client
             var type =typeof(RedisScriptsProbe);
             using (StreamReader reader = new StreamReader(type.Assembly.GetManifestResourceStream(string.Format("{0}.{1}", type.Namespace, fileName))))
             {
-                var scriptSha=SendCommand<byte[]>(RedisCommand.Load(reader.ReadToEnd()));
+                var scriptSha = SendCommand<byte[]>(RedisCommandFactory.Load(reader.ReadToEnd()));
                 _internalCache.TryAdd(fileName, scriptSha);
             }
         }
-        private TResult SendCommand<TResult>(IProcessResult<TResult> command)
+        private TResult SendCommand<TResult>(IRedisCommand<TResult> command)
         {
           
             var taskConnect = _socketClient.StartConnect();

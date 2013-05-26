@@ -24,7 +24,7 @@ namespace Yasb.Redis.Messaging.Client
 		
 		internal static IProcessResult<byte[]> LPush(string listId, byte[] value){return new LPushCommand(listId, value);}
 
-        internal static IProcessResult<byte[]> Del(string key) { return new DelCommand(key); }
+		internal static IProcessResult<byte[]> Del(string key) { return new DelCommand(key); }
 
 		public abstract byte[][] ToBinary { get; }
 		private class DelCommand : RedisCommand, IProcessResult<byte[]>
@@ -40,7 +40,7 @@ namespace Yasb.Redis.Messaging.Client
 			}
 			public override byte[][] ToBinary
 			{
-				get { return new byte[2][] { Commands.Del, _key }; }
+				get { return new byte[2][] { CommandNames.Del, _key }; }
 			}
 		}
 		private class SAddCommand : RedisCommand, IProcessResult<byte[]>
@@ -58,7 +58,7 @@ namespace Yasb.Redis.Messaging.Client
 			}
 			public override byte[][] ToBinary
 			{
-				get { return new byte[3][] { Commands.SAdd, _set, _value }; }
+				get { return new byte[3][] { CommandNames.SAdd, _set, _value }; }
 			}
 		}
 		private class SRemCommand : RedisCommand, IProcessResult<byte[]>
@@ -76,7 +76,7 @@ namespace Yasb.Redis.Messaging.Client
 			}
 			public override byte[][] ToBinary
 			{
-				get { return new byte[3][] { Commands.SRem, _set, _value }; }
+				get { return new byte[3][] { CommandNames.SRem, _set, _value }; }
 			}
 		}
 		private class SMembersCommand : RedisCommand, IProcessResult<byte[][]>
@@ -94,7 +94,7 @@ namespace Yasb.Redis.Messaging.Client
 			}
 			public override byte[][] ToBinary
 			{
-				get { return new byte[2][] { Commands.SMembers, _set }; }
+				get { return new byte[2][] { CommandNames.SMembers, _set }; }
 			}
 		}
 		
@@ -114,7 +114,7 @@ namespace Yasb.Redis.Messaging.Client
 
 			public override byte[][] ToBinary
 			{
-				get { return new byte[3][] { Commands.Script,Commands.Load, _script.ToUtf8Bytes() }; }
+				get { return new byte[3][] { CommandNames.Script,CommandNames.Load, _script.ToUtf8Bytes() }; }
 			}
 		}
 
@@ -136,7 +136,7 @@ namespace Yasb.Redis.Messaging.Client
 
 			public override byte[][] ToBinary
 			{
-				get { return BinaryUtils.MergeCommandWithArgs(Commands.Eval,_keys); }
+				get { return BinaryUtils.MergeCommandWithArgs(CommandNames.Eval,_keys); }
 			}
 		}
 		private class EvalShaCommand : RedisCommand, IProcessResult<byte[]>
@@ -156,7 +156,7 @@ namespace Yasb.Redis.Messaging.Client
 
 			public override byte[][] ToBinary
 			{
-				get { return BinaryUtils.MergeCommandWithArgs(Commands.EvalSha, _sha1,_keys); }
+				get { return BinaryUtils.MergeCommandWithArgs(CommandNames.EvalSha, _sha1,_keys); }
 			}
 		}
 		
@@ -178,7 +178,7 @@ namespace Yasb.Redis.Messaging.Client
 
 			public override byte[][] ToBinary
 			{
-				get { return new byte[3][] { Commands.LPush, _listId.ToUtf8Bytes(),_value }; }
+				get { return new byte[3][] { CommandNames.LPush, _listId.ToUtf8Bytes(),_value }; }
 			}
 		}
 		

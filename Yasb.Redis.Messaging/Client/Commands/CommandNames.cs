@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yasb.Common.Extensions;
+using Yasb.Redis.Messaging.Client.Commands;
 
 namespace Yasb.Redis.Messaging.Client
 {
    
-    public static class Commands
+    public static class CommandNames
     {
         public readonly static byte[] Quit = "QUIT".ToUtf8Bytes();
         public readonly static byte[] Auth = "AUTH".ToUtf8Bytes();

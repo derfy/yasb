@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Yasb.Common.Extensions;
 
-namespace Yasb.Redis.Messaging.Client
+namespace Yasb.Redis.Messaging.Client.Commands
 {
     public class CommandResultProcessor : ICommandResultProcessor
     {

@@ -51,15 +51,23 @@
   <ItemGroup>
     <Compile Include="Client\BufferPool.cs" />
     <Compile Include="Client\BinaryUtils.cs" />
-    <Compile Include="Client\Commands.cs" />
-    <Compile Include="Client\CommandResultProcessor.cs" />
+    <Compile Include="Client\Commands\CommandNames.cs" />
+    <Compile Include="Client\Commands\CommandResultProcessor.cs" />
+    <Compile Include="Client\Commands\DelCommand.cs" />
+    <Compile Include="Client\Commands\EvalCommand.cs" />
+    <Compile Include="Client\Commands\EvalShaCommand.cs" />
+    <Compile Include="Client\Commands\LoadCommand.cs" />
+    <Compile Include="Client\Commands\LPushCommand.cs" />
+    <Compile Include="Client\Commands\RedisCommandFactory.cs" />
+    <Compile Include="Client\Interfaces\IRedisCommand.cs" />
+    <Compile Include="Client\Commands\SAddCommand.cs" />
+    <Compile Include="Client\Commands\SMembersCommand.cs" />
+    <Compile Include="Client\Commands\SRemCommand.cs" />
     <Compile Include="Client\Interfaces\IRedisClient.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\IRedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />
-    <Compile Include="Client\Interfaces\IProcessResult.cs" />
     <Compile Include="Client\RedisClient.cs" />
-    <Compile Include="Client\RedisCommand.cs" />
     <Compile Include="Client\RedisException.cs" />
     <Compile Include="Client\RedisConnectionManager.cs" />
     <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
