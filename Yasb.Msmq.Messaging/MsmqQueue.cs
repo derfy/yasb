@@ -112,15 +112,17 @@ namespace Yasb.Msmq.Messaging
             return envelope!=null;
         }
 
-       
-        public void Push(MessageEnvelope envelope)
+
+        public void Push(IMessage message, string from)
         {
-            envelope.Id = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
-            var message = new Message(envelope) { Formatter = _formatter };
+            var envelopeId = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
+            var envelope = new MessageEnvelope(envelopeId, message, from, LocalEndPoint);
+            
+            var msmqMessage = new Message(envelope) { Formatter = _formatter };
             using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
             {
-               
-                internalQueue.Send(message, MessageQueueTransactionType.Single);
+
+                internalQueue.Send(msmqMessage, MessageQueueTransactionType.Single);
             }
         }
         public void Clear()

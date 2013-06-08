@@ -25,15 +25,12 @@ namespace Yasb.Common.Serialization
         {
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
             var message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
-
+            var envelopeId = jsonObject.Property("Id").Value.ToObject<string>();
             var from = jsonObject.Property("From").Value.ToObject<string>(serializer);
             var to = jsonObject.Property("To").Value.ToObject<string>(serializer);
-            var lastCreateOrUpdateTimestamp = jsonObject.Property("LastCreateOrUpdateTimestamp").Value.ToObject<long>(serializer);
-          
-            var envelope = new MessageEnvelope(message, from, to, lastCreateOrUpdateTimestamp);
-            
-            if (jsonObject.Property("Id") != null)
-                envelope.Id = jsonObject.Property("Id").Value.ToObject<string>();
+
+            var envelope = new MessageEnvelope(envelopeId,message, from, to);
+
             if (jsonObject.Property("StartTimestamp") != null)
                 envelope.StartTimestamp = jsonObject.Property("StartTimestamp").Value.ToObject<long?>();
             if (jsonObject.Property("RetriesNumber") != null)

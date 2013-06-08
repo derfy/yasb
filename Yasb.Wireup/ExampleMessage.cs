@@ -30,7 +30,7 @@ namespace Yasb.Wireup
         public void Handle(ExampleMessage message)
         {
             Thread.Sleep(10);
-            Console.WriteLine(string.Format("{0} {1}",message.Name,message.Number));
+           // Console.WriteLine(string.Format("{0} {1}",message.Name,message.Number));
 
             Interlocked.Increment(ref _readCount);
         }
@@ -39,7 +39,7 @@ namespace Yasb.Wireup
         {
             Thread.Sleep(5);
            // throw new Exception("bu bu");
-            Console.WriteLine(string.Format("{0} {1}", message.Name, message.Number));
+           // Console.WriteLine(string.Format("{0} {1}", message.Name, message.Number));
             Interlocked.Increment(ref _readCount);
         }
     }

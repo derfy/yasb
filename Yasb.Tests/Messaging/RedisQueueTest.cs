@@ -32,12 +32,11 @@ namespace Yasb.Tests.Messaging
         public void ShouldBeAbleToPush()
         {
 
-            var envelope = new MessageEnvelope(new TestMessage("This is a test"), "localConnection:foo", "localConnection:bar",DateTimeOffset.UtcNow.Ticks);
             
             var bytes = Encoding.Default.GetBytes("foo");
-            _serializerMock.Setup(c => c.Serialize(envelope)).Returns(bytes);
+            _serializerMock.Setup(c => c.Serialize(It.IsAny<MessageEnvelope>())).Returns(bytes);
             _redisClientMock.Setup(c => c.LPush("test", bytes));
-            _sut.Push(envelope);
+            _sut.Push(new TestMessage("This is a test"), "localConnection:foo");
             _redisClientMock.VerifyAll();
             _serializerMock.VerifyAll();
         }

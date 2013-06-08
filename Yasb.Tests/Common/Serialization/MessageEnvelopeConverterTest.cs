@@ -38,8 +38,7 @@ namespace Yasb.Tests.Common.Serialization
                new JProperty("ContentType", contentType),
                new JProperty("Message", message),
                new JProperty("From", fromEndPoint),
-               new JProperty("To", toEndPoint),
-               new JProperty("LastCreateOrUpdateTimestamp", lastCreateOrUpdateTimestamp)
+               new JProperty("To", toEndPoint)
             );
            
             var reader = new JTokenReader(jsonObject);
@@ -50,7 +49,6 @@ namespace Yasb.Tests.Common.Serialization
             Assert.AreEqual(typeof(TestMessage), result.ContentType);
             Assert.AreEqual(fromEndPoint, result.From);
             Assert.AreEqual(toEndPoint, result.To);
-            Assert.AreEqual(lastCreateOrUpdateTimestamp, result.LastCreateOrUpdateTimestamp);
         }
 
         private static Mock<JsonSerializer> CreateSerializerMock()

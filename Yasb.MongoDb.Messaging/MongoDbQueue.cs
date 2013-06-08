@@ -59,10 +59,10 @@ namespace Yasb.MongoDb.Messaging
         {
             throw new NotImplementedException();
         }
-        public void Push(MessageEnvelope envelope)
+        public void Push(IMessage message, string from)
         {
             var objectId = new BsonObjectId(ObjectId.GenerateNewId());
-            envelope.Id = objectId.ToString();
+            var envelope = new MessageEnvelope(objectId.ToString(), message, from, LocalEndPoint) { LastCreateOrUpdateTimestamp=DateTime.UtcNow.Ticks};
            
             _collection.Insert<MessageEnvelope>(envelope);
         }

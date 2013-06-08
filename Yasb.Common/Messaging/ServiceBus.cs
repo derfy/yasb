@@ -59,8 +59,7 @@ namespace Yasb.Common.Messaging
 
         public void Send(IQueue queue, IMessage message)
         {
-            var envelope = new MessageEnvelope(message, LocalEndPoint, queue.LocalEndPoint,DateTimeOffset.UtcNow.Ticks);
-            queue.Push(envelope);
+            queue.Push(message, LocalEndPoint);
         }
         
         public void Run()

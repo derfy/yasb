@@ -14,13 +14,14 @@ namespace Yasb.MongoDb.Messaging.Serialization
 	{
 		public override object Deserialize(BsonReader bsonReader, Type nominalType, Type actualType, IBsonSerializationOptions options)
 		{
-
+           
 			var doc = BsonDocument.ReadFrom(bsonReader);
+            var id = doc["_id"].AsString;
 			var contentType = Type.GetType(doc["ContentType"].AsString);
 			var message=BsonSerializer.Deserialize(doc["Message"].AsBsonDocument, contentType) as IMessage;
-			var env = new MessageEnvelope(message, doc["From"].AsString, doc["To"].AsString, doc["LastCreateOrUpdateTimestamp"].AsInt64)
+			var env = new MessageEnvelope(id,message, doc["From"].AsString, doc["To"].AsString)
 			{
-				Id = doc["_id"].AsString,
+                LastCreateOrUpdateTimestamp = doc["LastCreateOrUpdateTimestamp"].AsInt64,
 				RetriesNumber = doc["RetriesNumber"].AsInt32
 			};
 			if (!doc["StartTimestamp"].IsBsonNull)

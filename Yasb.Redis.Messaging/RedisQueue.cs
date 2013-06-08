@@ -50,9 +50,10 @@ namespace Yasb.Redis.Messaging
             _redisClient.EvalSha("SetMessageInError.lua", 1, envelopeId, errorMessage);
         }
 
-        public void Push(MessageEnvelope envelope)
+        public void Push(IMessage message, string from)
         {
-            envelope.Id = Guid.NewGuid().ToString();
+            var envelopeId = Guid.NewGuid().ToString();
+            var envelope = new MessageEnvelope(envelopeId, message, from, LocalEndPoint);
             var bytes = _serializer.Serialize(envelope);
             _redisClient.LPush(_queueName, bytes);
         }
