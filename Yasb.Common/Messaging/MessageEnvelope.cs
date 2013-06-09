@@ -8,7 +8,6 @@ namespace Yasb.Common.Messaging
    
     public class MessageEnvelope 
     {
-        private string envelopeId;
         private string LocalEndPoint;
 
         public MessageEnvelope()

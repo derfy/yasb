@@ -67,7 +67,6 @@
     <Compile Include="Common\CurrentThreadTaskScheduler.cs" />
     <Compile Include="Common\Extensions\ArrayExtensionsTest.cs" />
     <Compile Include="Common\GuardTest.cs" />
-    <Compile Include="Common\Messaging\MessageEnvelopeTest.cs" />
     <Compile Include="Messaging\Integration\MongoDb\MongoDbQueueTest.cs" />
     <Compile Include="Messaging\Integration\Msmq\MsmqQueueTest.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisConfiguratorExtensions.cs" />
