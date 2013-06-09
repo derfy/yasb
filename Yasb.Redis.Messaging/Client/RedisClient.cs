@@ -32,17 +32,22 @@ namespace Yasb.Redis.Messaging.Client
             get { return _socketClient.Address; }
         }
 
-       
-
         public virtual byte[] EvalSha(string fileName, int noKeys, params string[] keys)
         {
+            
+            return EvalSha(fileName, noKeys, keys.ToMultiByteArray());
+        }
+
+        public virtual byte[] EvalSha(string fileName, int noKeys, params byte[][] keys)
+        {
             byte[] scriptSha = null;
-            while(!_internalCache.TryGetValue(fileName,out scriptSha))
+            while (!_internalCache.TryGetValue(fileName, out scriptSha))
             {
                 EnsureScriptIsCached(fileName);
             }
             return EvalSha(scriptSha, noKeys, keys);
         }
+
 
         public byte[] Del(string key)
         {
@@ -90,14 +95,12 @@ namespace Yasb.Redis.Messaging.Client
 
 
 
-        private byte[] EvalSha(byte[] scriptSha, int noKeys, params string[] keys)
+        private byte[] EvalSha(byte[] scriptSha, int noKeys, params byte[][] multiByteKeys)
         {
-            var mergedArray = new byte[keys.Length + 1][];
-
-            var multiByteKeys = keys.ToMultiByteArray();
+            var mergedArray = new byte[multiByteKeys.Length + 1][];
 
             mergedArray[0] = noKeys.ToUtf8Bytes();
-            for (int i = 0; i < keys.Length; i++)
+            for (int i = 0; i < multiByteKeys.Length; i++)
             {
                 mergedArray[i + 1] = multiByteKeys[i];
             }

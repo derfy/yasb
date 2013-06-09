@@ -1,4 +1,4 @@
-﻿local queued = redis.call('RPOP',KEYS[1])
+﻿local queued = redis.call('RPOPLPUSH',KEYS[1],KEYS[1])
 if queued then
 	local envelope = cjson.decode(queued)
 	local results = redis.call("HMGET","hqueue",envelope.Id..":completedTime",envelope.Id..":lastErrorMessage")
@@ -9,7 +9,6 @@ if queued then
 			if tonumber(ARGV[1]) >  tonumber(envelope.StartTimestamp) then
 				envelope.LastErrorMessage="Operation Timed Out"
 			else
-				redis.call('LPUSH',KEYS[1],queued)
 				return nil
 			end
 		end
@@ -17,8 +16,8 @@ if queued then
 			envelope.RetriesNumber=envelope.RetriesNumber+1
 			envelope.StartTimestamp=ARGV[2]
 			local modifiedQueued = cjson.encode(envelope)
-			redis.call('LPUSH',KEYS[1],modifiedQueued)
 			return modifiedQueued
 		end
 	end
+	redis.call('LPOP',KEYS[1])
 end
