@@ -31,7 +31,7 @@ namespace Yasb.Common.Messaging
         
         public void Publish(IMessage message) 
         {
-            var subscriptionEndPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().FullName);
+            var subscriptionEndPoints = _subscriptionService.GetSubscriptionEndPoints(message.GetType().AssemblyQualifiedName);
             foreach (var endPointValue in subscriptionEndPoints)
             {
                 IQueue queue = _queueFactory.CreateFromEndPointValue(endPointValue);
@@ -53,7 +53,7 @@ namespace Yasb.Common.Messaging
 
         public void Subscribe<TMessage>(IQueue queue) where TMessage : IMessage
         {
-            var subscriptionMessage = new SubscriptionMessage(typeof(TMessage).FullName,LocalEndPoint);
+            var subscriptionMessage = new SubscriptionMessage(typeof(TMessage).AssemblyQualifiedName,LocalEndPoint);
             Send(queue, subscriptionMessage);
         }
 

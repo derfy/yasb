@@ -26,30 +26,52 @@ namespace Yasb.Common.Messaging
 
         public virtual void Execute(CancellationToken token)
         {
-            
             var delta = new TimeSpan(0, 0, 5);
-            while (true)
-            {
-                token.ThrowIfCancellationRequested();
-                MessageEnvelope envelope = null;
-                if (!_queue.TryDequeue(DateTime.Now, delta, out envelope))
-                    continue;
-                try
-                {
-                    var handlers = _handlerRegistrar(envelope.ContentType);
-                    var mhi = _messageDispatcher.GetHandlersFor(envelope.ContentType);
-                    foreach (var handler in handlers)
-                    {
-                        mhi.HandleMethod(handler, envelope.Message);
-                    }
-                    _queue.SetMessageCompleted(envelope.Id);
-                }
-                catch (Exception ex)
-                {
-                    throw new MessageHandlerException(envelope.Id, ex.Message); ;
-                }
-            }
+            token.ThrowIfCancellationRequested();
 
+            using (var task = Task.Factory.StartNew<MessageEnvelope>(() =>
+            {
+                MessageEnvelope envelope = null;
+                if (!(_queue.TryDequeue(DateTime.UtcNow, delta, out envelope)))
+                    return null;
+                var handlers = _handlerRegistrar(envelope.ContentType).ToArray();
+                var mhi = _messageDispatcher.GetHandleMethodDelegate(envelope.ContentType);
+                foreach (var handler in handlers)
+                {
+                    try { mhi(handler, envelope.Message); }
+                    catch (Exception ex)
+                    {
+                        throw new MessageHandlerException(envelope.Id, ex.Message);
+                    }
+                }
+                return envelope;
+            }, token))
+            {
+                var continuationTasks = new[]{ 
+                    task.ContinueWith(t =>
+                    {
+                        var env = t.Result;
+                        if (env != null)
+                        {
+                            _queue.SetMessageCompleted(env.Id);
+                        }
+                    }, TaskContinuationOptions.OnlyOnRanToCompletion),
+                    task.ContinueWith(t =>
+                    {
+                        t.Exception.Handle(ex =>
+                        {
+                            var exception = ex as MessageHandlerException;
+                            if (exception != null)
+                            {
+                                _queue.SetMessageInError(exception.EnvelopeId, exception.Message);
+                            }
+                            return true;
+                        });
+
+                    }, TaskContinuationOptions.OnlyOnFaulted)};
+                Task.WaitAny(continuationTasks);
+            }
+           
         }
 
         public void OnException(Exception ex)
@@ -57,7 +79,8 @@ namespace Yasb.Common.Messaging
             var handlerException = ex as MessageHandlerException;
             if (handlerException == null)
                 return;
-            _queue.SetMessageInError(handlerException.EnvelopeId,handlerException.StackTrace);
+           // Console.WriteLine("On exception   .......  " + handlerException.EnvelopeId+" "+ handlerException.StackTrace);
+            _queue.SetMessageInError(handlerException.EnvelopeId,handlerException.Message);
         }
 
         public void Dispose()

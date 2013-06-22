@@ -1,1 +1,2 @@
-﻿redis.call("HSET","hqueue",KEYS[1]..":completedTime",ARGV[1])
+﻿redis.call("HSET",KEYS[1],"completeTimestamp",ARGV[1])
+redis.log(redis.LOG_WARNING,"completed Id : "..KEYS[1])

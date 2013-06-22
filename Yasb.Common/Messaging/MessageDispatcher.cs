@@ -9,25 +9,24 @@ using System.Collections.Concurrent;
 namespace Yasb.Common.Messaging
 {
     public delegate void MessageHandlerMethodDelegate(object target, object message);
-
-    public class MsgHandlerInfo
+    
+    public class MessageDispatcher
     {
-        public MsgHandlerInfo(Type msgType)
+        private ConcurrentDictionary<Type, MessageHandlerMethodDelegate> _handlers = new ConcurrentDictionary<Type, MessageHandlerMethodDelegate>();
+
+        public MessageHandlerMethodDelegate GetHandleMethodDelegate(Type msgType)
         {
-            MessageHandlerGenericType = typeof(IHandleMessages<>).MakeGenericType(msgType);
-            HandleMethod=CreateMessageHandlerDelegate(MessageHandlerGenericType.GetMethod("Handle"));
+            MessageHandlerMethodDelegate mi;
+            if (!_handlers.TryGetValue(msgType, out mi))
+            {
+                var messageHandlerGenericType = typeof(IHandleMessages<>).MakeGenericType(msgType);
+                _handlers[msgType] = CreateMessageHandlerDelegate(messageHandlerGenericType.GetMethod("Handle"));
+                return _handlers[msgType];
+            }
+            return mi;
         }
-        public Type MessageHandlerGenericType;
-        public Type InitiatedByGenericType;
-        public Type MessageType;
-        public MessageHandlerMethodDelegate HandleMethod {get;private set;}
-        /// <summary>
-        /// Create a delegate for message handler (Handle) method of a generic interface
-        /// Used by message bus for delivering messages to their handlers.
-        /// </summary>
-        /// <param name="method"></param>
-        /// <returns></returns>
-        public static MessageHandlerMethodDelegate CreateMessageHandlerDelegate(MethodInfo method)
+
+        private static MessageHandlerMethodDelegate CreateMessageHandlerDelegate(MethodInfo method)
         {
             ParameterExpression instanceParameter = Expression.Parameter(typeof(object), "target");
             ParameterExpression argumentsParameter = Expression.Parameter(typeof(object), "message");
@@ -42,21 +41,6 @@ namespace Yasb.Common.Messaging
                 instanceParameter,
                 argumentsParameter);
             return lambda.Compile();
-        }
-    }
-    public class MessageDispatcher
-    {
-        private ConcurrentDictionary<Type, MsgHandlerInfo> _handlers = new ConcurrentDictionary<Type, MsgHandlerInfo>();
-
-        public MsgHandlerInfo GetHandlersFor(Type msgType)
-        {
-            MsgHandlerInfo mi;
-            if (!_handlers.TryGetValue(msgType, out mi))
-            {
-                mi = new MsgHandlerInfo(msgType);
-                _handlers[msgType] = mi;
-            }
-            return mi;
         }
     }
 }

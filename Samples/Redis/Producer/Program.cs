@@ -66,16 +66,17 @@ namespace Producer
             while (i < 5000)
             {
                 Reset.WaitOne();
-                i++;
+            //    i++;
 
-                var message = new ExampleMessage(i, "I am Handler 1 ");
+                var message = new ExampleMessage(i, "I am ExampleMessage ");
                 //bus.Send("consumer", message);
                 bus.Publish(message);
-                i++;
+                //i++;
                // bus.Send<ExampleMessage>("redis_consumer", message);
-                var message2 = new ExampleMessage2(i, "I am Handler 2");
+                var message2 = new ExampleMessage2(i, "I am ExampleMessage2");
                 bus.Publish(message2);
                // bus.Send("consumer", message2);
+                i++;
                 Interlocked.Increment(ref _writeCount);
             }
             

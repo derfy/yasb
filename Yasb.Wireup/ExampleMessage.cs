@@ -8,6 +8,17 @@ using System.Threading;
 namespace Yasb.Wireup
 {
     [Serializable]
+    public class ExampleMessage2 : ExampleMessage
+    {
+
+        public ExampleMessage2(int number, string name)
+            : base(number, name)
+        {
+
+        }
+
+    }
+    [Serializable]
     public class ExampleMessage : IMessage
     {
 
@@ -29,32 +40,22 @@ namespace Yasb.Wireup
         public static int ReadCount { get { return _readCount; } }
         public void Handle(ExampleMessage message)
         {
-            Thread.Sleep(10);
-           // Console.WriteLine(string.Format("{0} {1}",message.Name,message.Number));
-
+            
+           // Console.WriteLine(string.Format("Handler 1 : {0} {1}", message.Name, message.Number));
             Interlocked.Increment(ref _readCount);
         }
 
         public void Handle(ExampleMessage2 message)
         {
-            Thread.Sleep(5);
+            //Console.WriteLine(string.Format("Handler 2 {0} {1}", message.Name, message.Number));
+            //Thread.Sleep(2000);
            // throw new Exception("bu bu");
-           // Console.WriteLine(string.Format("{0} {1}", message.Name, message.Number));
+            
             Interlocked.Increment(ref _readCount);
         }
     }
 
-    [Serializable]
-    public class ExampleMessage2 : ExampleMessage
-    {
-
-        public ExampleMessage2(int number, string name)
-            : base(number, name)
-        {
-
-        }
-
-    }
+   
     public class ErrorMessage : IMessage
     {
         public int Number { get; private set; }

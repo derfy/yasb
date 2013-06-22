@@ -90,7 +90,8 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Scripts\TryGetEnvelope.lua" />
     <EmbeddedResource Include="Scripts\SetMessageCompleted.lua" />
-    <None Include="Scripts\SetMessageInError.lua" />
+    <EmbeddedResource Include="Scripts\PushMessage.lua" />
+    <EmbeddedResource Include="Scripts\SetMessageInError.lua" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Yasb.Common\Yasb.Common.csproj">

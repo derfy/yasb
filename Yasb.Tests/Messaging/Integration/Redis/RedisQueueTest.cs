@@ -41,7 +41,7 @@ namespace Yasb.Tests.Messaging.Redis
             _redisClient.Del("queue_test");
             
         }
-        [Ignore]
+      //  [Ignore]
         [TestMethod]
         public void ShouldSetTimeoutError()
         {
@@ -72,7 +72,7 @@ namespace Yasb.Tests.Messaging.Redis
             Assert.IsNotNull(newEnvelope);
         }
      
-        [Ignore]
+       // [Ignore]
        [TestMethod]
        public void ShouldNotRetrieveSameMessageTwice()
        {

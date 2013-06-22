@@ -11,6 +11,7 @@ using Yasb.Common.Messaging;
 using Yasb.Common.Serialization;
 using System.Threading;
 using Yasb.Redis.Messaging.Scripts;
+using Yasb.Common.Extensions;
 
 namespace Yasb.Redis.Messaging
 {
@@ -42,7 +43,7 @@ namespace Yasb.Redis.Messaging
 
         public void SetMessageCompleted(string envelopeId)
         {
-            _redisClient.EvalSha("SetMessageCompleted.lua", 1, envelopeId, DateTime.Now.Ticks.ToString());
+            _redisClient.EvalSha("SetMessageCompleted.lua", 1,envelopeId,DateTime.UtcNow.ToString());
         }
 
         public void SetMessageInError(string envelopeId,string errorMessage)
@@ -55,7 +56,7 @@ namespace Yasb.Redis.Messaging
             var envelopeId = Guid.NewGuid().ToString();
             var envelope = new MessageEnvelope(envelopeId, message, from, LocalEndPoint);
             var bytes = _serializer.Serialize(envelope);
-            _redisClient.LPush(_queueName, bytes);
+            _redisClient.EvalSha("PushMessage.lua", 1,_queueName.ToUtf8Bytes(), bytes);
         }
 
         public string LocalEndPoint

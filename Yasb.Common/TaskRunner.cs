@@ -12,7 +12,7 @@ namespace Yasb.Common
     
     public class TaskRunner : ITaskRunner
     {
-        private const int MaxRunningTasksNumber=3;
+        private const int MaxRunningTasksNumber=5;
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         private TaskFactory _taskFactory=new TaskFactory();
 

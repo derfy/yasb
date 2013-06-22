@@ -27,11 +27,12 @@ namespace Yasb.Wireup
             base.Load(builder);
             builder.RegisterGeneratedFactory<MessageHandlerFactory>().InstancePerMatchingLifetimeScope(Scope);
 
-            builder.RegisterWithScope<IHandleMessages>((componentScope, p) =>
+            builder.RegisterWithScope<IEnumerable<IHandleMessages>>((componentScope, p) =>
             {
                 var type = p.Named<Type>("type");
                 var genericType = typeof(IHandleMessages<>).MakeGenericType(type);
-                return componentScope.Resolve(genericType) as IHandleMessages;
+                var enumerableGenericType = typeof(IEnumerable<>).MakeGenericType(genericType);
+                return componentScope.Resolve(enumerableGenericType) as IEnumerable<IHandleMessages>;
             }).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<ITaskRunner>(componentScope => new TaskRunner()).As<ITaskRunner>().InstancePerMatchingLifetimeScope(Scope);

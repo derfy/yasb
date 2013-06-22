@@ -7,7 +7,9 @@ using System.Threading;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
 using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
-
+using System.Net;
+using Yasb.Common.Messaging.Configuration;
+using Autofac.Builder;
 namespace Consumer
 {
     internal class Program
@@ -56,18 +58,20 @@ namespace Consumer
 
         public static void Run()
         {
+            
+
             var configurator = new RedisConfigurator();
             var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("LocalConnection", "redis_consumer")
                                                                                   .WithEndPoint("ProducerConnection", "redis_producer", "producer"))
                                                 .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("ProducerConnection", "192.168.127.128")
                                                                                                          .WithConnection("LocalConnection", "192.168.127.128"))
                                                 .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly));
-            
-            
 
 
             bus.Subscribe<ExampleMessage>("producer");
+            Console.WriteLine("subscription ExampleMessage sent");
             bus.Subscribe<ExampleMessage2>("producer");
+            Console.WriteLine("subscription ExampleMessage2 sent");
             bus.Run();
         }
 
