@@ -40,7 +40,7 @@ namespace Yasb.Wireup
             builder.RegisterWithScope<RedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 var endPoint = parameters.TypedAs<RedisConnection>();
-                return new RedisSocketAsyncEventArgsPool(500, endPoint);
+                return new RedisSocketAsyncEventArgsPool(10, endPoint);
             }).As<IRedisSocketAsyncEventArgsPool>();
 
 
