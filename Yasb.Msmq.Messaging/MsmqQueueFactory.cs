@@ -19,17 +19,13 @@ namespace Yasb.Msmq.Messaging
             _messageFormatter = messageFormatter;
         }
 
-        protected override IQueue CreateQueue(MsmqConnection connection, string queueName)
+        public override IQueue<MsmqConnection> CreateQueue(MsmqConnection connection, string queueName)
         {
-            var endPointValue = string.Format(@"{0}\{1}$\{2}", connection.Host, connection.IsPrivate ? "Private" : "Public", queueName);
-            return CreateFromEndPointValue(endPointValue);
+            var endPoint = new MsmqQueueEndPoint(connection, queueName);
+            return new MsmqQueue(endPoint, _messageFormatter);
         }
 
-        public override IQueue CreateFromEndPointValue(string endPointValue)
-        {
-            return new MsmqQueue(endPointValue, _messageFormatter);
-        }
-
+        
        
     }
 }

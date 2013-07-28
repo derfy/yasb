@@ -16,7 +16,8 @@ namespace Yasb.Tests.Common
     [TestClass]
     public class TaskRunnerTest
     {
-        private TaskRunner _sut;
+        public class TestResult { }
+        private WorkerPool<TestResult> _sut;
        
 
         [TestMethod]
@@ -24,17 +25,18 @@ namespace Yasb.Tests.Common
         {
 
             CountdownEvent cde = new CountdownEvent(3);
-            _sut = new TaskRunner();
-            var worker = new Mock<IWorker>();
-            worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
+
+            var worker = new Mock<IWorker<TestResult>>();
+            _sut = new WorkerPool<TestResult>(worker.Object);
+            worker.Setup(w => w.Execute()).Callback(() =>
             {
                 cde.Signal();
                 while (true) { }
 
             });
-            _sut.Run(worker.Object.Execute,worker.Object.OnException);
+            _sut.Run();
             cde.Wait();
-            worker.Verify(w => w.Execute(It.IsAny<CancellationToken>()), Times.Exactly(3));
+            worker.Verify(w => w.Execute(), Times.Exactly(3));
            
         }
 
@@ -42,9 +44,10 @@ namespace Yasb.Tests.Common
         public void WorkerShouldHandleException()
         {
             var mre = new ManualResetEventSlim();
-            _sut = new TaskRunner();
-            var worker = new Mock<IWorker>();
-            worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
+            var worker = new Mock<IWorker<TestResult>>();
+            _sut = new WorkerPool<TestResult>(worker.Object);
+
+            worker.Setup(w => w.Execute()).Callback(() =>
             {
                 throw new Exception();
             });
@@ -52,26 +55,23 @@ namespace Yasb.Tests.Common
             {
                 Console.WriteLine("jhfg");
                 mre.Set();
-                while (true) { }
             });
-            _sut.CreateWorkerTask(worker.Object.Execute,worker.Object.OnException);
+            _sut.Run();
             mre.Wait();
-            worker.Verify(w=>w.Execute(It.IsAny<CancellationToken>()), Times.Once());
-            worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Once());
+            worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Exactly(3));
         }
         [TestMethod]
         public void ShouldBeToStop()
         {
-            _sut = new TaskRunner();
             var mre = new ManualResetEventSlim();
-            var worker = new Mock<IWorker>();
-            worker.Setup(w => w.Execute(It.IsAny<CancellationToken>())).Callback((CancellationToken t) =>
+            var worker = new Mock<IWorker<TestResult>>();
+            _sut = new WorkerPool<TestResult>(worker.Object);
+            worker.Setup(w => w.Execute()).Callback(() =>
             {
-                if (t.IsCancellationRequested)
-                    mre.Set();
+                 mre.Set();
 
             });
-            _sut.Run(worker.Object.Execute,worker.Object.OnException);
+            _sut.Run();
            _sut.Stop();
            mre.Wait();
            Assert.IsTrue(mre.IsSet);

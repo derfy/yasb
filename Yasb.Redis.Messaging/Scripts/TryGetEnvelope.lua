@@ -12,13 +12,13 @@ if queued then
 		if startTimestamp then 
 			if tonumber(ARGV[1]) >  tonumber(startTimestamp) then
 				redis.call("HSET",envelope.Id,"lastErrorMessage","Operation Timed Out")
-				redis.log(redis.LOG_WARNING,"Id : "..envelope.Id.." old startime : "..startTimestamp.." now is :"..ARGV[2].." time out")
+				redis.log(redis.LOG_WARNING,"Id : "..envelope.Id.." timed out : starTimestamp : "..startTimestamp.." currentTimestamp :"..ARGV[2])
 			else
 				return nil
 			end
 		end
 		if retriesNumber < 5 then
-			redis.log(redis.LOG_WARNING,"Id : "..envelope.Id.." started procesing "..ARGV[2].." retries : "..retriesNumber+1)
+		    redis.log(redis.LOG_WARNING,"starting Id : "..envelope.Id.." at : starTimestamp : "..ARGV[2])
 			redis.call("HMSET",envelope.Id,"startTimestamp",ARGV[2],"retriesNumber",retriesNumber+1)
 			return queued
 		end

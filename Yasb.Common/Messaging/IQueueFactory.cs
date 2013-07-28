@@ -5,10 +5,9 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IQueueFactory { 
-        IQueue CreateFromEndPointName(string endPointName);
-        IQueue CreateFromEndPointValue(string endPointValue);
-
-       
+    public interface IQueueFactory<TConnection>
+    {
+        IQueue<TConnection> CreateFromEndPointName(string endPointName);
+        IQueue<TConnection> CreateFromEndPointValue(QueueEndPoint<TConnection> endPoint);
     }
 }

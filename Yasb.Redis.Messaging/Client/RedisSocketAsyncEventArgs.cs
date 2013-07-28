@@ -7,12 +7,17 @@ using System.IO;
 using Yasb.Common.Extensions;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Yasb.Redis.Messaging.Client
 {
-    public class RedisSocketAsyncEventArgs : SocketAsyncEventArgs
+    public delegate void ClientDisconnectedEventHandler(RedisSocketAsyncEventArgs sender, EventArgs e);
+    public class RedisSocketAsyncEventArgs : SocketAsyncEventArgs,IDisposable
     {
         private Socket _socket;
+        public event ClientDisconnectedEventHandler OnClientDisconnected;
+
         private readonly byte[] endData = new[] { (byte)'\r', (byte)'\n' };
 
         public RedisSocketAsyncEventArgs()
@@ -27,12 +32,10 @@ namespace Yasb.Redis.Messaging.Client
             };
         }
 
-       
 
         public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
         {
             WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
-
             foreach (var safeBinaryValue in cmdWithBinaryArgs)
             {
                 WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
@@ -41,70 +44,158 @@ namespace Yasb.Redis.Messaging.Client
             }
         }
 
-
-        
-        public void Reset() {
-            var buffer = Buffer;
-            Array.Clear(buffer, 0, buffer.Length);
-            BufferPool.ReleaseBufferToPool(ref buffer);
-            SetBuffer(null, 0, 0);
-
-        }
-
-        internal void CopyToArray(out byte[] array)
+        public Task<RedisSocketAsyncEventArgs> StartConnect()
         {
-            array = new byte[BytesTransferred];
-            Array.Copy(Buffer, array, BytesTransferred); ;
-        }
-        internal bool ConnectAsync()
-        {
+            var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
+            UserToken = tcs;
+
             if (_socket.Connected)
-                return false;
-            return _socket.ConnectAsync(this);
-        }
-       
-        internal bool SendAsync(params byte[][] data)
-        {
-            PrepareToSend();
-            WriteAllToSendBuffer(data);
-            return _socket.SendAsync(this);
-        }
-        internal bool ReceiveAsync()
-        {
-            PrepareToReceive();
-            return _socket.ReceiveAsync(this);
+            {
+                tcs.SetResult(this);
+            }
+            else if (!_socket.ConnectAsync(this))
+            {
+                ProcessConnect();
+            }
+            return tcs.Task;
         }
 
-        
-        private void PrepareToSend()
+
+        internal Task<byte[]> SendAsync(byte[][] data)
         {
-            if (Buffer == null)
+            var taskCompletionSource = new TaskCompletionSource<byte[]>();
+            UserToken = taskCompletionSource;
+            SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
+            WriteAllToSendBuffer(data);
+            SetBuffer(0, Offset);
+            if (!_socket.SendAsync(this))
             {
-                SetBuffer(BufferPool.GetBuffer(), 0, 0);
+                ReceiveAsync();
             }
-            else
-            {
-                SetBuffer(0, 0);
-            }
+            return taskCompletionSource.Task;
         }
-        private void PrepareToReceive()
-        {
-            SetBuffer(0, Buffer.Length);
-        }
+
+
+       
         private void WriteToSendBuffer(byte[] cmdBytes)
         {
-            int currentIndex = this.Count;
-            if (cmdBytes.Length > this.Buffer.Length - currentIndex)
+            var buffer = Buffer;
+            var total = Offset + cmdBytes.Length;
+            if (cmdBytes.Length > this.Count)
             {
-                var buffer = this.Buffer;
-                BufferPool.ResizeAndFlushLeft(ref buffer, currentIndex + cmdBytes.Length, 0, currentIndex);
-
+                BufferPool.ResizeAndFlushLeft(ref buffer, total, 0, Offset);
             }
-            System.Buffer.BlockCopy(cmdBytes, 0, Buffer, currentIndex, cmdBytes.Length);
-            currentIndex += cmdBytes.Length;
-            SetBuffer(0, currentIndex);
+            System.Buffer.BlockCopy(cmdBytes, 0, buffer, Offset, cmdBytes.Length);
+            SetBuffer(buffer, total, buffer.Length-total);
         }
 
+        protected override void OnCompleted(SocketAsyncEventArgs e)
+        {
+            base.OnCompleted(e);
+            var completedArgs = e as RedisSocketAsyncEventArgs;
+            if (completedArgs != null)
+            {
+                switch (completedArgs.LastOperation)
+                {
+                    case SocketAsyncOperation.Connect:
+                        ProcessConnect();
+                        break;
+                    case SocketAsyncOperation.Send:
+                        ProcessSend();
+                        break;
+                    case SocketAsyncOperation.Receive:
+                        ProcessReceive();
+                        break;
+                    case SocketAsyncOperation.Disconnect:
+                        ProcessDisconnect();
+                        break;
+                }
+
+            }
+        }
+
+       
+        private void ProcessConnect()
+        {
+            var tcs = UserToken as TaskCompletionSource<RedisSocketAsyncEventArgs>;
+            if (SocketError == SocketError.Success)
+            {
+                tcs.SetResult(this);
+                return;
+            }
+            tcs.SetException(new SocketException((int)SocketError));
+        }
+        private void ProcessSend()
+        {
+            SetBuffer(0, BufferPool.BufferLength);
+            Array.Clear(Buffer, 0, Buffer.Length);
+            ReceiveAsync();
+        }
+        private void ReceiveAsync()
+        {
+            if (!_socket.ReceiveAsync(this))
+            {
+                ProcessReceive();
+            }
+        }
+        private void DisconnectAsync()
+        {
+            if (!_socket.DisconnectAsync(this))
+            {
+                ProcessDisconnect();
+            }
+        }
+
+        private void ProcessDisconnect()
+        {
+            var tcs = UserToken as TaskCompletionSource<byte[]>;
+            var nilArray = new byte[] { 36, 45, 49, 13, 10 };
+            tcs.SetResult(nilArray);
+        }
+        private void ProcessReceive()
+        {
+            var tcs = UserToken as TaskCompletionSource<byte[]>;
+          
+           
+            if (BytesTransferred == 0 || SocketError != SocketError.Success)
+            {
+                DisconnectAsync();
+                return;
+            }
+           
+            var total = BytesTransferred + Offset;
+            if (_socket.Available > 0)
+            {
+                var buffer = Buffer;
+
+                if (total + _socket.Available > buffer.Length)
+                {
+                    BufferPool.ResizeAndFlushLeft(ref buffer, total + _socket.Available, 0, total);
+                }
+
+                SetBuffer(buffer, total, buffer.Length - total);
+                
+                ReceiveAsync();
+                return;
+            }
+           
+            var array = new byte[total];
+            Array.Copy(Buffer, array, total);
+            Reset();
+            
+            tcs.SetResult(array);
+        }
+
+        
+
+        private void Reset()
+        {
+            var buffer = Buffer;
+            SetBuffer(null, 0, 0);
+            BufferPool.ReleaseBufferToPool(ref buffer);
+            UserToken = null;
+           
+        }
 
         private static byte[] GetCmdBytes(char cmdPrefix, int noOfLines)
         {
@@ -123,7 +214,6 @@ namespace Yasb.Redis.Messaging.Client
             return cmdBytes;
         }
 
-        
     }
    
 }

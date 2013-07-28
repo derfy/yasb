@@ -11,16 +11,17 @@ using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
-    public class MongoDbQueue : IQueue
+    public class MongoDbQueue : IQueue<MongoDbConnection>
     {
        
         private MongoCollection<BsonDocument> _collection;
         private const string TimeOutError = "Operation Timed Out";
 
-        public MongoDbQueue(MongoDbConnection connection, string queueName)
+        public MongoDbQueue(MongoDbQueueEndPoint queueEndPoint, string queueName)
         {
-            InitializeCollection(connection,queueName);
-            LocalEndPoint = string.Format("{0}:{1}:{2}",connection.Host,connection.Database,queueName);
+            LocalEndPoint = queueEndPoint;
+            InitializeCollection();
+            
         }
 
        
@@ -51,7 +52,7 @@ namespace Yasb.MongoDb.Messaging
             return envelope!=null;
         }
 
-        public void SetMessageCompleted(string envelopeId)
+        public void SetMessageCompleted(string envelopeId,DateTime now)
         {
             _collection.Remove(Query.EQ("_id", envelopeId));
         }
@@ -59,31 +60,38 @@ namespace Yasb.MongoDb.Messaging
         {
             throw new NotImplementedException();
         }
-        public void Push(IMessage message, string from)
+        public void Push(MessageEnvelope envelope)
         {
-            var objectId = new BsonObjectId(ObjectId.GenerateNewId());
-            var envelope = new MessageEnvelope(objectId.ToString(), message, from, LocalEndPoint) { LastCreateOrUpdateTimestamp=DateTime.UtcNow.Ticks};
-           
             _collection.Insert<MessageEnvelope>(envelope);
         }
+
+        
         public void Clear()
         {
             _collection.RemoveAll();
         }
-        public string LocalEndPoint { get; private set; }
+        public QueueEndPoint<MongoDbConnection> LocalEndPoint { get; private set; }
 
-        private void InitializeCollection(MongoDbConnection connection, string queueName)
+        private void InitializeCollection()
         {
-            var database = MongoDbFactory.CreateDatabase(connection);
-            if (!database.CollectionExists(queueName))
+            var database = MongoDbFactory.CreateDatabase(LocalEndPoint.Connection);
+            if (!database.CollectionExists(LocalEndPoint.Name))
             {
-               database.CreateCollection(queueName);
+                database.CreateCollection(LocalEndPoint.Name);
             }
-            _collection = database.GetCollection(queueName);
+            _collection = database.GetCollection(LocalEndPoint.Name);
         }
 
 
 
-       
+
+
+
+        public MessageEnvelope CreateMessageEnvelope(IMessage message, QueueEndPoint<MongoDbConnection> from, string messageHandler)
+        {
+            var objectId = new BsonObjectId(ObjectId.GenerateNewId());
+            return  new MessageEnvelope(objectId.ToString(), message, from.Value, LocalEndPoint.Value,messageHandler) { LastCreateOrUpdateTimestamp = DateTime.UtcNow.Ticks };
+
+        }
     }
 }

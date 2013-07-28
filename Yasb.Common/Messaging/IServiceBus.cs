@@ -5,12 +5,11 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IServiceBus
+    public interface IServiceBus<TConnection>
     {
-        string LocalEndPoint { get; }
+        QueueEndPoint<TConnection> LocalEndPoint { get; }
         void Send(string endPointName, IMessage message);
-        void Send(IQueue endPoint, IMessage message);
-        void Publish(IMessage message) ;
+        void Publish(IMessage message);
         void Subscribe<TMessage>(string endPointName) where TMessage : IMessage;
         void Run();
     }

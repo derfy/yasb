@@ -5,14 +5,16 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public class EndPointInfo<TConnection>
+    public class EndPointInfo
     {
-        public EndPointInfo(TConnection connection, string queueName)
+        public EndPointInfo(string connectionName, string queueName, string name)
         {
-            Connection = connection;
+            ConnectionName = connectionName;
             QueueName = queueName;
+            Name = name;
         }
-        public TConnection Connection { get; private set; }
+        public string ConnectionName { get; private set; }
         public string QueueName { get; private set; }
+        public string Name { get; private set; }
     }
 }

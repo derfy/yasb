@@ -6,18 +6,7 @@ using System.Reflection;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class QueueEndPointInfo
-    {
-        public QueueEndPointInfo(string connectionName,string queueName,string name)
-        {
-            ConnectionName = connectionName;
-            QueueName = queueName;
-            Name = name;
-        }
-        public string ConnectionName { get; private set; }
-        public string QueueName { get; private set; }
-        public string Name { get; private set; } 
-    }
+    
     public class EndPointConfigurer
     {
         

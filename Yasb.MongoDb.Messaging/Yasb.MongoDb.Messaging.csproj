@@ -55,6 +55,7 @@
     <Compile Include="MongoDbFactory.cs" />
     <Compile Include="MongoDbMessageEnvelope.cs" />
     <Compile Include="MongoDbQueue.cs" />
+    <Compile Include="MongoDbQueueEndPoint.cs" />
     <Compile Include="MongoDbQueueFactory.cs" />
     <Compile Include="MongoDbSubscriptionService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -6,30 +6,46 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Yasb.Common.Messaging;
+using Yasb.Common.Serialization.MessageDeserializers;
 
 namespace Yasb.Common.Serialization
 {
+    
+
+    
     public  class MessageEnvelopeConverter : JsonConverter 
     {
         
-       
+        private MessageDeserializerFactory _messageDeserializerFactory;
+
+        public MessageEnvelopeConverter()
+        {
+
+        }
+        public MessageEnvelopeConverter(MessageDeserializerFactory messageDeserializerFactory)
+        {
+            _messageDeserializerFactory = messageDeserializerFactory;
+        }
         public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null)
                 return null;
             var jobject = JObject.Load(reader);
+
             return PopuplaleFrom(jobject,serializer);
         }
 
         private object PopuplaleFrom(JObject jsonObject,JsonSerializer serializer)
         {
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
-            var message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
+            var messageDeserializer = _messageDeserializerFactory(contentType) as IMessageDeserializer;
+            var message = messageDeserializer.DeserializeFrom(jsonObject.Property("Message").Value, serializer);
+            //message = jsonObject.Property("Message").Value.ToObject(contentType, serializer) as IMessage;
             var envelopeId = jsonObject.Property("Id").Value.ToObject<string>();
             var from = jsonObject.Property("From").Value.ToObject<string>(serializer);
             var to = jsonObject.Property("To").Value.ToObject<string>(serializer);
-
-            var envelope = new MessageEnvelope(envelopeId,message, from, to);
+            var handler = jsonObject.Property("HandlerType").Value.ToObject<Type>(serializer);
+            var envelope = new MessageEnvelope(envelopeId,message, from, to,handler);
 
             if (jsonObject.Property("StartTimestamp") != null)
                 envelope.StartTimestamp = jsonObject.Property("StartTimestamp").Value.ToObject<long?>();

@@ -19,8 +19,8 @@ namespace Yasb.Wireup
 
         protected override void Load(Autofac.ContainerBuilder builder)
         {
-
-            builder.RegisterWithScope<JsonConverter>(componentScope => new MessageEnvelopeConverter());
+         //   builder.RegisterWithScope<JsonConverter>(componentScope => new MessageEnvelopeConverter());
+           
             builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
             {
                 return new Serializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray());

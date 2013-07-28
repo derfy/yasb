@@ -25,7 +25,7 @@ namespace Yasb.Wireup
             base.Load(builder);
             builder.RegisterWithScope<IMessageFormatter>(componentScope => new JsonMessageFormatter<MessageEnvelope>(componentScope.Resolve<ISerializer>()));
 
-            builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
+            builder.RegisterWithScope<AbstractQueueFactory<MsmqConnection>>((componentScope, parameters) =>
             {
                 return new MsmqQueueFactory(Configuration, componentScope.Resolve<IMessageFormatter>());
             }).InstancePerMatchingLifetimeScope(Scope);

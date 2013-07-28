@@ -16,7 +16,7 @@ namespace Yasb.Common.Serialization
         private JsonSerializer _serializer;
         public Serializer(JsonConverter[] jsonConverters)
         {
-            _serializer = new JsonSerializer() { NullValueHandling=NullValueHandling.Ignore};
+            _serializer = new JsonSerializer() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.None };
             foreach (var converter in jsonConverters)
             {
                 _serializer.Converters.Add(converter);

@@ -20,7 +20,7 @@ namespace Yasb.Redis.Messaging.Client
 
         private BufferPool() { }
         const int PoolSize = 1000; //1.45MB
-        internal const int BufferLength = 1435; //MTU size - some headers
+        internal const int BufferLength = 1024;//1435; //MTU size - some headers
         private static readonly object[] pool = new object[PoolSize];
 
         internal static byte[] GetBuffer()

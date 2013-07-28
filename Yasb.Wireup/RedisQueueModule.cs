@@ -16,39 +16,41 @@ using Autofac.Builder;
 using Yasb.Common.Serialization;
 using Yasb.Redis.Messaging.Scripts;
 using Newtonsoft.Json;
+using Yasb.Common.Messaging.Connections;
 
 namespace Yasb.Wireup
 {
-    public class RedisQueueModule : ScopedModule<QueueConfiguration<EndPoint>>
+    public class RedisQueueModule : ScopedModule<QueueConfiguration<RedisConnection>>
     {
-        public RedisQueueModule(QueueConfiguration<EndPoint> queueConfiguration, string scope)
+        public RedisQueueModule(QueueConfiguration<RedisConnection> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
         {
         }
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) => {
-                var connectionManager = new RedisConnectionManager(context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<EndPoint>(connection)));
-                return new RedisClient(connectionManager); 
+            builder.RegisterOneInstanceForObjectKey<RedisConnection, IRedisClient>((connection, context) =>
+            {
+                var connectionsPool = context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<RedisConnection>(connection));
+                return new RedisClient(connectionsPool); 
             });
             
            
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
-                var endPoint = parameters.TypedAs<EndPoint>();
+                var endPoint = parameters.TypedAs<RedisConnection>();
                 return new RedisSocketAsyncEventArgsPool(10, endPoint);
             });
 
-            
-            builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
+
+            builder.RegisterWithScope<AbstractQueueFactory<RedisConnection>>((componentScope, parameters) =>
             {
                 return new RedisQueueFactory(Configuration, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClientFactory>());
             }).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<RedisClientFactory>(componentScope =>
             {
-                 return endPoint => componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(endPoint));
+                return endPoint => componentScope.Resolve<IRedisClient>(TypedParameter.From<RedisConnection>(endPoint));
             }).InstancePerMatchingLifetimeScope(Scope);
 
            

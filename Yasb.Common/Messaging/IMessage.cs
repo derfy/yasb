@@ -7,7 +7,5 @@ namespace Yasb.Common.Messaging
 {
     public interface IMessage
     {
-       
     }
-   
 }

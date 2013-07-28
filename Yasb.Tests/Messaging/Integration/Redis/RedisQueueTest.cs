@@ -15,6 +15,7 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Threading.Tasks;
 using Yasb.Tests.Messaging.Integration.Redis;
 using System.Threading.Tasks;
+using Yasb.Common.Messaging.Connections;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -25,7 +26,7 @@ namespace Yasb.Tests.Messaging.Redis
     [TestClass]
     public class RedisQueueTest
     {
-        private IQueue _queue;
+        private IQueue<RedisConnection> _queue;
         private IRedisClient _redisClient;
         public RedisQueueTest()
         {
@@ -46,7 +47,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldSetTimeoutError()
         {
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint);
+            var envelope = new MessageEnvelope("id", message, _queue.LocalEndPoint.Value, "", "");
             MessageEnvelope newEnvelope = null;
             //Get Message
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
@@ -66,7 +67,9 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldRetrieveMessage()
         {
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint);
+            var envelope = new MessageEnvelope("id", message, _queue.LocalEndPoint.Value, "", "");
+            _queue.Push(envelope);
+
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
@@ -78,7 +81,8 @@ namespace Yasb.Tests.Messaging.Redis
        {
 
            var message = new TestMessage("This is a test");
-          _queue.Push(message, _queue.LocalEndPoint);
+           var envelope = new MessageEnvelope("id", message, _queue.LocalEndPoint.Value, "", "");
+           _queue.Push(envelope);
            MessageEnvelope newEnvelope = null;
            var t1 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
            var t2 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
@@ -93,11 +97,12 @@ namespace Yasb.Tests.Messaging.Redis
         {
 
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint);
+            var envelope = new MessageEnvelope("id", message, _queue.LocalEndPoint.Value, "", "");
+            _queue.Push(envelope);
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
-            _queue.SetMessageCompleted(newEnvelope.Id);
+            _queue.SetMessageCompleted(newEnvelope.Id, DateTime.Now);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNull(newEnvelope);
         }
@@ -108,12 +113,14 @@ namespace Yasb.Tests.Messaging.Redis
 
             MessageEnvelope newEnvelope = null;
             var message1 = new TestMessage("Message 1");
-            _queue.Push(message1, _queue.LocalEndPoint);
+            var envelope1 = new MessageEnvelope("id", message1, _queue.LocalEndPoint.Value, "", "");
+            _queue.Push(envelope1);
             var message2 = new TestMessage("Message 2");
-            _queue.Push(message2, _queue.LocalEndPoint);
+            var envelope2 = new MessageEnvelope("id", message2, _queue.LocalEndPoint.Value, "", "");
+            _queue.Push(envelope2);
             var message3 = new TestMessage("Message 3");
-            var envelope3 = new MessageEnvelope(message3, _queue.LocalEndPoint, _queue.LocalEndPoint, DateTimeOffset.UtcNow.Ticks);
-            _queue.Push(message3, _queue.LocalEndPoint);
+            var envelope3 = new MessageEnvelope("id", message3, _queue.LocalEndPoint.Value, "","");
+            _queue.Push(envelope3);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
            // Assert.AreEqual(envelope1.Id, newEnvelope.Id);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);

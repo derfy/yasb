@@ -8,10 +8,31 @@ using System.Collections.Concurrent;
 
 namespace Yasb.Common.Messaging
 {
+    public delegate IEnumerable<IHandleMessages> MessageHandlerFactory(Type type);
     public delegate void MessageHandlerMethodDelegate(object target, object message);
-    
-    public class MessageDispatcher
+    public interface IMessageDispatcher 
     {
+        void Dispatch(MessageEnvelope envelope);
+    }
+    public class MessageDispatcher<TConnection> : IMessageDispatcher
+    {
+        private MessageHandlerFactory _messageHandlerFactory;
+        public MessageDispatcher(MessageHandlerFactory messageHandlerFactory)
+        {
+            _messageHandlerFactory = messageHandlerFactory;
+        }
+        public void Dispatch(MessageEnvelope envelope)
+        {
+            var messageType = envelope.Message.GetType();
+            var handler = _messageHandlerFactory(messageType).Single(h => h.GetType().Equals(envelope.HandlerType));
+            var mhi = GetHandleMethodDelegate(messageType);
+            try { mhi(handler, envelope.Message); }
+            catch (Exception ex)
+            {
+                throw new MessageHandlerException(envelope.Id, ex.Message);
+            }
+            
+        }
         private ConcurrentDictionary<Type, MessageHandlerMethodDelegate> _handlers = new ConcurrentDictionary<Type, MessageHandlerMethodDelegate>();
 
         public MessageHandlerMethodDelegate GetHandleMethodDelegate(Type msgType)

@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MsmqQueueEndPoint.cs" />
     <Compile Include="MsmqQueueFactory.cs" />
     <Compile Include="MsmqSubscriptionService.cs" />
     <Compile Include="Serialization\JsonMessageFormatter.cs" />

@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Yasb.Common
 {
-    public interface ITaskRunner
+    public interface IWorkerPool<TResult>
     {
-        void Run(Action<CancellationToken> workerAction, Action<Exception> faultedAction = null);
+        Task Run();
         void Stop();
     }
 }

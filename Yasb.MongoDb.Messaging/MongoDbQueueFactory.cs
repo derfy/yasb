@@ -15,18 +15,19 @@ namespace Yasb.MongoDb.Messaging
             : base(queueConfiguration)
         {
         }
-        public override IQueue CreateFromEndPointValue(string endPointValue)
-        {
-            var array = endPointValue.Split(':');
-            if (array.Length != 3)
-                throw new ApplicationException("endPoint is not valid");
-            var connection = new MongoDbConnection(array[0], array[1]);
-            return CreateQueue(connection, array[2]);
-        }
+        //public IQueue<MongoDbConnection> CreateFromEndPointValue(string endPointValue)
+        //{
+        //    var array = endPointValue.Split(':');
+        //    if (array.Length != 3)
+        //        throw new ApplicationException("endPoint is not valid");
+        //    var connection = new MongoDbConnection(array[0], array[1]);
+        //    return CreateQueue(connection, array[2]);
+        //}
 
-        protected override IQueue CreateQueue(MongoDbConnection connection, string queueName)
+        public override IQueue<MongoDbConnection> CreateQueue(MongoDbConnection connection, string queueName)
         {
-            return new MongoDbQueue(connection, queueName);
+            var endPoint = new MongoDbQueueEndPoint(connection, queueName);
+            return new MongoDbQueue(endPoint, queueName);
         }
     }
 }

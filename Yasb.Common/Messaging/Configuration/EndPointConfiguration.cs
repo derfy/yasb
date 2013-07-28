@@ -7,13 +7,10 @@ namespace Yasb.Common.Messaging.Configuration
 {
     public class EndPointConfiguration
     {
-        private List<QueueEndPointInfo> _endPointsInfoList = new List<QueueEndPointInfo>();
+        private List<EndPointInfo> _endPointsInfoList = new List<EndPointInfo>();
 
-        public QueueEndPointInfo GetEndPointInfoByConnectionName(string connectionName)
-        {
-            return _endPointsInfoList.SingleOrDefault(e => e.ConnectionName == connectionName);
-        }
-        public QueueEndPointInfo GetEndPointInfoByName(string name)
+        
+        public EndPointInfo GetEndPointInfoByName(string name)
         {
             return _endPointsInfoList.SingleOrDefault(e => e.Name == name);
         }
@@ -21,7 +18,7 @@ namespace Yasb.Common.Messaging.Configuration
         internal void AddNamedEndPoint(string connectionName,string queueName,string endPointName)
 
         {
-            var queueEndPointInfo=new  QueueEndPointInfo(connectionName,queueName, endPointName);
+            var queueEndPointInfo=new  EndPointInfo(connectionName,queueName, endPointName);
             _endPointsInfoList.Add(queueEndPointInfo);
         }
         

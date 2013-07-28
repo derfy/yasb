@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Redis.Messaging.Client;
 using System.Net;
 using Moq;
+using Yasb.Common.Messaging.Connections;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -20,7 +21,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void PoolShouldHaveSizeItemsAfterCreation()
         {
             var size = 10;
-            var endPointMock = new Mock<EndPoint>();
+            var endPointMock = new Mock<RedisConnection>();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             Assert.AreEqual(size, sut.Size);
         }
@@ -28,7 +29,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldDequeueItem()
         {
             var size = 10;
-            var endPointMock = new Mock<EndPoint>();
+            var endPointMock = new Mock<RedisConnection>();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             var res=sut.Dequeue();
             Assert.AreEqual(size-1, sut.Size);
@@ -38,7 +39,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldEnqueueItem()
         {
             var size = 10;
-            var endPointMock = new Mock<EndPoint>();
+            var endPointMock = new Mock<RedisConnection>();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             var item = new RedisSocketAsyncEventArgs();
             sut.Enqueue(item);

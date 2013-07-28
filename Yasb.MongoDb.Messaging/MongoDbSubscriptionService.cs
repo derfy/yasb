@@ -9,40 +9,12 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
+using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
 
-    public class MyClassSerializer :  IBsonArraySerializer {
-    // ...
-
-    // implement GetItemSerializationInfo
-        public BsonSerializationInfo GetItemSerializationInfo()
-        {
-            throw new NotImplementedException();
-        }
-
-        public object Deserialize(MongoDB.Bson.IO.BsonReader bsonReader, Type nominalType, Type actualType, IBsonSerializationOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public object Deserialize(MongoDB.Bson.IO.BsonReader bsonReader, Type nominalType, IBsonSerializationOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IBsonSerializationOptions GetDefaultSerializationOptions()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Serialize(MongoDB.Bson.IO.BsonWriter bsonWriter, Type nominalType, object value, IBsonSerializationOptions options)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
+  
 
     public class MongoDbSubscription {
         public ObjectId Id { get; set; }
@@ -50,24 +22,25 @@ namespace Yasb.MongoDb.Messaging
         //[BsonSerializer(typeof(MyClassSerializer))]
         public string[] Endpoints { get; set; }
     }
-    public class MongoDbSubscriptionService : ISubscriptionService
+    public class MongoDbSubscriptionService : ISubscriptionService<MongoDbConnection>
     {
         private MongoCollection _collection;
         public MongoDbSubscriptionService(MongoDatabase database)
         {
             InitializeCollection(database);
         }
-        public string[] GetSubscriptionEndPoints(string typeName)
-        {
-            return _collection.FindOneAs<MongoDbSubscription>(Query.EQ("TypeName", typeName)).Endpoints;
-        }
+       
 
-        public void Subscribe(string typeName, string subscriberEndPoint)
+        public void Handle(SubscriptionMessage<MongoDbConnection> message)
         {
 
-            _collection.Update(Query.EQ("TypeName", typeName), Update.AddToSet("Endpoints", subscriberEndPoint), UpdateFlags.Upsert);
+          //  _collection.Update(Query.EQ("TypeName", message.TypeName), Update.AddToSet("Endpoints", message.SubscriberEndPoint), UpdateFlags.Upsert);
         }
-
+        public SubscriptionInfo<MongoDbConnection>[] GetSubscriptions(string typeName)
+        {
+            return null;
+            //  return _collection.FindOneAs<MongoDbSubscription>(Query.EQ("TypeName", typeName)).Endpoints;
+        }
         public void UnSubscribe(string typeName, string subscriberEndPoint)
         {
             throw new NotImplementedException();
@@ -80,5 +53,7 @@ namespace Yasb.MongoDb.Messaging
             }
             _collection = database.GetCollection("subscriptions");
         }
+
+    
     }
 }

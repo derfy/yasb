@@ -20,16 +20,16 @@ namespace Yasb.Redis.Messaging.Client
     public class RedisClient : IRedisClient, IDisposable
     {
         internal const int Success = 1;
-        private RedisConnectionManager _socketClient;
+        private IRedisSocketAsyncEventArgsPool _connectionEventArgsPool;
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        public RedisClient(RedisConnectionManager socketClient)
+        public RedisClient(IRedisSocketAsyncEventArgsPool connectionEventArgsPool)
         {
-           _socketClient = socketClient;
+            _connectionEventArgsPool = connectionEventArgsPool;
         }
 
         public EndPoint Address
         {
-            get { return _socketClient.Address; }
+            get { return _connectionEventArgsPool.Address; }
         }
 
         public virtual byte[] EvalSha(string fileName, int noKeys, params string[] keys)
@@ -85,6 +85,7 @@ namespace Yasb.Redis.Messaging.Client
 
             return SendCommand<byte[]>(RedisCommandFactory.SRem(set, value));
         }
+
         public byte[][] SMembers(string set)
         {
             if (set == null)
@@ -116,16 +117,22 @@ namespace Yasb.Redis.Messaging.Client
                 _internalCache.TryAdd(fileName, scriptSha);
             }
         }
+
         private TResult SendCommand<TResult>(IRedisCommand<TResult> command)
         {
-          
-            var taskConnect = _socketClient.StartConnect();
-            taskConnect.Wait();
-            var taskSend = _socketClient.SendAsync(command.ToBinary,taskConnect.Result);
-            using (var commandProcessor = new CommandResultProcessor(taskSend.Result))
-            {
-                return command.ProcessResponse(commandProcessor);
-            }
+            var connectEventArgs = _connectionEventArgsPool.Dequeue();
+            
+            var task=  connectEventArgs.StartConnect()
+                                       .ContinueWith(t =>  t.Result.SendAsync(command.ToBinary));
+            return task.Unwrap<byte[]>().ContinueWith(taskSend =>
+            { 
+                _connectionEventArgsPool.Enqueue(connectEventArgs);
+                using (var commandProcessor = new CommandResultProcessor(taskSend.Result))
+                {
+                    return command.ProcessResponse(commandProcessor);
+                }
+            }).Result;                         
+            
         }
 
         private bool isDisposed = false;
@@ -135,10 +142,9 @@ namespace Yasb.Redis.Messaging.Client
             isDisposed = true;
         }
 
-
-
-
-
-       
+        private void EnqueueConnection(RedisSocketAsyncEventArgs socketEventArgs, EventArgs e)
+        {
+            _connectionEventArgsPool.Enqueue(socketEventArgs); 
+        }
     }
 }

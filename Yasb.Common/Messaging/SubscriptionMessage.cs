@@ -5,21 +5,21 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public  class SubscriptionMessage : IMessage
+    public class SubscriptionMessage<TConnection> : IMessage
     {
-        protected SubscriptionMessage()
-        {
+        private List<SubscriptionInfo<TConnection>> _subscriptions = new List<SubscriptionInfo<TConnection>>();
 
-        }
-        public SubscriptionMessage(string typeName, string subscriberEndPoint)
+        
+        public SubscriptionMessage(string typeName, IEnumerable<SubscriptionInfo<TConnection>> subscriptions)
         {
             TypeName = typeName;
-            SubscriberEndPoint = subscriberEndPoint;
+            _subscriptions.AddRange(subscriptions);
         }
+
+        
         public virtual string TypeName { get; private set; }
 
 
-
-        public virtual string SubscriberEndPoint { get; private set; }
+        public virtual SubscriptionInfo<TConnection>[] Subscriptions { get { return _subscriptions.ToArray(); } }
     }
 }

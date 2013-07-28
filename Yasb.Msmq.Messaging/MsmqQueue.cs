@@ -6,13 +6,14 @@ using System.Messaging;
 using Yasb.Common.Messaging;
 using System.Transactions;
 using System.Threading.Tasks;
+using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqQueue : IQueue
+    public class MsmqQueue : IQueue<MsmqConnection>
     {
         private IMessageFormatter _formatter;
-        public MsmqQueue(string localEndPoint,IMessageFormatter formatter)
+        public MsmqQueue(QueueEndPoint<MsmqConnection> localEndPoint,IMessageFormatter formatter)
         {
             LocalEndPoint = localEndPoint;
             _formatter = formatter;
@@ -20,15 +21,15 @@ namespace Yasb.Msmq.Messaging
         }
         public void Initialize()
         {
-            if (!MessageQueue.Exists(LocalEndPoint))
-                MessageQueue.Create(LocalEndPoint, true);
+            if (!MessageQueue.Exists(LocalEndPoint.Value))
+                MessageQueue.Create(LocalEndPoint.Value, true);
         }
 
 
 
-        public void SetMessageCompleted(string envelopeId)
+        public void SetMessageCompleted(string envelopeId, DateTime now)
         {
-            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
                 WithMessageQueueTransaction(tx =>
                 {
@@ -43,7 +44,7 @@ namespace Yasb.Msmq.Messaging
 
         public void SetMessageInError(string envelopeId,string errorMessage)
         {
-            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
                 WithMessageQueueTransaction(tx =>
                 {
@@ -59,7 +60,7 @@ namespace Yasb.Msmq.Messaging
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
-            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
                 Task<Message> ts = Task.Factory.FromAsync<Message>(internalQueue.BeginPeek(TimeSpan.FromMilliseconds(10)), internalQueue.EndPeek);
                 var onCompletionTask = ts.ContinueWith<MessageEnvelope>(t =>
@@ -112,14 +113,18 @@ namespace Yasb.Msmq.Messaging
             return envelope!=null;
         }
 
-
-        public void Push(IMessage message, string from)
+        public MessageEnvelope CreateMessageEnvelope(IMessage message, QueueEndPoint<MsmqConnection> from, string messageHandler)
         {
             var envelopeId = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
-            var envelope = new MessageEnvelope(envelopeId, message, from, LocalEndPoint);
+            return  new MessageEnvelope(envelopeId, message, from.Value, LocalEndPoint.Value,messageHandler);
+        }
+
+        
+        public void Push(MessageEnvelope envelope)
+        {
             
-            var msmqMessage = new Message(envelope) { Formatter = _formatter };
-            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            var msmqMessage = new System.Messaging.Message(envelope) { Formatter = _formatter };
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
 
                 internalQueue.Send(msmqMessage, MessageQueueTransactionType.Single);
@@ -127,7 +132,7 @@ namespace Yasb.Msmq.Messaging
         }
         public void Clear()
         {
-            using (var internalQueue = new MessageQueue(LocalEndPoint) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
                 internalQueue.Purge();
             }
@@ -155,10 +160,13 @@ namespace Yasb.Msmq.Messaging
         }
 
 
-        public string LocalEndPoint { get; private set; }
+        public QueueEndPoint<MsmqConnection> LocalEndPoint { get; private set; }
 
 
-        
+
+
+
+      
     }
     
 }

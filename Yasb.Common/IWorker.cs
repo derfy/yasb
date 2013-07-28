@@ -6,10 +6,13 @@ using System.Threading;
 
 namespace Yasb.Common
 {
-    public interface IWorker
+    
+    public interface IWorker<TResult> 
     {
-        void Execute(CancellationToken token);
+        TResult Execute();
 
         void OnException(Exception ex);
+
+        void OnCompleted(TResult result);
     }
 }

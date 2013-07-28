@@ -14,7 +14,7 @@ namespace Yasb.Wireup
         {
         }
 
-        public IServiceBus Bus(Action<ServiceBusConfigurer<TConnection>> action)
+        public IServiceBus<TConnection> Bus(Action<ServiceBusConfigurer<TConnection>> action)
         {
             var builder = new ContainerBuilder();
             var serviceBusConfigurer = new ServiceBusConfigurer<TConnection>();
@@ -22,17 +22,17 @@ namespace Yasb.Wireup
             var serviceBusConfiguration = serviceBusConfigurer.Built;
             
             RegisterServiceBusModule(builder,serviceBusConfiguration);
-            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus>();
+            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus<TConnection>>();
         }
 
 
-        public IQueueFactory ConfigureQueue(Action<QueueConfigurer<TConnection>> action)
+        public AbstractQueueFactory<TConnection> ConfigureQueue(Action<QueueConfigurer<TConnection>> action)
         {
             var builder = new ContainerBuilder();
             var queueConfigurer = new QueueConfigurer<TConnection>();
             action(queueConfigurer);
             RegisterQueueModule(builder,queueConfigurer.Built);
-            return builder.Build().BeginLifetimeScope("queue").Resolve<IQueueFactory>();
+            return builder.Build().BeginLifetimeScope("queue").Resolve<AbstractQueueFactory<TConnection>>();
         }
 
 

@@ -14,7 +14,7 @@ namespace Yasb.Tests.Wireup
     public class TestConfigurator : AbstractConfigurator<TestConnection>
     {
         public TestQueueFactory QueueFactory { get; private set; }
-        public Mock<ISubscriptionService> SubscriptionService { get;  set; }
+        public Mock<ISubscriptionService<TestConnection>> SubscriptionService { get; set; }
         protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<TestConnection> queueConfiguration)
         {
             QueueFactory = new TestQueueFactory(queueConfiguration);

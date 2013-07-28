@@ -11,6 +11,8 @@ using Yasb.Common.Messaging;
 using Yasb.Common.Tests;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Net;
+using Yasb.Common.Tests.Configuration;
+using Yasb.Common.Messaging.Connections;
 
 namespace Yasb.Tests.Messaging
 {
@@ -23,20 +25,22 @@ namespace Yasb.Tests.Messaging
         private RedisQueue _sut;
         private Mock<ISerializer> _serializerMock= new Mock<ISerializer>();
         private Mock<IRedisClient> _redisClientMock = new Mock<IRedisClient>();
+        private Mock<QueueEndPoint<RedisConnection>> _endPointTest = new Mock<QueueEndPoint<RedisConnection>>();
         public RedisQueueTest()
         {
-            _sut = new RedisQueue("test", _serializerMock.Object, _redisClientMock.Object);
+            _sut = new RedisQueue(_endPointTest.Object, _serializerMock.Object, _redisClientMock.Object);
            
         }
         [TestMethod]
         public void ShouldBeAbleToPush()
         {
 
-            
+            var endPointTest = new Mock<QueueEndPoint<RedisConnection>>();
+            endPointTest.Setup(e => e.Value).Returns("localConnection:foo");
             var bytes = Encoding.Default.GetBytes("foo");
             _serializerMock.Setup(c => c.Serialize(It.IsAny<MessageEnvelope>())).Returns(bytes);
             _redisClientMock.Setup(c => c.LPush("test", bytes));
-            _sut.Push(new TestMessage("This is a test"), "localConnection:foo");
+            var envelope = new MessageEnvelope("id", new TestMessage("This is a test"), endPointTest.Object.Value, "", "");
             _redisClientMock.VerifyAll();
             _serializerMock.VerifyAll();
         }
@@ -45,7 +49,7 @@ namespace Yasb.Tests.Messaging
         public void ShouldBeAbleToDequeue()
         {
             MessageEnvelope newEnvelope = null;
-            var envelope = new MessageEnvelope(new TestMessage("This is a test"), "localConnection:foo", "localConnection:bar", DateTimeOffset.UtcNow.Ticks);
+            var envelope = new MessageEnvelope("id",new TestMessage("This is a test"), "localConnection:foo", "localConnection:bar", "");
             byte[] script1 = Encoding.Default.GetBytes("foo");
             var now=DateTime.Now;
             var timoutWindow = new TimeSpan();
@@ -76,7 +80,7 @@ namespace Yasb.Tests.Messaging
         {
             var envelopeId=Guid.NewGuid();
             var now = DateTime.Now;
-            _sut.SetMessageCompleted(envelopeId.ToString());
+            _sut.SetMessageCompleted(envelopeId.ToString(), DateTime.Now);
             _redisClientMock.Verify(c => c.EvalSha("SetMessageCompleted.lua", 1, It.IsAny<string[]>()), Times.Once());
         }
     }

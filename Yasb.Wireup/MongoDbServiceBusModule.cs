@@ -19,7 +19,7 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISubscriptionService>((componentScope, parameters) =>
+            builder.RegisterWithScope<ISubscriptionService<MongoDbConnection>>((componentScope, parameters) =>
             {
                 var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
                 var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);

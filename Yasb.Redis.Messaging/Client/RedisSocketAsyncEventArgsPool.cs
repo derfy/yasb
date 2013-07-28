@@ -7,22 +7,31 @@ using System.Collections.Concurrent;
 using Yasb.Common.Messaging;
 using System.Net.Sockets;
 using System.Net;
+using Yasb.Common.Messaging.Connections;
+using System.Threading;
 
 namespace Yasb.Redis.Messaging.Client
 {
     public class RedisSocketAsyncEventArgsPool : IRedisSocketAsyncEventArgsPool
     {
         private ConcurrentQueue<RedisSocketAsyncEventArgs> _internalQueue = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
-       
-         
-        public RedisSocketAsyncEventArgsPool(int size,EndPoint address)
+        private ManualResetEventSlim _mres = new ManualResetEventSlim(false); 
+        private RedisConnection _connection;
+        public RedisSocketAsyncEventArgsPool(int size, RedisConnection connection)
         {
-            Address = address;
-           
-            Initialise(size,address);
+            _connection  = connection;
+
+            Initialise(size, Address);
         }
 
-        public EndPoint Address { get; private set; }
+        public EndPoint Address 
+        { 
+            get 
+            {
+                var ipAddress = Dns.GetHostAddresses(_connection.Host).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).First();
+                return new IPEndPoint(ipAddress, _connection.Port);
+            } 
+        }
 
         private void Initialise(int size, EndPoint endPoint)
         {
@@ -34,10 +43,12 @@ namespace Yasb.Redis.Messaging.Client
 
         public RedisSocketAsyncEventArgs Dequeue()
         {
+           
             RedisSocketAsyncEventArgs connectEventArgs=null;
-            if (!_internalQueue.TryDequeue(out connectEventArgs))
+            while (!_internalQueue.TryDequeue(out connectEventArgs))
             {
-                connectEventArgs = RedisSocketAsyncEventArgs.CreateNew(Address);
+                _mres.Wait();
+                _mres.Reset();
             }
             return connectEventArgs;
         }
@@ -50,8 +61,8 @@ namespace Yasb.Redis.Messaging.Client
         public void Enqueue(RedisSocketAsyncEventArgs socketAsyncEventArgs)
         {
            
-            _internalQueue.Enqueue(socketAsyncEventArgs);   
-            
+            _internalQueue.Enqueue(socketAsyncEventArgs);
+            _mres.Set();
         }
 
        

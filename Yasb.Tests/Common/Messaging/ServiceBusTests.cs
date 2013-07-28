@@ -24,14 +24,14 @@ namespace Yasb.Tests.Common.Messaging
     [TestClass]
     public class ServiceBusTests
     {
-        private  Mock<ISubscriptionService> _subscriptionService;
-        private IServiceBus _sut;
+        private Mock<ISubscriptionService<TestConnection>> _subscriptionService;
+        private IServiceBus<TestConnection> _sut;
         private TestQueueFactory _queueFactory; 
         [TestInitialize]
         public void Setup()
         {
            
-            _subscriptionService = new Mock<ISubscriptionService>();
+            _subscriptionService = new Mock<ISubscriptionService<TestConnection>>();
             var configurator = new TestConfigurator();
             configurator.SubscriptionService = _subscriptionService;
             _sut = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "consumer")
@@ -44,34 +44,35 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void LocalMessageEndPointShouldBeCorrect()
         {
-            Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint);
+            Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint.Value);
         }
         [TestMethod]
         public void WhenSendingMessageSenderShouldBeInvokedCorrectly()
         {
              var message=new TestMessage("foo");
              _sut.Send("producer", message);
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(message,"192.168.127.128:6379:consumer"), Times.Once());
+             var endPoint0 = new Mock<QueueEndPoint<TestConnection>>();
+             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"),It.IsAny<string>()), Times.Once());
       
         }
         [TestMethod]
         public void ShouldBeAbleToSubscribe()
         {
              _sut.Subscribe<TestMessage>("producer");
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(It.IsAny<SubscriptionMessage>(), "192.168.127.128:6379:consumer"), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(It.IsAny<SubscriptionMessage<TestConnection>>(), It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
         }
 
         [TestMethod]
         public void ShouldBeAbleToPublish()
         {
 
-            _subscriptionService.Setup(s => s.GetSubscriptionEndPoints(typeof(TestMessage).FullName)).Returns(new string[] { "192.168.127.128:6379:consumer", "192.168.127.128:6379:producer" });
+         //   _subscriptionService.Setup(s => s.GetSubscriptions(typeof(TestMessage).FullName)).Returns(new string[] { "192.168.127.128:6379:consumer", "192.168.127.128:6379:producer" });
           
             var message = new TestMessage("foo");
              _sut.Publish(message);
-             _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.Push(message,"192.168.127.128:6379:consumer"), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(message,"192.168.127.128:6379:consumer"), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.Push(It.IsAny<IMessage>(),It.IsAny<string>()), Times.Never());
+             _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.CreateMessageEnvelope(It.IsAny<IMessage>(), It.IsAny<QueueEndPoint<TestConnection>>(), It.IsAny<string>()), Times.Never());
         }
         [TestMethod]
         public void ShouldBeAbleToRun()

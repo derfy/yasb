@@ -5,14 +5,17 @@ using System.Text;
 using Autofac.Builder;
 using Autofac;
 using Autofac.Core;
+using Yasb.Common.Messaging;
+using Yasb.Common.Serialization.MessageDeserializers;
 
 namespace Yasb.Wireup
 {
     public static class ContainerBuilderExtensions
     {
+       
         public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope, IEnumerable<Parameter>, T> func, object scope = null)
         {
-            return builder.Register<T>((c,p)=>
+            return builder.Register((c,p)=>
             {
                 var lifetimeScope = scope == null ? c.Resolve<ILifetimeScope>() : c.Resolve<ILifetimeScope>().BeginLifetimeScope(scope);
                 return func(lifetimeScope,p);
@@ -21,7 +24,7 @@ namespace Yasb.Wireup
 
         public static IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> RegisterWithScope<T>(this ContainerBuilder builder, Func<ILifetimeScope,T> func,object scope =null)
         {
-            return builder.Register<T>((c) =>
+            return builder.Register((c) =>
             {
                 var lifetimeScope = scope==null ? c.Resolve<ILifetimeScope>() : c.Resolve<ILifetimeScope>().BeginLifetimeScope(scope);
                 return func(lifetimeScope);
@@ -33,6 +36,5 @@ namespace Yasb.Wireup
             builder.RegisterSource(new OneInstancePerKeyObjectRegistrationSource<TKeyObject, T>(func));
             
         }
-       
     }
 }

@@ -12,10 +12,11 @@ namespace Yasb.Redis.Messaging.Client.Commands
     public class CommandResultProcessor : ICommandResultProcessor
     {
         private BufferedStream _bStream;
-       
-        
+
+        private byte[] _buffer;
         internal CommandResultProcessor(byte[] buffer)
         {
+            _buffer = buffer;
              _bStream = new BufferedStream(new MemoryStream(buffer));
      
         }

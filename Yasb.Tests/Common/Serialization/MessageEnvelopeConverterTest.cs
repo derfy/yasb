@@ -46,7 +46,7 @@ namespace Yasb.Tests.Common.Serialization
             var sut = new MessageEnvelopeConverter();
             var result = sut.ReadJson(reader, typeof(MessageEnvelope), null, serializer.Object) as MessageEnvelope;
             Assert.AreEqual(id, result.Id);
-            Assert.AreEqual(typeof(TestMessage), result.ContentType);
+            Assert.AreEqual(typeof(TestMessage), result.Message.GetType());
             Assert.AreEqual(fromEndPoint, result.From);
             Assert.AreEqual(toEndPoint, result.To);
         }

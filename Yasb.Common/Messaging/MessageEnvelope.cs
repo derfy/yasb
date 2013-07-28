@@ -8,36 +8,37 @@ namespace Yasb.Common.Messaging
    
     public class MessageEnvelope 
     {
-        private string LocalEndPoint;
-
+       
         public MessageEnvelope()
         {
 
         }
 
-        public MessageEnvelope(IMessage message, string from, string to, long lastCreateOrUpdateTimestamp)
-        {
-            Message = message;
-            From = from;
-            To = to;
-            LastCreateOrUpdateTimestamp = lastCreateOrUpdateTimestamp;
-        }
-
-        public MessageEnvelope(string envelopeId, IMessage message, string from, string to)
+        public MessageEnvelope(string envelopeId, IMessage message, string from, string to, string messageHandlerTypeName)
         {
             Id = envelopeId;
             Message = message;
             From = from;
             To = to;
+            HandlerType = Type.GetType(messageHandlerTypeName);
+        }
+
+        public MessageEnvelope(string envelopeId, IMessage message, string from, string to, Type handlerType)
+        {
+            Id = envelopeId;
+            Message = message;
+            From = from;
+            To = to;
+            HandlerType = handlerType;
         }
         public IMessage Message { get; private set; }
 
         public string From { get; private set; }
         public string To { get; private set; }
+        public string Id { get;  set; }
+
+        public Type HandlerType { get; private set; }
         public Type ContentType { get { return Message.GetType(); } }
-
-        public string Id { get; private set; }
-
         public int RetriesNumber { get;set; }
 
         public long? StartTimestamp { get; set; }

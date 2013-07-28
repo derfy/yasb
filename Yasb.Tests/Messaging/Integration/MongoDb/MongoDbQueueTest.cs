@@ -18,7 +18,7 @@ namespace Yasb.Tests.Messaging.Integration.MongoDb
     [TestClass]
     public class MongoDbQueueTest
     {
-        private IQueue _queue;
+        private IQueue<MongoDbConnection> _queue;
         public MongoDbQueueTest()
         {
             _queue = new MongoDbConfigurator().ConfigureQueue(e => e.WithEndPoint("vmEndPoint", "test_mongodb", "myEndPoint")

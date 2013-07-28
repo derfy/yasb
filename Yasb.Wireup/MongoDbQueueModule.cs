@@ -22,8 +22,8 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-          
-            builder.RegisterWithScope<IQueueFactory>((componentScope, parameters) =>
+
+            builder.RegisterWithScope<AbstractQueueFactory<MongoDbConnection>>((componentScope, parameters) =>
             {
                 return new MongoDbQueueFactory(Configuration);
             }).InstancePerMatchingLifetimeScope(Scope);

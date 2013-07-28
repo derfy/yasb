@@ -55,7 +55,7 @@ namespace Yasb.Wireup
         }
     }
 
-   
+
     public class ErrorMessage : IMessage
     {
         public int Number { get; private set; }

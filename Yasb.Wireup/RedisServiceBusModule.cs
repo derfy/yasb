@@ -19,25 +19,28 @@ using Autofac.Core.Registration;
 using Autofac.Core.Lifetime;
 using Autofac.Builder;
 using Newtonsoft.Json;
+using Yasb.Common.Messaging.Connections;
 
 namespace Yasb.Wireup
 {
 
-    public class RedisServiceBusModule : ServiceBusModule<EndPoint>
+    public class RedisServiceBusModule : ServiceBusModule<RedisConnection>
     {
-        public RedisServiceBusModule(ServiceBusConfiguration<EndPoint> serviceBusConfiguration)
+        public RedisServiceBusModule(ServiceBusConfiguration<RedisConnection> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
         }
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISubscriptionService>((componentScope, parameters) =>
+            builder.RegisterWithScope<RedisSubscriptionMessageHandler>((componentScope, parameters) =>
             {
                 var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
                 var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
-                return new SubscriptionService(componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(connection)));
-            });
+                return new RedisSubscriptionMessageHandler(componentScope.Resolve<IRedisClient>(TypedParameter.From<RedisConnection>(connection)));
+            })
+            .As<ISubscriptionService<RedisConnection>>()
+            .As<IHandleMessages<SubscriptionMessage<RedisConnection>>>();
         }
     }
    
