@@ -28,7 +28,8 @@ namespace Yasb.Common.Messaging
             MessageEnvelope envelope = null;
             if (!(_queue.TryDequeue(DateTime.UtcNow, delta, out envelope)))
                 return null;
-            _messageDispatcher.Dispatch(envelope);
+            if (!_messageDispatcher.TryDispatch(envelope))
+                return null;
             return envelope;
         }
         public void OnCompleted(MessageEnvelope env)
@@ -40,7 +41,6 @@ namespace Yasb.Common.Messaging
             var handlerException = ex as MessageHandlerException;
             if (handlerException == null)
                 return;
-           // Console.WriteLine("On exception   .......  " + handlerException.EnvelopeId+" "+ handlerException.StackTrace);
             _queue.SetMessageInError(handlerException.EnvelopeId,handlerException.Message);
         }
 

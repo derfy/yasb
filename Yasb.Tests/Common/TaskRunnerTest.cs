@@ -47,10 +47,7 @@ namespace Yasb.Tests.Common
             var worker = new Mock<IWorker<TestResult>>();
             _sut = new WorkerPool<TestResult>(worker.Object);
 
-            worker.Setup(w => w.Execute()).Callback(() =>
-            {
-                throw new Exception();
-            });
+            worker.Setup(w => w.Execute()).Throws(new Exception());
             worker.Setup(w => w.OnException(It.IsAny<Exception>())).Callback((Exception t) =>
             {
                 Console.WriteLine("jhfg");

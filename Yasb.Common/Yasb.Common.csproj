@@ -83,6 +83,7 @@
     <Compile Include="Messaging\MessageEnvelope.cs" />
     <Compile Include="Messaging\MessageHandlerException.cs" />
     <Compile Include="Messaging\MessagesReceiver.cs" />
+    <Compile Include="Messaging\NullMessageHandler.cs" />
     <Compile Include="Messaging\QueueEndPoint.cs" />
     <Compile Include="Messaging\ServiceBus.cs" />
     <Compile Include="Messaging\SubscriptionInfo.cs" />

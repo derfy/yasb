@@ -59,7 +59,7 @@ namespace Yasb.Common
         {
             var token = _tokenSource.Token;
             token.ThrowIfCancellationRequested();
-            var task = new Task<TResult>((state) =>
+            var task = new Task<TResult>(() =>
             {
                
                 Interlocked.Increment(ref _runningTasksNumber);
@@ -83,11 +83,7 @@ namespace Yasb.Common
             }, TaskContinuationOptions.ExecuteSynchronously|TaskContinuationOptions.OnlyOnFaulted);
             task.ContinueWith(canceledTask =>
             {
-                canceledTask.Exception.Handle(ex =>
-                {
-                    worker.OnException(ex);
-                    return true;
-                });
+                
             }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnCanceled);
             return task;
         }

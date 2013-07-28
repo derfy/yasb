@@ -8,15 +8,19 @@ namespace Yasb.Common.Messaging.Connections
 {
     public class RedisConnection
     {
+        protected RedisConnection()
+        {
+
+        }
         public RedisConnection(string host,int port)
         {
             Host = host;
             Port = port;
         }
 
-        public string Host { get; private set; }
+        public virtual string Host { get; private set; }
 
-        public int Port { get; private set; }
+        public virtual int Port { get; private set; }
 
         public string Value { get { return string.Format("{0}:{1}", Host, Port); } }
 

@@ -21,7 +21,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void PoolShouldHaveSizeItemsAfterCreation()
         {
             var size = 10;
-            var endPointMock = new Mock<RedisConnection>();
+            var endPointMock = CreateEndPointMock();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             Assert.AreEqual(size, sut.Size);
         }
@@ -29,25 +29,32 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldDequeueItem()
         {
             var size = 10;
-            var endPointMock = new Mock<RedisConnection>();
+            var endPointMock = CreateEndPointMock();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             var res=sut.Dequeue();
             Assert.AreEqual(size-1, sut.Size);
         }
 
+        
         [TestMethod]
         public void ShouldEnqueueItem()
         {
             var size = 10;
-            var endPointMock = new Mock<RedisConnection>();
+            var endPointMock = CreateEndPointMock();
             var sut = new RedisSocketAsyncEventArgsPool(size, endPointMock.Object);
             var item = new RedisSocketAsyncEventArgs();
             sut.Enqueue(item);
             Assert.AreEqual(size + 1, sut.Size);
         }
-       
 
-      
+
+        private static Mock<RedisConnection> CreateEndPointMock()
+        {
+            var endPointMock = new Mock<RedisConnection>();
+            endPointMock.Setup(e => e.Host).Returns("127.0.0.1");
+            return endPointMock;
+        }
+
 
        
     }

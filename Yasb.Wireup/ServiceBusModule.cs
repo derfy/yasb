@@ -26,9 +26,9 @@ namespace Yasb.Wireup
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
-           
-          
-            builder.RegisterWithScope<MessageHandlerFactory>((componentScope, p) =>
+
+
+            builder.RegisterWithScope<Func<Type, IEnumerable<IHandleMessages>>>((componentScope, p) =>
             {
                 return type =>
                 {
@@ -56,7 +56,7 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<MessageDispatcher<TConnection>>((componentScope, parameters) =>
             {
-                return new MessageDispatcher<TConnection>(componentScope.Resolve<MessageHandlerFactory>());
+                return new MessageDispatcher<TConnection>(componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As<IMessageDispatcher>().InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<MessagesReceiver<TConnection>>((componentScope, parameters) =>
@@ -66,11 +66,12 @@ namespace Yasb.Wireup
 
             builder.RegisterWithScope<ServiceBus<TConnection>>((componentScope, parameters) =>
             {
-                return new ServiceBus<TConnection>(componentScope.Resolve<AbstractQueueFactory<TConnection>>(), componentScope.Resolve<ISubscriptionService<TConnection>>(),componentScope.Resolve<IWorkerPool<MessageEnvelope>>(), componentScope.Resolve<MessageHandlerFactory>());
+                return new ServiceBus<TConnection>(componentScope.Resolve<AbstractQueueFactory<TConnection>>(), componentScope.Resolve<ISubscriptionService<TConnection>>(), componentScope.Resolve<IWorkerPool<MessageEnvelope>>(), componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As<IServiceBus<TConnection>>().InstancePerMatchingLifetimeScope(Scope);
 
 
-            builder.RegisterWithScope<MessageDeserializerFactory>((componentScope) => type => {
+            builder.RegisterWithScope<Func<Type, IMessageDeserializer>>((componentScope) => type =>
+            {
                 if (!componentScope.IsRegisteredWithKey<IMessageDeserializer>(type))
                 {
                     var genericType = typeof(DefaultMessageDeserializer<>).MakeGenericType(type);
@@ -82,7 +83,7 @@ namespace Yasb.Wireup
             builder.RegisterType<SubscriptionMessageDeserializer<TConnection>>().Keyed<IMessageDeserializer>(typeof(SubscriptionMessage<TConnection>))
                .As<IMessageDeserializer>()
                .InstancePerMatchingLifetimeScope(Scope);
-            builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<MessageDeserializerFactory>())).As<JsonConverter>();
+            builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
         }
     }
 }

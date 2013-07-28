@@ -47,12 +47,17 @@ namespace Yasb.Tests.Common.Messaging
             Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint.Value);
         }
         [TestMethod]
-        public void WhenSendingMessageSenderShouldBeInvokedCorrectly()
+        public void WhenSendingMessageQueueShouldBeInvokedCorrectly()
         {
              var message=new TestMessage("foo");
              _sut.Send("producer", message);
-             var endPoint0 = new Mock<QueueEndPoint<TestConnection>>();
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"),It.IsAny<string>()), Times.Once());
+            var endPoint0 = new Mock<QueueEndPoint<TestConnection>>();
+            var connection = new TestConnection("192.168.127.128", 6379);
+            endPoint0.Setup(e => e.Connection).Returns(connection);
+            endPoint0.Setup(e => e.Name).Returns("producer");
+            endPoint0.Setup(e => e.Value).Returns("192.168.127.128:6379:producer");
+            var queue = _queueFactory.GetMock(endPoint0.Object.Value);
+            queue.Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"),It.IsAny<string>()), Times.Once());
       
         }
         [TestMethod]
@@ -65,8 +70,14 @@ namespace Yasb.Tests.Common.Messaging
         [TestMethod]
         public void ShouldBeAbleToPublish()
         {
-
-         //   _subscriptionService.Setup(s => s.GetSubscriptions(typeof(TestMessage).FullName)).Returns(new string[] { "192.168.127.128:6379:consumer", "192.168.127.128:6379:producer" });
+            var endPoint1=new Mock<QueueEndPoint<TestConnection>>();
+            var connection = new TestConnection("192.168.127.128", 6379);
+            endPoint1.Setup(e => e.Connection).Returns(connection);
+            endPoint1.Setup(e => e.Name).Returns("consumer");
+             var endPoint2=new Mock<QueueEndPoint<TestConnection>>();
+             endPoint2.Setup(e => e.Connection).Returns(connection);
+             endPoint2.Setup(e => e.Name).Returns("producer");
+            _subscriptionService.Setup(s => s.GetSubscriptions(typeof(TestMessage).AssemblyQualifiedName)).Returns(new SubscriptionInfo<TestConnection>[] { new SubscriptionInfo<TestConnection>(endPoint1.Object, ""), new SubscriptionInfo<TestConnection>(endPoint2.Object, "") });
           
             var message = new TestMessage("foo");
              _sut.Publish(message);

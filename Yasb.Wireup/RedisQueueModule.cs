@@ -17,6 +17,7 @@ using Yasb.Common.Serialization;
 using Yasb.Redis.Messaging.Scripts;
 using Newtonsoft.Json;
 using Yasb.Common.Messaging.Connections;
+using Yasb.Common.Serialization.MessageDeserializers;
 
 namespace Yasb.Wireup
 {
@@ -36,24 +37,33 @@ namespace Yasb.Wireup
             });
             
            
-            builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
+            builder.RegisterWithScope<RedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 var endPoint = parameters.TypedAs<RedisConnection>();
                 return new RedisSocketAsyncEventArgsPool(500, endPoint);
-            });
+            }).As<IRedisSocketAsyncEventArgsPool>();
 
 
-            builder.RegisterWithScope<AbstractQueueFactory<RedisConnection>>((componentScope, parameters) =>
+            builder.RegisterWithScope<RedisQueueFactory>((componentScope, parameters) =>
             {
                 return new RedisQueueFactory(Configuration, componentScope.Resolve<ISerializer>(), componentScope.Resolve<RedisClientFactory>());
-            }).InstancePerMatchingLifetimeScope(Scope);
+            }).As<AbstractQueueFactory<RedisConnection>>().InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<RedisClientFactory>(componentScope =>
             {
                 return endPoint => componentScope.Resolve<IRedisClient>(TypedParameter.From<RedisConnection>(endPoint));
             }).InstancePerMatchingLifetimeScope(Scope);
 
-           
+            builder.RegisterWithScope<Func<Type, IMessageDeserializer>>((componentScope) => type =>
+            {
+                if (!componentScope.IsRegisteredWithKey<IMessageDeserializer>(type))
+                {
+                    var genericType = typeof(DefaultMessageDeserializer<>).MakeGenericType(type);
+                    return Activator.CreateInstance(genericType) as IMessageDeserializer;
+                }
+                return componentScope.ResolveKeyed<IMessageDeserializer>(type);
+            }).InstancePerMatchingLifetimeScope(Scope);
+            builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
         }
     }
 }

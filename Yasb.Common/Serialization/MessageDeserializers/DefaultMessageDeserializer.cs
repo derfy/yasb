@@ -8,10 +8,8 @@ using Newtonsoft.Json;
 
 namespace Yasb.Common.Serialization.MessageDeserializers
 {
-    public class DefaultMessageDeserializer<TMessage> : IMessageDeserializer<TMessage> where TMessage : IMessage
+    public class DefaultMessageDeserializer<TMessage> : IMessageDeserializer where TMessage : IMessage
     {
-        
-
         public IMessage DeserializeFrom(JToken jToken, JsonSerializer serializer)
         {
             return jToken.ToObject<TMessage>(serializer);

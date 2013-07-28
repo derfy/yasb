@@ -11,9 +11,9 @@ namespace Yasb.Common.Messaging
         private readonly AbstractQueueFactory<TConnection> _queueFactory;
         private readonly IWorkerPool<MessageEnvelope> _messageReveiverWorkerPool;
         private readonly ISubscriptionService<TConnection> _subscriptionService;
-        private MessageHandlerFactory _messageHandlerFactory;
+        private Func<Type, IEnumerable<IHandleMessages>> _messageHandlerFactory;
 
-        public ServiceBus(AbstractQueueFactory<TConnection> queueFactory, ISubscriptionService<TConnection> subscriptionService, IWorkerPool<MessageEnvelope> messageReveiverWorkerPool, MessageHandlerFactory messageHandlerFactory)
+        public ServiceBus(AbstractQueueFactory<TConnection> queueFactory, ISubscriptionService<TConnection> subscriptionService, IWorkerPool<MessageEnvelope> messageReveiverWorkerPool, Func<Type, IEnumerable<IHandleMessages>> messageHandlerFactory)
         {
             _queueFactory = queueFactory;
             _subscriptionService = subscriptionService;
@@ -29,7 +29,13 @@ namespace Yasb.Common.Messaging
                 return localQueue.LocalEndPoint;
             } 
         }
-
+        public void Send(string endPointName, IMessage message)
+        {
+            var queue = _queueFactory.CreateFromEndPointName(endPointName);
+            var handlerType = typeof(NullMessageHandler<>).MakeGenericType(message.GetType());
+            var envelope = queue.CreateMessageEnvelope(message, LocalEndPoint, handlerType.AssemblyQualifiedName);
+            queue.Push(envelope);
+        }
         public void Publish(IMessage message) 
         {
             var subscriptions = _subscriptionService.GetSubscriptions(message.GetType().AssemblyQualifiedName);
@@ -41,11 +47,7 @@ namespace Yasb.Common.Messaging
             }
             
         }
-        public void Send(string endPointName, IMessage message)
-        {
-            var queue = _queueFactory.CreateFromEndPointName(endPointName);
-            //queue.Push(message, LocalEndPoint);
-        }
+        
         public void Subscribe<TMessage>(string endPointName) where TMessage : IMessage
         {
             var queue = _queueFactory.CreateFromEndPointName(endPointName);

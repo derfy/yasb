@@ -7,6 +7,10 @@ namespace Yasb.Common.Messaging
 {
     public class SubscriptionInfo<TConnection>
     {
+        protected SubscriptionInfo()
+        {
+
+        }
         public SubscriptionInfo(QueueEndPoint<TConnection> endPoint, string handler)
         {
             EndPoint = endPoint;

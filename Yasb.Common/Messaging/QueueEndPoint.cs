@@ -21,9 +21,9 @@ namespace Yasb.Common.Messaging
         {
 
         }
-        public string Name { get; protected set; }
+        public virtual string Name { get; protected set; }
 
-        public TConnection Connection { get; protected set; }
+        public virtual TConnection Connection { get; protected set; }
 
         public Type Type { get { return GetType(); } }
         
