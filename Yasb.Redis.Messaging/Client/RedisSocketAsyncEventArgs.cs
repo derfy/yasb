@@ -149,8 +149,9 @@ namespace Yasb.Redis.Messaging.Client
         private void ProcessDisconnect()
         {
             var tcs = UserToken as TaskCompletionSource<byte[]>;
-            var nilArray = new byte[] { 36, 45, 49, 13, 10 };
-            tcs.SetResult(nilArray);
+            Reset();
+            Dispose();
+            tcs.SetCanceled();
         }
         private void ProcessReceive()
         {

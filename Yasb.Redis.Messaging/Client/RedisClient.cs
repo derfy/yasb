@@ -125,7 +125,12 @@ namespace Yasb.Redis.Messaging.Client
             var task=  connectEventArgs.StartConnect()
                                        .ContinueWith(t =>  t.Result.SendAsync(command.ToBinary));
             return task.Unwrap<byte[]>().ContinueWith(taskSend =>
-            { 
+            {
+                if (taskSend.IsCanceled)
+                {
+                    _connectionEventArgsPool.Enqueue(RedisSocketAsyncEventArgs.CreateNew(Address));
+                    return default(TResult);
+                }
                 _connectionEventArgsPool.Enqueue(connectEventArgs);
                 using (var commandProcessor = new CommandResultProcessor(taskSend.Result))
                 {
