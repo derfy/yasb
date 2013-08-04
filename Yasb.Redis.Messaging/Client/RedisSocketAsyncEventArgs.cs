@@ -33,17 +33,8 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
-        public void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
-        {
-            WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
-            foreach (var safeBinaryValue in cmdWithBinaryArgs)
-            {
-                WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
-                WriteToSendBuffer(safeBinaryValue);
-                WriteToSendBuffer(endData);
-            }
-        }
-
+     
+        
         public Task<RedisSocketAsyncEventArgs> StartConnect()
         {
             var tcs = new TaskCompletionSource<RedisSocketAsyncEventArgs>();
@@ -65,9 +56,7 @@ namespace Yasb.Redis.Messaging.Client
         {
             var taskCompletionSource = new TaskCompletionSource<byte[]>();
             UserToken = taskCompletionSource;
-            SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
-            WriteAllToSendBuffer(data);
-            SetBuffer(0, Offset);
+            WriteAllToSendBufferList(data);
             if (!_socket.SendAsync(this))
             {
                 ReceiveAsync();
@@ -75,20 +64,23 @@ namespace Yasb.Redis.Messaging.Client
             return taskCompletionSource.Task;
         }
 
-
-       
-        private void WriteToSendBuffer(byte[] cmdBytes)
+      
+        private void WriteAllToSendBufferList(params byte[][] cmdWithBinaryArgs)
         {
-            var buffer = Buffer;
-            var total = Offset + cmdBytes.Length;
-            if (cmdBytes.Length > this.Count)
+            
+            var bufferList = new List<ArraySegment<byte>>();
+            bufferList.Add(new ArraySegment<byte>(GetCmdBytes('*', cmdWithBinaryArgs.Length)));
+            foreach (var safeBinaryValue in cmdWithBinaryArgs)
             {
-                BufferPool.ResizeAndFlushLeft(ref buffer, total, 0, Offset);
+                bufferList.Add(new ArraySegment<byte>(GetCmdBytes('$', safeBinaryValue.Length)));
+                bufferList.Add(new ArraySegment<byte>(safeBinaryValue));
+                bufferList.Add(new ArraySegment<byte>(endData));
             }
-            System.Buffer.BlockCopy(cmdBytes, 0, buffer, Offset, cmdBytes.Length);
-            SetBuffer(buffer, total, buffer.Length-total);
+            BufferList = bufferList;
         }
 
+       
+       
         protected override void OnCompleted(SocketAsyncEventArgs e)
         {
             base.OnCompleted(e);
@@ -127,8 +119,8 @@ namespace Yasb.Redis.Messaging.Client
         }
         private void ProcessSend()
         {
-            SetBuffer(0, BufferPool.BufferLength);
-            Array.Clear(Buffer, 0, Buffer.Length);
+            BufferList=null;
+            SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
             ReceiveAsync();
         }
         private void ReceiveAsync()
@@ -215,6 +207,31 @@ namespace Yasb.Redis.Messaging.Client
             return cmdBytes;
         }
 
+        private void WriteAllToSendBuffer(params byte[][] cmdWithBinaryArgs)
+        {
+            SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
+            WriteToSendBuffer(GetCmdBytes('*', cmdWithBinaryArgs.Length));
+            foreach (var safeBinaryValue in cmdWithBinaryArgs)
+            {
+                WriteToSendBuffer(GetCmdBytes('$', safeBinaryValue.Length));
+                WriteToSendBuffer(safeBinaryValue);
+                WriteToSendBuffer(endData);
+            }
+            SetBuffer(0, Offset);
+        }
+
+        private void WriteToSendBuffer(byte[] cmdBytes)
+        {
+            
+            var buffer = Buffer;
+            var total = Offset + cmdBytes.Length;
+            if (cmdBytes.Length > this.Count)
+            {
+                BufferPool.ResizeAndFlushLeft(ref buffer, total, 0, Offset);
+            }
+            System.Buffer.BlockCopy(cmdBytes, 0, buffer, Offset, cmdBytes.Length);
+            SetBuffer(buffer, total, buffer.Length-total);
+        }
     }
    
 }

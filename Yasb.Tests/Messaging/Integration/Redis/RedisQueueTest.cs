@@ -65,7 +65,7 @@ namespace Yasb.Tests.Messaging.Redis
             //Assert It's the same message
             Assert.AreEqual(newEnvelope.Id, timeoutEnvelope.Id);
             //Second retrieval should yield timeout
-            //Assert.AreEqual("Operation Timed Out", timeoutEnvelope.LastErrorMessage);
+            Assert.AreEqual("Operation Timed Out", timeoutEnvelope.LastErrorMessage);
         }
        [Ignore]
         [TestMethod]
