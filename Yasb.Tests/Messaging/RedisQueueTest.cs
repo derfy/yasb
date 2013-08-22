@@ -40,8 +40,8 @@ namespace Yasb.Tests.Messaging
             var bytes = Encoding.Default.GetBytes("foo");
             _serializerMock.Setup(c => c.Serialize(It.IsAny<MessageEnvelope>())).Returns(bytes);
             _redisClientMock.Setup(c => c.EvalSha("PushMessage.lua", 1, It.IsAny<byte[]>(), bytes));
-            var envelope = new MessageEnvelope("id", new TestMessage("This is a test"), _endPointTest.Object.Value, "", "");
-            _sut.Push(envelope);
+            var message = new TestMessage("This is a test");
+            _sut.Push(message, _endPointTest.Object.Value, "");
             _redisClientMock.VerifyAll();
             _serializerMock.VerifyAll();
         }

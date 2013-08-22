@@ -57,14 +57,14 @@ namespace Yasb.Tests.Common.Messaging
             endPoint0.Setup(e => e.Name).Returns("producer");
             endPoint0.Setup(e => e.Value).Returns("192.168.127.128:6379:producer");
             var queue = _queueFactory.GetMock(endPoint0.Object.Value);
-            queue.Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"),It.IsAny<string>()), Times.Once());
+            queue.Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
       
         }
         [TestMethod]
         public void ShouldBeAbleToSubscribe()
         {
              _sut.Subscribe<TestMessage>("producer");
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(It.IsAny<SubscriptionMessage<TestConnection>>(), It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(It.IsAny<SubscriptionMessage<TestConnection>>(), "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
         }
 
         [TestMethod]
@@ -81,9 +81,9 @@ namespace Yasb.Tests.Common.Messaging
           
             var message = new TestMessage("foo");
              _sut.Publish(message);
-             _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.CreateMessageEnvelope(message, It.Is<QueueEndPoint<TestConnection>>(m => m.Value == "192.168.127.128:6379:consumer"), It.IsAny<string>()), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.CreateMessageEnvelope(It.IsAny<IMessage>(), It.IsAny<QueueEndPoint<TestConnection>>(), It.IsAny<string>()), Times.Never());
+             _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
+             _queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.Push(It.IsAny<IMessage>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never());
         }
         [TestMethod]
         public void ShouldBeAbleToRun()

@@ -8,11 +8,11 @@ using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqSubscriptionService : ISubscriptionService<MsmqConnection>
+    public class MsmqSubscriptionMessageHandler : ISubscriptionService<MsmqConnection>, IHandleMessages<SubscriptionMessage<MsmqConnection>>
     {
         private string _queueName;
         private ConcurrentDictionary<string, List<SubscriptionInfo<MsmqConnection>>> _subscriptionsStore = new ConcurrentDictionary<string, List<SubscriptionInfo<MsmqConnection>>>();
-        public MsmqSubscriptionService(string queueName)
+        public MsmqSubscriptionMessageHandler(string queueName)
         {
             this._queueName = queueName;
         }

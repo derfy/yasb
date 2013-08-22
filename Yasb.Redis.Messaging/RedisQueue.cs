@@ -52,16 +52,13 @@ namespace Yasb.Redis.Messaging
             _redisClient.EvalSha("SetMessageInError.lua", 1, envelopeId, errorMessage);
         }
 
-        public void Push(MessageEnvelope envelope)
+        public void Push(IMessage message, string replyTo, string messageHandler)
         {
+            var envelope= CreateMessageEnvelope(message, replyTo, messageHandler);
              var bytes = _serializer.Serialize(envelope);
             _redisClient.EvalSha("PushMessage.lua", 1, LocalEndPoint.Name.ToUtf8Bytes(), bytes);
         }
-        public MessageEnvelope CreateMessageEnvelope(IMessage message, QueueEndPoint<RedisConnection> from, string messageHandler)
-        {
-            var envelopeId = Guid.NewGuid().ToString();
-            return new MessageEnvelope(envelopeId, message, from.Value, LocalEndPoint.Value, messageHandler);
-        }
+       
         public QueueEndPoint<RedisConnection> LocalEndPoint { get; private set; }
 
         public void Clear() {
@@ -73,7 +70,11 @@ namespace Yasb.Redis.Messaging
 
 
 
-
+        private MessageEnvelope CreateMessageEnvelope(IMessage message, string replyTo, string messageHandler)
+        {
+            var envelopeId = Guid.NewGuid().ToString();
+            return new MessageEnvelope(envelopeId, message, replyTo, LocalEndPoint.Value, messageHandler);
+        }
 
 
 

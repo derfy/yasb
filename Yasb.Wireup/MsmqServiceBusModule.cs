@@ -21,12 +21,15 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISubscriptionService<MsmqConnection>>((componentScope, parameters) =>
+            builder.RegisterWithScope<MsmqSubscriptionMessageHandler>((componentScope, parameters) =>
             {
                 var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
                 var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
-                return new MsmqSubscriptionService(localEndPointInfo.QueueName);
-            }).InstancePerMatchingLifetimeScope(Scope);
+                return new MsmqSubscriptionMessageHandler(localEndPointInfo.QueueName);
+            })
+           .As<ISubscriptionService<MsmqConnection>>()
+           .As<IHandleMessages<SubscriptionMessage<MsmqConnection>>>();
+           
         }
     }
 }

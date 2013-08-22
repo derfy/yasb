@@ -50,8 +50,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldSetTimeoutError()
         {
             var message = new TestMessage("This is a test");
-            var envelope = new MessageEnvelope(CreateGuid(), message, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope);
+            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
 
             MessageEnvelope newEnvelope = null;
             //Get Message
@@ -72,8 +71,7 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldRetrieveMessage()
         {
             var message = new TestMessage("This is a test");
-            var envelope = new MessageEnvelope(CreateGuid(), message, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope);
+            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
 
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
@@ -86,8 +84,7 @@ namespace Yasb.Tests.Messaging.Redis
        {
 
            var message = new TestMessage("This is a test");
-           var envelope = new MessageEnvelope(CreateGuid(), message, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-           _queue.Push(envelope);
+           _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
            MessageEnvelope newEnvelope = null;
            var t1 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
            var t2 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
@@ -102,8 +99,7 @@ namespace Yasb.Tests.Messaging.Redis
         {
 
             var message = new TestMessage("This is a test");
-            var envelope = new MessageEnvelope(CreateGuid(), message, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope);
+            _queue.Push(message, _queue.LocalEndPoint.Value, "");
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
@@ -118,20 +114,17 @@ namespace Yasb.Tests.Messaging.Redis
 
             MessageEnvelope newEnvelope = null;
             var message1 = new TestMessage("Message 1");
-            var envelope1 = new MessageEnvelope(CreateGuid(), message1, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope1);
+            _queue.Push(message1, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
             var message2 = new TestMessage("Message 2");
-            var envelope2 = new MessageEnvelope(CreateGuid(), message2, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope2);
+            _queue.Push(message2, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
             var message3 = new TestMessage("Message 3");
-            var envelope3 = new MessageEnvelope(CreateGuid(), message3, _queue.LocalEndPoint.Value, "", typeof(TestMessageHandler));
-            _queue.Push(envelope3);
+            _queue.Push(message3, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(envelope1.Id, newEnvelope.Id);
+            Assert.AreEqual(message1.Value, ((TestMessage)newEnvelope.Message).Value);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(envelope2.Id, newEnvelope.Id);
+            Assert.AreEqual(message2.Value, ((TestMessage)newEnvelope.Message).Value);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(envelope3.Id, newEnvelope.Id);
+            Assert.AreEqual(message3.Value, ((TestMessage)newEnvelope.Message).Value);
         }
         private static string CreateGuid() {
             return Guid.NewGuid().ToString();

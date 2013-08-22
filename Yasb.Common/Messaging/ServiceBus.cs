@@ -33,8 +33,7 @@ namespace Yasb.Common.Messaging
         {
             var queue = _queueFactory.CreateFromEndPointName(endPointName);
             var handlerType = typeof(NullMessageHandler<>).MakeGenericType(message.GetType());
-            var envelope = queue.CreateMessageEnvelope(message, LocalEndPoint, handlerType.AssemblyQualifiedName);
-            queue.Push(envelope);
+            queue.Push(message, LocalEndPoint.Value, handlerType.AssemblyQualifiedName);
         }
         public void Publish(IMessage message) 
         {
@@ -42,8 +41,7 @@ namespace Yasb.Common.Messaging
             foreach (var subscription in subscriptions)
             {
                 IQueue<TConnection> queue = _queueFactory.CreateQueue(subscription.EndPoint.Connection, subscription.EndPoint.Name);
-                var envelope = queue.CreateMessageEnvelope(message, LocalEndPoint, subscription.Handler);
-                queue.Push(envelope);
+                queue.Push(message, LocalEndPoint.Value, subscription.Handler);
             }
             
         }
@@ -59,8 +57,7 @@ namespace Yasb.Common.Messaging
         {
             var subscriptions = _messageHandlerFactory(typeof(TMessage)).Select(h=>new SubscriptionInfo<TConnection>(LocalEndPoint, h.GetType().AssemblyQualifiedName));
             var subscriptionMessage = new SubscriptionMessage<TConnection>(typeof(TMessage).AssemblyQualifiedName, subscriptions);
-            var envelope = queue.CreateMessageEnvelope(subscriptionMessage, LocalEndPoint, _subscriptionService.GetType().AssemblyQualifiedName);
-            queue.Push(envelope);
+            queue.Push(subscriptionMessage, LocalEndPoint.Value, _subscriptionService.GetType().AssemblyQualifiedName);
         }
         
         public void Run()

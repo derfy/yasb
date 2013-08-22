@@ -60,8 +60,9 @@ namespace Yasb.MongoDb.Messaging
         {
             throw new NotImplementedException();
         }
-        public void Push(MessageEnvelope envelope)
+        public void Push(IMessage message, string replyTo, string messageHandler)
         {
+            var envelope = CreateMessageEnvelope(message, replyTo, messageHandler);
             _collection.Insert<MessageEnvelope>(envelope);
         }
 
@@ -87,10 +88,10 @@ namespace Yasb.MongoDb.Messaging
 
 
 
-        public MessageEnvelope CreateMessageEnvelope(IMessage message, QueueEndPoint<MongoDbConnection> from, string messageHandler)
+        private MessageEnvelope CreateMessageEnvelope(IMessage message, string replyTo, string messageHandler)
         {
             var objectId = new BsonObjectId(ObjectId.GenerateNewId());
-            return  new MessageEnvelope(objectId.ToString(), message, from.Value, LocalEndPoint.Value,messageHandler) { LastCreateOrUpdateTimestamp = DateTime.UtcNow.Ticks };
+            return new MessageEnvelope(objectId.ToString(), message, replyTo, LocalEndPoint.Value, messageHandler) { LastCreateOrUpdateTimestamp = DateTime.UtcNow.Ticks };
 
         }
     }

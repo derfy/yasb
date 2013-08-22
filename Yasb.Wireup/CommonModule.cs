@@ -23,7 +23,7 @@ namespace Yasb.Wireup
            
             builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
             {
-                return new Serializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray());
+                return new JsonNetSerializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray());
             }).InstancePerMatchingLifetimeScope(Scope);
 
 

@@ -43,6 +43,10 @@ namespace Yasb.Wireup
                 return new RedisSocketAsyncEventArgsPool(10, endPoint);
             }).As<IRedisSocketAsyncEventArgsPool>();
 
+            builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
+            {
+                return new JsonNetSerializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray());
+            }).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<RedisQueueFactory>((componentScope, parameters) =>
             {

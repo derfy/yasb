@@ -113,16 +113,12 @@ namespace Yasb.Msmq.Messaging
             return envelope!=null;
         }
 
-        public MessageEnvelope CreateMessageEnvelope(IMessage message, QueueEndPoint<MsmqConnection> from, string messageHandler)
-        {
-            var envelopeId = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
-            return  new MessageEnvelope(envelopeId, message, from.Value, LocalEndPoint.Value,messageHandler);
-        }
+       
 
-        
-        public void Push(MessageEnvelope envelope)
+
+        public void Push(IMessage message, string replyTo, string messageHandler)
         {
-            
+            var envelope = CreateMessageEnvelope(message, replyTo, messageHandler);
             var msmqMessage = new System.Messaging.Message(envelope) { Formatter = _formatter };
             using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
@@ -148,7 +144,7 @@ namespace Yasb.Msmq.Messaging
                     tx.Commit();
                     return result;
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
                     if (tx.Status == MessageQueueTransactionStatus.Pending)
                     {
@@ -163,7 +159,11 @@ namespace Yasb.Msmq.Messaging
         public QueueEndPoint<MsmqConnection> LocalEndPoint { get; private set; }
 
 
-
+        private MessageEnvelope CreateMessageEnvelope(IMessage message, string replyTo, string messageHandler)
+        {
+            var envelopeId = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
+            return new MessageEnvelope(envelopeId, message, replyTo, LocalEndPoint.Value, messageHandler);
+        }
 
 
       

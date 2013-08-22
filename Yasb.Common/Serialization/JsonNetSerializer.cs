@@ -11,10 +11,10 @@ using Yasb.Common.Messaging;
 namespace Yasb.Common.Serialization
 {
    
-    public class Serializer : ISerializer
+    public class JsonNetSerializer : ISerializer
     {
         private JsonSerializer _serializer;
-        public Serializer(JsonConverter[] jsonConverters)
+        public JsonNetSerializer(JsonConverter[] jsonConverters)
         {
             _serializer = new JsonSerializer() { NullValueHandling = NullValueHandling.Ignore, TypeNameHandling = TypeNameHandling.None };
             foreach (var converter in jsonConverters)

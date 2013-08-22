@@ -17,13 +17,11 @@ namespace Yasb.Wireup
 
         protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<MsmqConnection> serviceBusConfiguration)
         {
-            builder.RegisterModule(new CommonModule<QueueConfiguration<MsmqConnection>>(serviceBusConfiguration, "bus"));
             builder.RegisterModule(new MsmqQueueModule(serviceBusConfiguration,"bus"));
             builder.RegisterModule(new MsmqServiceBusModule(serviceBusConfiguration));
         }
         protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<MsmqConnection> queueConfiguration)
         {
-            builder.RegisterModule(new CommonModule<QueueConfiguration<MsmqConnection>>(queueConfiguration, "queue"));
             builder.RegisterModule(new MsmqQueueModule(queueConfiguration,"queue"));
         }
        
