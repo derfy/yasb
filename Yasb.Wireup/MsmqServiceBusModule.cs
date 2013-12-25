@@ -6,13 +6,15 @@ using Yasb.Common.Messaging.Configuration;
 using Yasb.Msmq.Messaging;
 using Autofac;
 using Yasb.Common.Messaging;
+using Yasb.Common.Messaging.EndPoints.Msmq;
 using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Wireup
 {
-    public class MsmqServiceBusModule : ServiceBusModule<MsmqConnection> 
+
+    public class MsmqServiceBusModule : ServiceBusModule<MsmqEndPoint,MsmqSerializationConfiguration> 
     {
-        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqConnection> serviceBusConfiguration)
+        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
 
@@ -21,14 +23,12 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<MsmqSubscriptionMessageHandler>((componentScope, parameters) =>
+            builder.RegisterWithScope<MsmqSubscriptionService>((componentScope, parameters) =>
             {
-                var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
-                var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
-                return new MsmqSubscriptionMessageHandler(localEndPointInfo.QueueName);
+                var localEndPoint = Configuration.EndPoints["local"];
+                return new MsmqSubscriptionService(localEndPoint);
             })
-           .As<ISubscriptionService<MsmqConnection>>()
-           .As<IHandleMessages<SubscriptionMessage<MsmqConnection>>>();
+           .As<ISubscriptionService<MsmqEndPoint>>();
            
         }
     }

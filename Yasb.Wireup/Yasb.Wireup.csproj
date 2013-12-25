@@ -58,7 +58,6 @@
   <ItemGroup>
     <Compile Include="AbstractConfigurator.cs" />
     <Compile Include="MongoDbConfigurator.cs" />
-    <Compile Include="CommonModule.cs" />
     <Compile Include="MongoDbQueueModule.cs" />
     <Compile Include="MongoDbServiceBusModule.cs" />
     <Compile Include="RedisConfigurator.cs" />

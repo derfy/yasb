@@ -38,15 +38,13 @@ namespace Yasb.Common.Serialization
         private object PopuplaleFrom(JObject jsonObject,JsonSerializer serializer)
         {
             var contentType = jsonObject.Property("ContentType").Value.ToObject<Type>();
-            var handlerType = jsonObject.Property("HandlerType").Value.ToObject<Type>(serializer);
             var messageDeserializer = _messageDeserializerFactory(contentType) as IMessageDeserializer;
             var message = messageDeserializer.DeserializeFrom(jsonObject.Property("Message").Value, serializer);
             var envelopeId = jsonObject.Property("Id").Value.ToObject<string>();
-            var from = jsonObject.Property("From").Value.ToObject<string>(serializer);
-            var to = jsonObject.Property("To").Value.ToObject<string>(serializer);
+            //var from = jsonObject.Property("From").Value.ToObject<string>(serializer);
+            //var to = jsonObject.Property("To").Value.ToObject<string>(serializer);
             
-            var envelope = new MessageEnvelope(envelopeId,message, from, to,handlerType);
-
+            var envelope = new MessageEnvelope(envelopeId,message);
             if (jsonObject.Property("StartTimestamp") != null)
                 envelope.StartTimestamp = jsonObject.Property("StartTimestamp").Value.ToObject<long?>();
             if (jsonObject.Property("RetriesNumber") != null)

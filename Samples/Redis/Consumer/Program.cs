@@ -6,10 +6,13 @@ using Autofac;
 using System.Threading;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
-using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 using System.Net;
 using Yasb.Common.Messaging.Configuration;
 using Autofac.Builder;
+using Yasb.Common.Messaging.EndPoints.Redis;
+using Yasb.Common.Messaging.Configuration.Redis;
+using Yasb.Common.Serialization;
+using Yasb.Common.Serialization.Json;
 namespace Consumer
 {
     internal class Program
@@ -61,16 +64,14 @@ namespace Consumer
             
 
             var configurator = new RedisConfigurator();
-            var bus = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("LocalConnection", "redis_consumer")
-                                                                                  .WithEndPoint("ProducerConnection", "redis_producer", "producer"))
-                                                .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("ProducerConnection", "192.168.127.128")
-                                                                                                         .WithConnection("LocalConnection", "192.168.127.128"))
-                                                .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly));
+            var bus = configurator.Bus(sb => sb.EndPoints<RedisEndPointConfiguration>(eb => eb.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_consumer"))
+                                                   .SubscribesTo("redis_producer@192.168.227.128", ec => ec.WithHostName("192.168.227.128").WithQueueName("redis_producer")))
+                                                .Serializer<JsonSerializationConfiguration<RedisEndPoint>>());
 
 
-            bus.Subscribe<ExampleMessage>("producer");
+            bus.Subscribe<ExampleMessage>("redis_producer@192.168.227.128");
             Console.WriteLine("subscription ExampleMessage sent");
-            bus.Subscribe<ExampleMessage2>("producer");
+            bus.Subscribe<ExampleMessage2>("redis_producer@192.168.227.128");
             Console.WriteLine("subscription ExampleMessage2 sent");
             bus.Run();
         }

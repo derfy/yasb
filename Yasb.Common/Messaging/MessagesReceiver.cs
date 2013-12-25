@@ -11,14 +11,14 @@ using Yasb.Common;
 
 namespace Yasb.Common.Messaging
 {
-    
-    public class MessagesReceiver<TConnection> : IWorker<MessageEnvelope>, IDisposable 
+
+    public class MessagesReceiver<TEndPoint> : IWorker<MessageEnvelope>, IDisposable 
     {
-        private IQueue<TConnection> _queue;
+        private IQueue<TEndPoint> _queue;
         private IMessageDispatcher _messageDispatcher;
-        public MessagesReceiver(AbstractQueueFactory<TConnection> queueFactory,IMessageDispatcher messageDispatcher)
+        public MessagesReceiver(IQueue<TEndPoint> queue, IMessageDispatcher messageDispatcher)
         {
-            _queue = queueFactory.CreateFromEndPointName("local");
+            _queue = queue;
             _messageDispatcher = messageDispatcher;
         }
 

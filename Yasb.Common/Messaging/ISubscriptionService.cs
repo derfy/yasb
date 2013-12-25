@@ -5,9 +5,11 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface ISubscriptionService<TConnection>
+    public interface ISubscriptionService<TEndPoint>
     {
-        SubscriptionInfo<TConnection>[] GetSubscriptions(string typeName);
-        void UnSubscribe(string typeName, string subscriberEndPoint);
+        TEndPoint[] GetSubscriptionEndPoints();
+        void UnSubscribe(string topicName, TEndPoint subscriberEndPoint);
+
+        void SubscribeTo(TEndPoint topicEndPoint);
     }
 }

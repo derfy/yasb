@@ -8,7 +8,6 @@ using Yasb.Wireup;
 using Yasb.Redis.Messaging;
 using Yasb.Common.Tests;
 using Yasb.Common.Messaging;
-using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 using Autofac;
 
 namespace Yasb.Tests.Wireup

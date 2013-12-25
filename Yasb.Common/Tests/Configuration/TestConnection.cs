@@ -2,24 +2,47 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Tests.Configuration
 {
-    public class TestConnection 
+    public class TestSerializationConfiguration { }
+    public class TestEndPointConfiguration : IEndPointConfiguration<TestEndPoint>
     {
-        private string host;
-        private int port;
-
-        public TestConnection(string host, int port)
+        private string _queueName;
+        private string _hostName;
+        public TestEndPointConfiguration WithHostName(string hostName)
         {
-             this.host = host;
-            this.port = port;
+            _hostName = hostName;
+            return this;
         }
 
-        public override string ToString()
+
+
+        public TestEndPointConfiguration WithQueueName(string queueName)
         {
-            return string.Format("{0}:{1}",host,port);
+            _queueName = queueName;
+            return this;
+        }
+
+        public TestEndPoint Built
+        {
+            get { return new TestEndPoint(_hostName, _queueName); }
         }
     }
+    public class TestEndPoint : QueueEndPoint,IEndPoint {
+        public TestEndPoint(string host,string queueName):base(host,queueName)
+        {
+
+        }
+        public  string Value
+        {
+            get { return string.Format("{0}:{1}:{2}", Host,Port, QueueName); }
+        }
+
+        public int Port { get; set; }
+    }
+    
 }

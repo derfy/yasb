@@ -8,30 +8,27 @@ using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Serialization;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging.Client.Interfaces;
-using Yasb.Common.Messaging.Connections;
+using Yasb.Common.Messaging.EndPoints.Redis;
 
 namespace Yasb.Redis.Messaging
 {
-    public delegate IRedisClient RedisClientFactory(RedisConnection connection);
+    public delegate IRedisClient RedisClientFactory(RedisEndPoint connection);
 
-    public class RedisQueueFactory : AbstractQueueFactory<RedisConnection>
+    public class RedisQueueFactory :  IQueueFactory<RedisEndPoint>
     {
         private RedisClientFactory _redisClientFactory;
         private ISerializer _serializer;
-        public RedisQueueFactory(QueueConfiguration<RedisConnection> queueConfiguration, ISerializer serializer, RedisClientFactory redisClientFactory)
-            :base(queueConfiguration)
+
+        public RedisQueueFactory(ISerializer serializer, RedisClientFactory redisClientFactory)
         {
             _serializer = serializer;
             _redisClientFactory = redisClientFactory;
         }
 
-
-        public override IQueue<RedisConnection> CreateQueue(RedisConnection connection, string queueName)
+        public  IQueue<RedisEndPoint> CreateQueue(RedisEndPoint endPoint)
         {
-            var redisClient = _redisClientFactory(connection);
-            var queueEndPoint = new RedisQueueEndPoint(connection, queueName);
-            return new RedisQueue(queueEndPoint, _serializer, redisClient);
+            var redisClient = _redisClientFactory(endPoint);
+            return new RedisQueue(endPoint, _serializer, redisClient);
         }
-
     }
 }

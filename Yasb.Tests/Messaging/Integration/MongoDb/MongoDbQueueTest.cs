@@ -5,10 +5,10 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
-using Yasb.Common.Messaging.Configuration.MongoDb;
 using Yasb.MongoDb.Messaging;
 using Yasb.Common.Tests;
 using System.Threading.Tasks;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.Tests.Messaging.Integration.MongoDb
 {
@@ -18,12 +18,11 @@ namespace Yasb.Tests.Messaging.Integration.MongoDb
     [TestClass]
     public class MongoDbQueueTest
     {
-        private IQueue<MongoDbConnection> _queue;
+        private IQueue<MongoDbEndPoint> _queue;
         public MongoDbQueueTest()
         {
-            _queue = new MongoDbConfigurator().ConfigureQueue(e => e.WithEndPoint("vmEndPoint", "test_mongodb", "myEndPoint")
-                .ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test")))
-                .CreateFromEndPointName("myEndPoint");
+           // _queue = new MongoDbConfigurator().ConfigureQueue(e => e.WithLocalEndPoint("vmEndPoint", "test_mongodb"));
+                                                                //    .ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test")));
 
             
            

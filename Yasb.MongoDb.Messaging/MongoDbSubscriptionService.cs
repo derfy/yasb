@@ -9,7 +9,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
-using Yasb.Common.Messaging.Configuration.MongoDb;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
@@ -22,7 +22,7 @@ namespace Yasb.MongoDb.Messaging
         //[BsonSerializer(typeof(MyClassSerializer))]
         public string[] Endpoints { get; set; }
     }
-    public class MongoDbSubscriptionService : ISubscriptionService<MongoDbConnection>
+    public class MongoDbSubscriptionService : ISubscriptionService<MongoDbEndPoint>
     {
         private MongoCollection _collection;
         public MongoDbSubscriptionService(MongoDatabase database)
@@ -31,17 +31,20 @@ namespace Yasb.MongoDb.Messaging
         }
        
 
-        public void Handle(SubscriptionMessage<MongoDbConnection> message)
+        public MongoDbEndPoint[] GetSubscriptionEndPoints()
         {
+            throw new NotImplementedException();
+        }
 
-          //  _collection.Update(Query.EQ("TypeName", message.TypeName), Update.AddToSet("Endpoints", message.SubscriberEndPoint), UpdateFlags.Upsert);
-        }
-        public SubscriptionInfo<MongoDbConnection>[] GetSubscriptions(string typeName)
+
+
+
+
+        public void SubscribeTo(MongoDbEndPoint topicEndPoint)
         {
-            return null;
-            //  return _collection.FindOneAs<MongoDbSubscription>(Query.EQ("TypeName", typeName)).Endpoints;
+            throw new NotImplementedException();
         }
-        public void UnSubscribe(string typeName, string subscriberEndPoint)
+        public void UnSubscribe(string topicName, MongoDbEndPoint subscriberEndPoint)
         {
             throw new NotImplementedException();
         }
@@ -54,6 +57,6 @@ namespace Yasb.MongoDb.Messaging
             _collection = database.GetCollection("subscriptions");
         }
 
-    
+
     }
 }

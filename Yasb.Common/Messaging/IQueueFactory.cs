@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yasb.Common.Serialization;
+using Yasb.Common.Messaging.Configuration;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IQueueFactory<TConnection>
+    public interface IQueueFactory<TEndPoint> 
     {
-        IQueue<TConnection> CreateFromEndPointName(string endPointName);
-        IQueue<TConnection> CreateFromEndPointValue(QueueEndPoint<TConnection> endPoint);
+        IQueue<TEndPoint> CreateQueue(TEndPoint endPoint);
     }
+
+   
 }

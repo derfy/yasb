@@ -8,6 +8,9 @@ using System.IO;
 using Yasb.Common.Messaging;
 using Newtonsoft.Json;
 using Yasb.Common.Tests;
+using Yasb.Common.Messaging.EndPoints.Redis;
+using Moq;
+using Yasb.Common.Serialization.Json;
 
 namespace Yasb.Tests.Common.Serialization
 {
@@ -21,7 +24,8 @@ namespace Yasb.Tests.Common.Serialization
         [TestMethod]
         public void CanSerialize()
         {
-            var sut = new JsonNetSerializer(new JsonConverter[]{});
+            var endPointConverter = new Mock<EndPointConverter<RedisEndPoint>>();
+            var sut = new JsonNetSerializer<RedisEndPoint>(endPointConverter.Object);
             var graph = new TestMessage("foo");
             Byte[] array = sut.Serialize<TestMessage>(graph);
             var result=System.Text.Encoding.Default.GetString(array);
@@ -32,7 +36,8 @@ namespace Yasb.Tests.Common.Serialization
         [TestMethod]
         public void CanDeserialize()
         {
-            var sut = new JsonNetSerializer(new JsonConverter[] { });
+            var endPointConverter = new Mock<EndPointConverter<RedisEndPoint>>();
+            var sut = new JsonNetSerializer<RedisEndPoint>(endPointConverter.Object);
             var array = System.Text.Encoding.Default.GetBytes("{}");
             var result = sut.Deserialize<TestMessage>(array);
             Assert.AreEqual(typeof(TestMessage), result.GetType());
@@ -41,7 +46,8 @@ namespace Yasb.Tests.Common.Serialization
         [TestMethod]
         public void DeserializeShouldReturnNull()
         {
-            var sut = new JsonNetSerializer(new JsonConverter[] { });
+            var endPointConverter = new Mock<EndPointConverter<RedisEndPoint>>();
+            var sut = new JsonNetSerializer<RedisEndPoint>(endPointConverter.Object);
             var array = new Byte[]{};
             var result = sut.Deserialize<TestMessage>(array);
             Assert.AreEqual(null, result);

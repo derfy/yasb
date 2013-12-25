@@ -2,25 +2,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yasb.Common.Messaging.Configuration.MongoDb;
 using Autofac;
 using Yasb.Common.Messaging.Configuration;
+using Yasb.MongoDb.Messaging;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.Wireup
 {
-    public class MongoDbConfigurator : AbstractConfigurator<MongoDbConnection>
+    public class MongoDbConfigurator : AbstractConfigurator<MongoDbEndPoint, MongoDbSerializationConfiguration>
     {
-        protected override void RegisterServiceBusModule(Autofac.ContainerBuilder builder, Common.Messaging.Configuration.ServiceBusConfiguration<MongoDbConnection> serviceBusConfiguration)
+        protected override void RegisterServiceBusModule(Autofac.ContainerBuilder builder, ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> serviceBusConfiguration)
         {
-            builder.RegisterModule(new CommonModule<QueueConfiguration<MongoDbConnection>>(serviceBusConfiguration, "bus"));
-            builder.RegisterModule(new MongoDbQueueModule(serviceBusConfiguration, "bus"));
             builder.RegisterModule(new MongoDbServiceBusModule(serviceBusConfiguration));
         }
 
-        protected override void RegisterQueueModule(Autofac.ContainerBuilder builder, Common.Messaging.Configuration.QueueConfiguration<MongoDbConnection> queueConfiguration)
+        protected override void RegisterQueueModule(Autofac.ContainerBuilder builder, ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> queueConfiguration)
         {
-            builder.RegisterModule(new CommonModule<QueueConfiguration<MongoDbConnection>>(queueConfiguration, "queue"));
-            builder.RegisterModule(new MongoDbQueueModule(queueConfiguration, "queue"));
+           builder.RegisterModule(new MongoDbQueueModule(queueConfiguration, "queue"));
         }
     }
 }

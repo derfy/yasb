@@ -8,13 +8,16 @@ using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Common.Tests;
-using Yasb.Common.Messaging.Configuration.CommonConnectionConfigurers;
 using Autofac;
 using System.Net;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Threading.Tasks;
 using Yasb.Tests.Messaging.Integration.Redis;
-using Yasb.Common.Messaging.Connections;
+using Yasb.Common.Messaging.Configuration;
+using Yasb.Common.Messaging.EndPoints.Redis;
+using Yasb.Common.Messaging.Configuration.Redis;
+using Yasb.Common.Serialization;
+using Yasb.Common.Serialization.Json;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -31,13 +34,14 @@ namespace Yasb.Tests.Messaging.Redis
     [TestClass]
     public class RedisQueueTest
     {
-        private IQueue<RedisConnection> _queue;
+        private IQueue<RedisEndPoint> _queue;
+        private RedisEndPoint _fromEndPoint = new RedisEndPoint("host1", "abc");
+
         public RedisQueueTest()
         {
             var configurator = new RedisConfigurator();
-            var redisQueueFactory = configurator.ConfigureQueue(q => q.WithEndPoint("vmEndPoint", "queue_test", "consumer")
-                                             .ConfigureConnections<FluentIPEndPointConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128")));
-            _queue = redisQueueFactory.CreateFromEndPointName("consumer") as RedisQueue;
+            _queue = configurator.ConfigureQueue(q => q.EndPoints<RedisEndPointConfiguration>(c => c.ReceivesOn(e => e.WithHostName("192.168.227.128").WithQueueName("queue_test")))
+                                 .Serializer<JsonSerializationConfiguration<RedisEndPoint>>());
         }
         [TestInitialize()]
         public void BeforeTest()
@@ -50,12 +54,14 @@ namespace Yasb.Tests.Messaging.Redis
         public void ShouldSetTimeoutError()
         {
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
 
             MessageEnvelope newEnvelope = null;
             //Get Message
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
+            //Assert.AreEqual(newEnvelope.From.Value,_fromEndPoint.Value);
             //Wait 5 seconds and reget same message
             MessageEnvelope timeoutEnvelope = null;
             _queue.TryDequeue(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out timeoutEnvelope);
@@ -66,12 +72,12 @@ namespace Yasb.Tests.Messaging.Redis
             //Second retrieval should yield timeout
             Assert.AreEqual("Operation Timed Out", timeoutEnvelope.LastErrorMessage);
         }
-       [Ignore]
         [TestMethod]
         public void ShouldRetrieveMessage()
         {
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
 
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
@@ -84,7 +90,8 @@ namespace Yasb.Tests.Messaging.Redis
        {
 
            var message = new TestMessage("This is a test");
-           _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+           var envelope = new MessageEnvelope( message);
+           _queue.Push(envelope);
            MessageEnvelope newEnvelope = null;
            var t1 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
            var t2 = Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
@@ -99,7 +106,9 @@ namespace Yasb.Tests.Messaging.Redis
         {
 
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, "");
+
+            var envelope = new MessageEnvelope( message);
+            _queue.Push(envelope);
             MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
@@ -114,11 +123,14 @@ namespace Yasb.Tests.Messaging.Redis
 
             MessageEnvelope newEnvelope = null;
             var message1 = new TestMessage("Message 1");
-            _queue.Push(message1, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope1 = new MessageEnvelope(message1);
+            _queue.Push(envelope1);
             var message2 = new TestMessage("Message 2");
-            _queue.Push(message2, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope2 = new MessageEnvelope(message2);
+            _queue.Push(envelope2);
             var message3 = new TestMessage("Message 3");
-            _queue.Push(message3, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope3 = new MessageEnvelope( message3);
+            _queue.Push(envelope3);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.AreEqual(message1.Value, ((TestMessage)newEnvelope.Message).Value);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);

@@ -3,63 +3,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging.Configuration;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging
 {
-    public class ServiceBus<TConnection> : IServiceBus<TConnection> 
+    public class ServiceBus<TEndPoint> : IServiceBus<TEndPoint> 
     {
-        private readonly AbstractQueueFactory<TConnection> _queueFactory;
+        private readonly IQueueFactory<TEndPoint> _queueFactory;
         private readonly IWorkerPool<MessageEnvelope> _messageReveiverWorkerPool;
-        private readonly ISubscriptionService<TConnection> _subscriptionService;
-        private Func<Type, IEnumerable<IHandleMessages>> _messageHandlerFactory;
-
-        public ServiceBus(AbstractQueueFactory<TConnection> queueFactory, ISubscriptionService<TConnection> subscriptionService, IWorkerPool<MessageEnvelope> messageReveiverWorkerPool, Func<Type, IEnumerable<IHandleMessages>> messageHandlerFactory)
+        private readonly ISubscriptionService<TEndPoint> _subscriptionService;
+        private IEndPointsRepository<TEndPoint> _endPointsRepository;
+        public ServiceBus(IEndPointsRepository<TEndPoint> endPointsRepository, IQueueFactory<TEndPoint> queueFactory, ISubscriptionService<TEndPoint> subscriptionService, IWorkerPool<MessageEnvelope> messageReveiverWorkerPool)
         {
+            _endPointsRepository = endPointsRepository;
             _queueFactory = queueFactory;
             _subscriptionService = subscriptionService;
             _messageReveiverWorkerPool = messageReveiverWorkerPool;
-            _messageHandlerFactory = messageHandlerFactory;
         }
 
-        public virtual QueueEndPoint<TConnection> LocalEndPoint 
-        {
-            get
-            {
-                var localQueue = _queueFactory.CreateFromEndPointName("local");
-                return localQueue.LocalEndPoint;
-            } 
-        }
+        public virtual TEndPoint LocalEndPoint { get { return _endPointsRepository["local"]; } }
+
         public void Send(string endPointName, IMessage message)
         {
-            var queue = _queueFactory.CreateFromEndPointName(endPointName);
-            var handlerType = typeof(NullMessageHandler<>).MakeGenericType(message.GetType());
-            queue.Push(message, LocalEndPoint.Value, handlerType.AssemblyQualifiedName);
+            var endPoint = _endPointsRepository[endPointName];
+            var queue = _queueFactory.CreateQueue(endPoint);
+            queue.Push(new MessageEnvelope(message));
         }
+       
         public void Publish(IMessage message) 
         {
-            var subscriptions = _subscriptionService.GetSubscriptions(message.GetType().AssemblyQualifiedName);
-            foreach (var subscription in subscriptions)
+            var subscriptions = _subscriptionService.GetSubscriptionEndPoints();
+            foreach (var subscriptionEndPoint in subscriptions)
             {
-                IQueue<TConnection> queue = _queueFactory.CreateQueue(subscription.EndPoint.Connection, subscription.EndPoint.Name);
-                queue.Push(message, LocalEndPoint.Value, subscription.Handler);
+                var queue = _queueFactory.CreateQueue(subscriptionEndPoint);
+                queue.Push(new MessageEnvelope( message));
             }
             
         }
-        
-        public void Subscribe<TMessage>(string endPointName) where TMessage : IMessage
-        {
-            var queue = _queueFactory.CreateFromEndPointName(endPointName);
-            Subscribe<TMessage>(queue);
-        }
 
-
-        public void Subscribe<TMessage>(IQueue<TConnection> queue) where TMessage : IMessage
+        public void Subscribe<TMessage>(string topicEndPointName) where TMessage : IMessage
         {
-            var subscriptions = _messageHandlerFactory(typeof(TMessage)).Select(h=>new SubscriptionInfo<TConnection>(LocalEndPoint, h.GetType().AssemblyQualifiedName));
-            var subscriptionMessage = new SubscriptionMessage<TConnection>(typeof(TMessage).AssemblyQualifiedName, subscriptions);
-            queue.Push(subscriptionMessage, LocalEndPoint.Value, _subscriptionService.GetType().AssemblyQualifiedName);
+            var topicEndPoint = _endPointsRepository[topicEndPointName];
+            _subscriptionService.SubscribeTo(topicEndPoint);
         }
-        
+       
         public void Run()
         {
             _messageReveiverWorkerPool.Run();

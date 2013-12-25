@@ -3,39 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Reflection;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging.Configuration
 {
 
-    public class ServiceBusConfigurer<TConnection> 
+    public class ServiceBusConfigurer<TEndPoint, TSerializer> 
     {
         public ServiceBusConfigurer()
         {
-            Built = new ServiceBusConfiguration<TConnection>();
+            Built = new ServiceBusConfiguration<TEndPoint,TSerializer>();
         }
-        public ServiceBusConfigurer<TConnection> WithEndPointConfiguration(Action<ServiceBusEndPointConfigurer> action)
+        public ServiceBusConfigurer<TEndPoint, TSerializer> EndPoints<TEndPointConfiguration>(Action<EndPointsConfigurer<TEndPoint, TEndPointConfiguration>> endPointConfigurationBuilder)
+            where TEndPointConfiguration : IEndPointConfiguration<TEndPoint>
         {
-            var endPointConfigurer = new ServiceBusEndPointConfigurer();
-            action(endPointConfigurer);
-            Built.EndPointConfiguration = endPointConfigurer.Built;
+            var endPointsConfigurer = new EndPointsConfigurer<TEndPoint, TEndPointConfiguration>(Built.EndPoints);
+            endPointConfigurationBuilder(endPointsConfigurer);
             return this;
         }
-
-        public ServiceBusConfigurer<TConnection> ConfigureConnections<TConnectionConfigurer>(Action<TConnectionConfigurer> action)
-            where TConnectionConfigurer : IConnectionConfigurer<TConnection>
+        public ServiceBusConfigurer<TEndPoint, TSerializer> Serializer<TSerializerConfiguration>(Action<TSerializerConfiguration> serializerConfigurer=null)
+            where TSerializerConfiguration : ISerializerConfiguration<TSerializer>
         {
-            var connectionConfigurer = Activator.CreateInstance<TConnectionConfigurer>();
-            action(connectionConfigurer);
-            Built.ConnectionConfiguration = connectionConfigurer.Built;
+
+            var serializationConfiguration = Activator.CreateInstance<TSerializerConfiguration>();
+            Built.Serializer = serializationConfiguration.Built;
             return this;
         }
-
-        public ServiceBusConfigurer<TConnection> WithMessageHandlersAssembly(Assembly assembly)
-        {
-            Built.MessageHandlersAssembly = assembly;
-            return this;
-        }
-
-        public ServiceBusConfiguration<TConnection> Built { get; private set; }
+        public ServiceBusConfiguration<TEndPoint, TSerializer> Built { get; private set; }
+       
+       
     }
 }

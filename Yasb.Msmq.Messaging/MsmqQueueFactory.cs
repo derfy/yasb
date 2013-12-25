@@ -6,26 +6,22 @@ using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Serialization;
 using System.Messaging;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using Yasb.Common.Messaging.EndPoints.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqQueueFactory : AbstractQueueFactory<MsmqConnection>
+    public class MsmqQueueFactory :IQueueFactory<MsmqEndPoint>
     {
         private readonly IMessageFormatter _messageFormatter;
-        public MsmqQueueFactory(QueueConfiguration<MsmqConnection> queueConfiguration, IMessageFormatter messageFormatter)
-            : base(queueConfiguration)
+        public MsmqQueueFactory( IMessageFormatter messageFormatter)
         {
             _messageFormatter = messageFormatter;
         }
 
-        public override IQueue<MsmqConnection> CreateQueue(MsmqConnection connection, string queueName)
+
+        public  IQueue<MsmqEndPoint> CreateQueue(MsmqEndPoint endPoint)
         {
-            var endPoint = new MsmqQueueEndPoint(connection, queueName);
             return new MsmqQueue(endPoint, _messageFormatter);
         }
-
-        
-       
     }
 }

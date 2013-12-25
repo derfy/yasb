@@ -5,38 +5,39 @@ using System.Text;
 using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Wireup
 {
-    public abstract class AbstractConfigurator<TConnection>
+    public abstract class AbstractConfigurator<TEndPoint, TSerializerConfiguration> 
     {
         public AbstractConfigurator()
         {
         }
 
-        public IServiceBus<TConnection> Bus(Action<ServiceBusConfigurer<TConnection>> action)
+        public IServiceBus<TEndPoint> Bus(Action<ServiceBusConfigurer<TEndPoint, TSerializerConfiguration>> action)
         {
             var builder = new ContainerBuilder();
-            var serviceBusConfigurer = new ServiceBusConfigurer<TConnection>();
+            var serviceBusConfigurer = new ServiceBusConfigurer<TEndPoint,TSerializerConfiguration>();
             action(serviceBusConfigurer);
             var serviceBusConfiguration = serviceBusConfigurer.Built;
             
             RegisterServiceBusModule(builder,serviceBusConfiguration);
-            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus<TConnection>>();
+            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus<TEndPoint>>();
         }
 
 
-        public AbstractQueueFactory<TConnection> ConfigureQueue(Action<QueueConfigurer<TConnection>> action)
+        public IQueue<TEndPoint> ConfigureQueue(Action<ServiceBusConfigurer<TEndPoint,  TSerializerConfiguration>> action)
         {
             var builder = new ContainerBuilder();
-            var queueConfigurer = new QueueConfigurer<TConnection>();
+            var queueConfigurer = new ServiceBusConfigurer<TEndPoint, TSerializerConfiguration>();
             action(queueConfigurer);
             RegisterQueueModule(builder,queueConfigurer.Built);
-            return builder.Build().BeginLifetimeScope("queue").Resolve<AbstractQueueFactory<TConnection>>();
+            return builder.Build().BeginLifetimeScope("queue").Resolve<IQueue<TEndPoint>>();
         }
 
 
-        protected abstract void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TConnection> serviceBusConfiguration);
-        protected abstract void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<TConnection> queueConfiguration);
+        protected abstract void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TEndPoint,TSerializerConfiguration> serviceBusConfiguration);
+        protected abstract void RegisterQueueModule(ContainerBuilder builder, ServiceBusConfiguration<TEndPoint, TSerializerConfiguration> queueConfiguration);
     }
 }

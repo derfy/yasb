@@ -72,13 +72,11 @@
     <Compile Include="Messaging\Integration\Redis\RedisConfiguratorExtensions.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisQueueTest.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisSocketAsyncEventArgsPoolTest.cs" />
-    <Compile Include="Common\Serialization\MessageEnvelopeConverterTest.cs" />
     <Compile Include="Common\Serialization\SerializerTest.cs" />
     <Compile Include="Common\TaskRunnerTest.cs" />
     <Compile Include="Messaging\RedisQueueTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Messaging\ServiceBusTests.cs" />
-    <Compile Include="Messaging\Integration\Redis\SubscriptionMessageHandlerTest.cs" />
     <Compile Include="Wireup\AutofacConfiguratorTest.cs" />
     <Compile Include="Wireup\RegisterOneInstanceForObjectKeyTest.cs" />
     <Compile Include="Wireup\TestConfigurator.cs" />

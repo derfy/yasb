@@ -13,7 +13,7 @@ namespace Yasb.Common.Messaging
     {
         bool TryDispatch(MessageEnvelope envelope);
     }
-    public class MessageDispatcher<TConnection> : IMessageDispatcher
+    public class MessageDispatcher : IMessageDispatcher
     {
         private Func<Type, IEnumerable<IHandleMessages>> _messageHandlerFactory;
         public MessageDispatcher(Func<Type, IEnumerable<IHandleMessages>> messageHandlerFactory)

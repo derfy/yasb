@@ -11,10 +11,10 @@ namespace Yasb.Redis.Messaging.Client.Commands
     {
         private byte[] _set;
         private byte[] _value;
-        public SAddCommand(string set, string value)
+        public SAddCommand(byte[] set, byte[] value)
         {
-            _set = set.ToUtf8Bytes();
-            _value = value.ToUtf8Bytes();
+            _set = set;
+            _value = value;
         }
         public byte[] ProcessResponse(ICommandResultProcessor processor)
         {

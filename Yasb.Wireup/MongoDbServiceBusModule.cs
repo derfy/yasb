@@ -2,28 +2,28 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yasb.Common.Messaging.Configuration.MongoDb;
 using Yasb.Common.Messaging.Configuration;
 using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.MongoDb.Messaging;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.Wireup
 {
-    public class MongoDbServiceBusModule : ServiceBusModule<MongoDbConnection> 
+    public class MongoDbServiceBusModule : ServiceBusModule<MongoDbEndPoint, MongoDbSerializationConfiguration> 
     {
-        public MongoDbServiceBusModule(ServiceBusConfiguration<MongoDbConnection> serviceBusConfiguration)
+        public MongoDbServiceBusModule(ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
         }
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISubscriptionService<MongoDbConnection>>((componentScope, parameters) =>
+            builder.RegisterWithScope<ISubscriptionService<MongoDbEndPoint>>((componentScope, parameters) =>
             {
-                var localEndPointInfo = Configuration.EndPointConfiguration.GetEndPointInfoByName("local");
-                var connection = Configuration.ConnectionConfiguration.GetConnectionByName(localEndPointInfo.ConnectionName);
-                return MongoDbFactory.CreateSubscriptionService(connection);
+                var localEndPoint = Configuration.EndPoints["local"];
+                 return MongoDbFactory.CreateSubscriptionService(localEndPoint);
             });
         }
     }

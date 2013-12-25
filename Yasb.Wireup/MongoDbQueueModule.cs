@@ -2,18 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Yasb.Common.Messaging.Configuration.MongoDb;
 using Yasb.Common.Messaging.Configuration;
 using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.MongoDb.Messaging;
 using Yasb.MongoDb.Messaging.Serialization;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.Common.Messaging.Configuration.MongoDb;
 
 namespace Yasb.Wireup
 {
-    public class MongoDbQueueModule : ScopedModule<QueueConfiguration<MongoDbConnection>>
+    public class MongoDbQueueModule : ScopedModule<ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration>>
     {
-        public MongoDbQueueModule(QueueConfiguration<MongoDbConnection> queueConfiguration, string scope)
+        public MongoDbQueueModule(ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> queueConfiguration, string scope)
             : base(queueConfiguration, scope)
         {
            
@@ -23,10 +24,10 @@ namespace Yasb.Wireup
         {
             base.Load(builder);
 
-            builder.RegisterWithScope<AbstractQueueFactory<MongoDbConnection>>((componentScope, parameters) =>
+            builder.RegisterWithScope<MongoDbQueueFactory>((componentScope, parameters) =>
             {
-                return new MongoDbQueueFactory(Configuration);
-            }).InstancePerMatchingLifetimeScope(Scope);
+                return new MongoDbQueueFactory();
+            }).As<IQueueFactory<MongoDbEndPoint>>().InstancePerMatchingLifetimeScope(Scope);
 
             SerializerRegisterer.Register<MessageEnvelope>();
         }

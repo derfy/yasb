@@ -4,52 +4,49 @@ using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging;
 using System.Collections.Concurrent;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using Yasb.Common.Messaging.EndPoints.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqSubscriptionMessageHandler : ISubscriptionService<MsmqConnection>, IHandleMessages<SubscriptionMessage<MsmqConnection>>
+    public class MsmqSubscriptionService : ISubscriptionService<MsmqEndPoint>
     {
-        private string _queueName;
-        private ConcurrentDictionary<string, List<SubscriptionInfo<MsmqConnection>>> _subscriptionsStore = new ConcurrentDictionary<string, List<SubscriptionInfo<MsmqConnection>>>();
-        public MsmqSubscriptionMessageHandler(string queueName)
+        private MsmqEndPoint _localEndPoint;
+        private ConcurrentDictionary<MsmqEndPoint, List<MsmqEndPoint>> _subscriptionsStore = new ConcurrentDictionary<MsmqEndPoint, List<MsmqEndPoint>>();
+        public MsmqSubscriptionService(MsmqEndPoint localEndPoint)
         {
-            this._queueName = queueName;
+            _localEndPoint = localEndPoint;
         }
 
 
-       
 
-        public void Handle(SubscriptionMessage<MsmqConnection> message)
+        public void SubscribeTo(MsmqEndPoint topicEndPoint)
         {
-            string set = string.Format("{0}:{1}", _queueName, message.TypeName);
-            List<SubscriptionInfo<MsmqConnection>> subscribers = null;
-            if (!_subscriptionsStore.TryGetValue(set,out subscribers))
-            {
-                subscribers = new List<SubscriptionInfo<MsmqConnection>>();
-                _subscriptionsStore.TryAdd(set, subscribers);
-            }
-            subscribers.AddRange(message.Subscriptions);
-            
+            List<MsmqEndPoint> subscribers = null;
+            //if (!_subscriptionsStore.TryGetValue(message.TopicEndPoint, out subscribers))
+            //{
+            //    subscribers = new List<string>();
+            //    _subscriptionsStore.TryAdd(message.TopicEndPoint, subscribers);
+            //}
+            //subscribers.Add(message.SubscriberEndPoint);
         }
-        public SubscriptionInfo<MsmqConnection>[] GetSubscriptions(string typeName)
+      
+
+        public MsmqEndPoint[] GetSubscriptionEndPoints()
         {
-            string set = string.Format("{0}:{1}", _queueName, typeName);
-            List<SubscriptionInfo<MsmqConnection>> subscribers = null;
-            if (!_subscriptionsStore.TryGetValue(set, out subscribers))
+            List<MsmqEndPoint> subscribers = null;
+            if (!_subscriptionsStore.TryGetValue(_localEndPoint, out subscribers))
             {
-                return new SubscriptionInfo<MsmqConnection>[] { };
+                return new MsmqEndPoint[] { };
             }
             return subscribers.ToArray();
         }
-        public void UnSubscribe(string typeName, string subscriberEndPoint)
+
+        public void UnSubscribe(string topicName, MsmqEndPoint subscriberEndPoint)
         {
             throw new NotImplementedException();
         }
 
 
-
-
-        
+       
     }
 }

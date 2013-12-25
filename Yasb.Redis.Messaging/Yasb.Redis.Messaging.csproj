@@ -75,12 +75,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="RedisQueueEndPoint.cs" />
     <Compile Include="RedisQueueFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RedisQueue.cs" />
     <Compile Include="Scripts\RedisScriptsProbe.cs" />
-    <Compile Include="RedisSubscriptionMessageHandler.cs" />
+    <Compile Include="RedisSubscriptionService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -13,12 +13,14 @@ using Yasb.Common;
 using Newtonsoft.Json;
 using Yasb.Common.Serialization;
 using Yasb.Common.Serialization.MessageDeserializers;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Wireup
 {
-    public class ServiceBusModule<TConnection> : ScopedModule<ServiceBusConfiguration< TConnection>>
+    public class ServiceBusModule<TEndPoint, TSerializer> : ScopedModule<ServiceBusConfiguration<TEndPoint, TSerializer>> 
+   
     {
-        public ServiceBusModule(ServiceBusConfiguration<TConnection> configuration)
+        public ServiceBusModule(ServiceBusConfiguration<TEndPoint, TSerializer> configuration)
             : base(configuration, "bus")
         {
         }
@@ -26,6 +28,30 @@ namespace Yasb.Wireup
         protected override void Load(Autofac.ContainerBuilder builder)
         {
             base.Load(builder);
+
+            builder.RegisterWithScope<WorkerPool<MessageEnvelope>>(componentScope => new WorkerPool<MessageEnvelope>(componentScope.Resolve<IWorker<MessageEnvelope>>())).As<IWorkerPool<MessageEnvelope>>().InstancePerMatchingLifetimeScope(Scope);
+
+            builder.RegisterWithScope<MessagesReceiver<TEndPoint>>((componentScope, parameters) =>
+            {
+                var queueFactory = componentScope.Resolve<IQueueFactory<TEndPoint>>();
+                var localQueue = queueFactory.CreateQueue(Configuration.EndPoints["local"]);
+                return new MessagesReceiver<TEndPoint>(localQueue, componentScope.Resolve<IMessageDispatcher>());
+            }).As<IWorker<MessageEnvelope>>().InstancePerMatchingLifetimeScope(Scope);
+
+            builder.RegisterWithScope<TSerializer>((componentScope, parameters) =>
+            {
+                return Configuration.Serializer;
+            })
+            .As<ISerializer>()
+            .InstancePerMatchingLifetimeScope(Scope);
+
+          
+
+            builder.RegisterWithScope<ServiceBus<TEndPoint>>((componentScope, parameters) =>
+            {
+                return new ServiceBus<TEndPoint>(Configuration.EndPoints, componentScope.Resolve<IQueueFactory<TEndPoint>>(), componentScope.Resolve<ISubscriptionService<TEndPoint>>(), componentScope.Resolve<IWorkerPool<MessageEnvelope>>());
+            }).As<IServiceBus<TEndPoint>>().InstancePerMatchingLifetimeScope(Scope);
+
 
 
             builder.RegisterWithScope<Func<Type, IEnumerable<IHandleMessages>>>((componentScope, p) =>
@@ -38,36 +64,10 @@ namespace Yasb.Wireup
                 };
 
             }).InstancePerMatchingLifetimeScope(Scope);
-
-            
-           
-           
-
-            builder.RegisterWithScope<WorkerPool<MessageEnvelope>>(componentScope => new WorkerPool<MessageEnvelope>(componentScope.Resolve<IWorker<MessageEnvelope>>())).As<IWorkerPool<MessageEnvelope>>().InstancePerMatchingLifetimeScope(Scope);
-
-
-
-            if (Configuration.MessageHandlersAssembly != null)
+            builder.RegisterWithScope<MessageDispatcher>((componentScope, parameters) =>
             {
-                builder.RegisterAssemblyTypes(Configuration.MessageHandlersAssembly)
-                      .AsClosedTypesOf(typeof(IHandleMessages<>))
-                      .AsImplementedInterfaces();
-            }
-
-            builder.RegisterWithScope<MessageDispatcher<TConnection>>((componentScope, parameters) =>
-            {
-                return new MessageDispatcher<TConnection>(componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
+                return new MessageDispatcher(componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
             }).As<IMessageDispatcher>().InstancePerMatchingLifetimeScope(Scope);
-
-            builder.RegisterWithScope<MessagesReceiver<TConnection>>((componentScope, parameters) =>
-            {
-                return new MessagesReceiver<TConnection>(componentScope.Resolve<AbstractQueueFactory<TConnection>>(), componentScope.Resolve<IMessageDispatcher>());
-            }).As<IWorker<MessageEnvelope>>().InstancePerMatchingLifetimeScope(Scope);
-
-            builder.RegisterWithScope<ServiceBus<TConnection>>((componentScope, parameters) =>
-            {
-                return new ServiceBus<TConnection>(componentScope.Resolve<AbstractQueueFactory<TConnection>>(), componentScope.Resolve<ISubscriptionService<TConnection>>(), componentScope.Resolve<IWorkerPool<MessageEnvelope>>(), componentScope.Resolve<Func<Type, IEnumerable<IHandleMessages>>>());
-            }).As<IServiceBus<TConnection>>().InstancePerMatchingLifetimeScope(Scope);
 
 
             builder.RegisterWithScope<Func<Type, IMessageDeserializer>>((componentScope) => type =>
@@ -80,10 +80,10 @@ namespace Yasb.Wireup
                 return componentScope.ResolveKeyed<IMessageDeserializer>(type); 
             }).InstancePerMatchingLifetimeScope(Scope);
 
-            builder.RegisterType<SubscriptionMessageDeserializer<TConnection>>().Keyed<IMessageDeserializer>(typeof(SubscriptionMessage<TConnection>))
-               .As<IMessageDeserializer>()
-               .InstancePerMatchingLifetimeScope(Scope);
-            builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
+            //builder.RegisterType<SubscriptionMessageDeserializer<TConnection>>().Keyed<IMessageDeserializer>(typeof(SubscriptionMessage<TConnection>))
+            //   .As<IMessageDeserializer>()
+            //   .InstancePerMatchingLifetimeScope(Scope);
+           // builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
         }
     }
 }

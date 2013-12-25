@@ -9,15 +9,16 @@ using Yasb.Msmq.Messaging;
 using System.Messaging;
 using Yasb.Msmq.Messaging.Serialization;
 using Yasb.Common.Serialization;
-using Yasb.Common.Messaging.Configuration.Msmq;
 using Newtonsoft.Json;
 using Yasb.Common.Serialization.MessageDeserializers;
+using Yasb.Common.Messaging.EndPoints.Msmq;
+using Yasb.Common.Messaging.Configuration.Msmq;
 
 namespace Yasb.Wireup
 {
-    public class MsmqQueueModule : ScopedModule<QueueConfiguration<MsmqConnection>>
+    public class MsmqQueueModule : ScopedModule<ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration>>
     {
-        public MsmqQueueModule(QueueConfiguration<MsmqConnection> queueConfiguration, string scope)
+        public MsmqQueueModule(ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
         {
         }
@@ -25,17 +26,17 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
-            {
-                return new JsonNetSerializer(componentScope.Resolve<IEnumerable<JsonConverter>>().ToArray());
-            }).InstancePerMatchingLifetimeScope(Scope);
+            //builder.RegisterWithScope<ISerializer>((componentScope, parameters) =>
+            //{
+            //    return new JsonNetSerializer();
+            //}).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<IMessageFormatter>(componentScope => new JsonMessageFormatter<MessageEnvelope>(componentScope.Resolve<ISerializer>()));
 
-            builder.RegisterWithScope<AbstractQueueFactory<MsmqConnection>>((componentScope, parameters) =>
+            builder.RegisterWithScope<MsmqQueueFactory>((componentScope, parameters) =>
             {
-                return new MsmqQueueFactory(Configuration, componentScope.Resolve<IMessageFormatter>());
-            }).InstancePerMatchingLifetimeScope(Scope);
+                return new MsmqQueueFactory(componentScope.Resolve<IMessageFormatter>());
+            }).As<IQueueFactory<MsmqEndPoint>>().InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<Func<Type, IMessageDeserializer>>((componentScope) => type =>
             {
@@ -46,7 +47,7 @@ namespace Yasb.Wireup
                 }
                 return componentScope.ResolveKeyed<IMessageDeserializer>(type);
             }).InstancePerMatchingLifetimeScope(Scope);
-            builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
+           // builder.RegisterWithScope<MessageEnvelopeConverter>(componentScope => new MessageEnvelopeConverter(componentScope.Resolve<Func<Type, IMessageDeserializer>>())).As<JsonConverter>();
             
          
         }

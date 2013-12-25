@@ -24,66 +24,72 @@ namespace Yasb.Tests.Common.Messaging
     [TestClass]
     public class ServiceBusTests
     {
-        private Mock<ISubscriptionService<TestConnection>> _subscriptionService;
-        private IServiceBus<TestConnection> _sut;
-        private TestQueueFactory _queueFactory; 
+        private Mock<ISubscriptionService<TestEndPoint>> _subscriptionService;
+        private IServiceBus<TestEndPoint> _sut;
+        private Mock<IQueueFactory<TestEndPoint>> _queueFactory; 
         [TestInitialize]
         public void Setup()
         {
-           
-            _subscriptionService = new Mock<ISubscriptionService<TestConnection>>();
-            var configurator = new TestConfigurator();
+
+            _subscriptionService = new Mock<ISubscriptionService<TestEndPoint>>();
+            //_endPointFactory = new Mock<IEndPointFactory<ITestEndPoint>>();
+            _queueFactory = new Mock<IQueueFactory<TestEndPoint>>();
+           var configurator = new TestConfigurator(_queueFactory);
             configurator.SubscriptionService = _subscriptionService;
-            _sut = configurator.Bus(sb => sb.WithEndPointConfiguration(ec => ec.WithLocalEndPoint("vmEndPoint", "consumer")
-                                                                               .WithEndPoint("vmEndPoint", "producer", "producer"))
-                                            .ConfigureConnections<FluentTestConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128"))
-                                            .WithMessageHandlersAssembly(typeof(ExampleMessage).Assembly));
-            _queueFactory = configurator.QueueFactory;
+            _sut = configurator.Bus(sb => sb.EndPoints<TestEndPointConfiguration>(ec =>
+                   ec.ReceivesOn(e => e.WithHostName("192.168.127.128").WithQueueName("consumer"))
+                     .SubscribesTo("producer@vmEndPoint",e => e.WithHostName("vmEndPoint").WithQueueName("producer"))));
            
         }
         [TestMethod]
         public void LocalMessageEndPointShouldBeCorrect()
         {
+
             Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint.Value);
         }
         [TestMethod]
         public void WhenSendingMessageQueueShouldBeInvokedCorrectly()
         {
-             var message=new TestMessage("foo");
-             _sut.Send("producer", message);
-            var endPoint0 = new Mock<QueueEndPoint<TestConnection>>();
-            var connection = new TestConnection("192.168.127.128", 6379);
-            endPoint0.Setup(e => e.Connection).Returns(connection);
-            endPoint0.Setup(e => e.Name).Returns("producer");
-            endPoint0.Setup(e => e.Value).Returns("192.168.127.128:6379:producer");
-            var queue = _queueFactory.GetMock(endPoint0.Object.Value);
-            queue.Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
+
+            var queue = new Mock<IQueue<TestEndPoint>>();
+            _queueFactory.Setup(f => f.CreateQueue(It.Is<TestEndPoint>(e => e.Host == "vmEndPoint" && e.QueueName == "producer"))).Returns(queue.Object);
+         
+            var message = new TestMessage("foo");
+            _sut.Send("producer@vmEndPoint", message);
+            var envelope = new Mock<MessageEnvelope>();
+            envelope.Setup(e => e.Message).Returns(message);
+            queue.Verify(s => s.Push(envelope.Object), Times.Once());
       
         }
         [TestMethod]
         public void ShouldBeAbleToSubscribe()
         {
-             _sut.Subscribe<TestMessage>("producer");
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(It.IsAny<SubscriptionMessage<TestConnection>>(), "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
+            var queue = new Mock<IQueue<TestEndPoint>>();
+            _queueFactory.Setup(f => f.CreateQueue(It.Is<TestEndPoint>(e => e.Host == "vmEndPoint" && e.QueueName == "producer"))).Returns(queue.Object);
+            _sut.Subscribe<TestMessage>("producer@vmEndPoint");
+            var envelope = new Mock<MessageEnvelope>();
+            //queue.Verify(s => s.Push(It.IsAny<SubscriptionMessage>()), Times.Once());
         }
 
         [TestMethod]
         public void ShouldBeAbleToPublish()
         {
-            var endPoint1=new Mock<QueueEndPoint<TestConnection>>();
-            var connection = new TestConnection("192.168.127.128", 6379);
-            endPoint1.Setup(e => e.Connection).Returns(connection);
-            endPoint1.Setup(e => e.Name).Returns("consumer");
-             var endPoint2=new Mock<QueueEndPoint<TestConnection>>();
-             endPoint2.Setup(e => e.Connection).Returns(connection);
-             endPoint2.Setup(e => e.Name).Returns("producer");
-            _subscriptionService.Setup(s => s.GetSubscriptions(typeof(TestMessage).AssemblyQualifiedName)).Returns(new SubscriptionInfo<TestConnection>[] { new SubscriptionInfo<TestConnection>(endPoint1.Object, ""), new SubscriptionInfo<TestConnection>(endPoint2.Object, "") });
+            var fooEndPoint = new TestEndPoint("192.168.127.128", "foo");
+            var barEndPoint = new TestEndPoint("192.168.127.128", "bar");
+            var queueFoo = new Mock<IQueue<TestEndPoint>>();
+            var queueBar = new Mock<IQueue<TestEndPoint>>();
+            _queueFactory.Setup(f => f.CreateQueue(fooEndPoint)).Returns(queueFoo.Object);
+            _queueFactory.Setup(f => f.CreateQueue(barEndPoint)).Returns(queueBar.Object);
+             var consumerEndPoint = new TestEndPoint("192.168.127.128", "consumer");
+             _subscriptionService.Setup(s => s.GetSubscriptionEndPoints()).Returns(new TestEndPoint[] { fooEndPoint, barEndPoint });
           
             var message = new TestMessage("foo");
              _sut.Publish(message);
-             _queueFactory.GetMock("192.168.127.128:6379:consumer").Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:producer").Verify(s => s.Push(message, "192.168.127.128:6379:consumer", It.IsAny<string>()), Times.Once());
-             _queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.Push(It.IsAny<IMessage>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+             var envelope = new Mock<MessageEnvelope>();
+             envelope.Setup(e => e.Message).Returns(message);
+             queueFoo.Verify(s => s.Push(envelope.Object), Times.Once());
+             queueBar.Verify(s => s.Push(envelope.Object), Times.Once());
+             //_queueFactory.GetMock("192.168.127.128:6379:myQueue").Verify(s => s.Push(It.IsAny<IMessage>(), It.IsAny<string>()), Times.Never());
         }
         [TestMethod]
         public void ShouldBeAbleToRun()

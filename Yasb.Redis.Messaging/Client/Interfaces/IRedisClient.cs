@@ -11,9 +11,9 @@ namespace Yasb.Redis.Messaging.Client.Interfaces
         byte[] LPush(string listId, byte[] value);
         byte[] EvalSha(string fileName, int noKeys, params byte[][] keys);
         byte[] EvalSha(string scriptName, int noKeys, params string[] keys);
-        byte[] Sadd(string set, string value);
+        byte[] Sadd(byte[] set, byte[] value);
         byte[] SRem(string set, string subscriberEndPoint);
-        byte[][] SMembers(string set);
+        byte[][] SMembers(byte[] set);
         byte[] Del(string key);
         EndPoint Address { get; }
 

@@ -11,9 +11,9 @@ namespace Yasb.Redis.Messaging.Client.Commands
     {
         private byte[] _set;
 
-        public SMembersCommand(string set)
+        public SMembersCommand(byte[] set)
         {
-            _set = set.ToUtf8Bytes();
+            _set = set;
         }
 
         public byte[][] ProcessResponse(ICommandResultProcessor processor)

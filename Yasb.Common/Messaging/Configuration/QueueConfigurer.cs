@@ -2,34 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class QueueConfigurer<TConnection>
+    public class QueueConfigurer<TEndPoint> 
     {
         public QueueConfigurer()
         {
-            Built = new QueueConfiguration<TConnection>();
+            Built = new QueueConfiguration<TEndPoint>();
         }
 
-        public QueueConfigurer<TConnection> WithEndPoint(string connectionName, string queueName, string endPointName)
+        public QueueConfigurer<TEndPoint> WithLocalEndPoint(string connectionName, string queueName)
         {
-            Built.EndPointConfiguration = new EndPointConfiguration();
-            Built.EndPointConfiguration.AddNamedEndPoint(connectionName, queueName, endPointName);
-            return this;
-        }
-        
-
-        public QueueConfigurer<TConnection> ConfigureConnections<TConnectionConfigurer>(Action<TConnectionConfigurer> action)
-            where TConnectionConfigurer : IConnectionConfigurer<TConnection>
-        {
-            var connectionConfigurer = Activator.CreateInstance<TConnectionConfigurer>();
-            action(connectionConfigurer);
-            Built.ConnectionConfiguration = connectionConfigurer.Built;
+          //  Built.LocalEndPointName = string.Format("{0}@local",queueName);
             return this;
         }
 
 
-        public QueueConfiguration<TConnection> Built { get; private set; }
+
+        public QueueConfiguration<TEndPoint> Built { get; private set; }
     }
 }

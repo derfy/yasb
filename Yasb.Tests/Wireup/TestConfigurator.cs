@@ -11,21 +11,23 @@ using Moq;
 
 namespace Yasb.Tests.Wireup
 {
-    public class TestConfigurator : AbstractConfigurator<TestConnection>
+    public class TestConfigurator : AbstractConfigurator<TestEndPoint, TestSerializationConfiguration>
     {
-        public TestQueueFactory QueueFactory { get; private set; }
-        public Mock<ISubscriptionService<TestConnection>> SubscriptionService { get; set; }
-        protected override void RegisterQueueModule(ContainerBuilder builder, QueueConfiguration<TestConnection> queueConfiguration)
+        private Mock<IQueueFactory<TestEndPoint>> _queueFactory;
+        public TestConfigurator(Mock<IQueueFactory<TestEndPoint>> queueFactory)
         {
-            QueueFactory = new TestQueueFactory(queueConfiguration);
-            builder.RegisterModule(new TestQueueModule(QueueFactory,queueConfiguration, "queue"));
+             _queueFactory = queueFactory;
+        }
+        public Mock<ISubscriptionService<TestEndPoint>> SubscriptionService { get; set; }
+        protected override void RegisterQueueModule(ContainerBuilder builder, ServiceBusConfiguration<TestEndPoint, TestSerializationConfiguration> queueConfiguration)
+        {
+            // builder.RegisterModule(new TestQueueModule(_queueFactory.Object, queueConfiguration, "queue"));
         }
 
-        protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TestConnection> serviceBusConfiguration)
+        protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TestEndPoint,  TestSerializationConfiguration> serviceBusConfiguration)
         {
-            QueueFactory = new TestQueueFactory(serviceBusConfiguration);
-            builder.RegisterModule(new TestQueueModule(QueueFactory,serviceBusConfiguration, "bus"));
-            builder.RegisterModule(new TestServiceBusModule(SubscriptionService,serviceBusConfiguration));
+           // builder.RegisterModule(new TestQueueModule(_endPointFactory.Object, _queueFactory.Object, serviceBusConfiguration, "bus"));
+            builder.RegisterModule(new TestServiceBusModule(serviceBusConfiguration, _queueFactory, SubscriptionService));
         }
     }
 }

@@ -68,8 +68,8 @@ namespace Yasb.Redis.Messaging.Client
         }
 
 
-       
-        public byte[] Sadd(string set, string value)
+
+        public byte[] Sadd(byte[] set, byte[] value)
         {
             if (set == null)
                 throw new ArgumentNullException("set");
@@ -86,7 +86,7 @@ namespace Yasb.Redis.Messaging.Client
             return SendCommand<byte[]>(RedisCommandFactory.SRem(set, value));
         }
 
-        public byte[][] SMembers(string set)
+        public byte[][] SMembers(byte[] set)
         {
             if (set == null)
                 throw new ArgumentNullException("set");

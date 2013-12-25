@@ -8,7 +8,7 @@ using Autofac;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Net;
 using Yasb.Redis.Messaging.Client;
-using Yasb.Common.Messaging.Connections;
+using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Tests.Messaging.Integration.Redis
 {
@@ -18,19 +18,19 @@ namespace Yasb.Tests.Messaging.Integration.Redis
         {
             var builder = new ContainerBuilder();
             var ipAddress = IPAddress.Parse(host);
-            var endPoint = new RedisConnection(host, port);
+            var endPoint = new IPEndPoint(ipAddress, port);
             builder.RegisterWithScope<IRedisSocketAsyncEventArgsPool>((componentScope, parameters) =>
             {
                 return new RedisSocketAsyncEventArgsPool(1, endPoint);
             });
-            builder.RegisterOneInstanceForObjectKey<RedisConnection, IRedisClient>((connection, context) =>
+            builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((connection, context) =>
             {
 
-                var connectionsPool = context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<RedisConnection>(connection));
+                var connectionsPool = context.Resolve<IRedisSocketAsyncEventArgsPool>(TypedParameter.From<EndPoint>(connection));
                 return new RedisClient(connectionsPool);
             });
 
-            return builder.Build().BeginLifetimeScope("test").Resolve<IRedisClient>(TypedParameter.From<RedisConnection>(endPoint));
+            return builder.Build().BeginLifetimeScope("test").Resolve<IRedisClient>(TypedParameter.From<EndPoint>(endPoint));
         }
     }
 }

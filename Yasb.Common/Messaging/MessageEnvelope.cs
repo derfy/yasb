@@ -5,52 +5,71 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-   
-    public class MessageEnvelope 
+    
+    public class MessageEnvelope
     {
-       
+        private Dictionary<string, object> _headers = new Dictionary<string, object>();
         public MessageEnvelope()
         {
 
         }
 
-        public MessageEnvelope(string envelopeId, IMessage message, string from, string to, string messageHandlerTypeName)
+        public MessageEnvelope(IMessage message)
         {
-            Id = envelopeId;
             Message = message;
-            From = from;
-            To = to;
-            HandlerType = Type.GetType(messageHandlerTypeName);
         }
 
-        public MessageEnvelope(string envelopeId, IMessage message, string from, string to, Type handlerType)
-        {
-            Id = envelopeId;
-            Message = message;
-            From = from;
-            To = to;
-            HandlerType = handlerType;
-        }
-        public IMessage Message { get; private set; }
+       
+        public IMessage Message { get; set; }
 
-        public string From { get; private set; }
-        public string To { get; private set; }
-        public string Id { get;  set; }
+       // public TEndPoint From { get;  set; }
+
+        public string Id
+        {
+            get { return GetHeader<string>("Id"); }
+            set { SetHeader("Id", value); }
+        }
+        
+        public int RetriesNumber
+        {
+            get { return GetHeader<int>("RetriesNumber"); }
+            set { SetHeader("RetriesNumber", value); }
+        }
+
+        public string LastErrorMessage
+        {
+            get { return GetHeader<string>("LastErrorMessage"); }
+            set { SetHeader("LastErrorMessage", value); }
+        }
+
+        public long? StartTimestamp
+        {
+            get { return GetHeader<long?>("StartTimestamp"); }
+            set { SetHeader("StartTimestamp", value); }
+        }
+
+        public DateTime? StartTime
+        {
+            get
+            {
+                if (!StartTimestamp.HasValue)
+                    return null;
+                return DateTime.MinValue.Add(new TimeSpan(StartTimestamp.Value));
+            }
+        }
+        public void SetHeader<TValue>(string name, TValue value)
+        {
+            _headers[name] = value;
+        }
+
+        public TValue GetHeader<TValue>(string name) 
+        {
+            object value=default(TValue);
+            return _headers.TryGetValue(name,out value) ? (TValue)value : default(TValue);
+        }
 
         public Type HandlerType { get; private set; }
-        public Type ContentType { get { return Message.GetType(); } }
-        public int RetriesNumber { get;set; }
 
-        public long? StartTimestamp { get; set; }
 
-        public string LastErrorMessage { get; set; }
-
-        public long LastCreateOrUpdateTimestamp { get; set; }
-        
-        public DateTime? StartTime { get {
-            if (!StartTimestamp.HasValue)
-                return null;
-            return DateTime.MinValue.Add(new TimeSpan(StartTimestamp.Value));
-        } }
     }
 }

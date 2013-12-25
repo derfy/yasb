@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using MongoDB.Driver;
-using Yasb.Common.Messaging.Configuration.MongoDb;
 using Yasb.Common.Messaging;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
@@ -12,13 +12,13 @@ namespace Yasb.MongoDb.Messaging
     {
         
 
-        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbConnection connection)
+        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbEndPoint connection)
         {
              return new MongoDbSubscriptionService(MongoDbFactory.CreateDatabase(connection));
         }
 
 
-        internal static MongoDatabase CreateDatabase(MongoDbConnection connection)
+        internal static MongoDatabase CreateDatabase(MongoDbEndPoint connection)
         {
             var connectionString = string.Format("mongodb://{0}", connection.Host);
             var server = MongoServer.Create(connectionString);

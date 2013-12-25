@@ -14,9 +14,9 @@ using Yasb.Tests.Common.Serialization;
 using Yasb.Wireup;
 using Yasb.Common.Tests;
 using System.Threading.Tasks;
-using Yasb.Common.Messaging.Configuration.Msmq;
 using System.Net;
 using Yasb.Tests.Messaging.Redis;
+using Yasb.Common.Messaging.EndPoints.Msmq;
 
 namespace Yasb.Tests.Messaging.Msmq
 {
@@ -26,12 +26,12 @@ namespace Yasb.Tests.Messaging.Msmq
     [TestClass]
     public class MsmqQueueTest
     {
-        private IQueue<MsmqConnection> _queue;
+        private IQueue<MsmqEndPoint> _queue;
+        private MsmqEndPoint __fromEndPoint=new MsmqEndPoint("","");
+
         public MsmqQueueTest()
         {
-            _queue = new MsmqConfigurator().ConfigureQueue(e => e.WithEndPoint("localConnection", "test_msmq", "myEndPoint")
-                .ConfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localConnection", "localhost")))
-                .CreateFromEndPointName("myEndPoint");
+             //_queue = new MsmqConfigurator().ConfigureQueue(e => e.WithLocalEndPoint("localConnection", "test_msmq"));
            
             
         }
@@ -50,13 +50,15 @@ namespace Yasb.Tests.Messaging.Msmq
         {
 
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
-            MessageEnvelope newEnvelope = null;
+           MessageEnvelope envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
+
+           MessageEnvelope newEnvelope = null;
             //Get Message
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             //Wait 5 seconds and reget same message
-            MessageEnvelope timeoutEnvelope = null;
+           MessageEnvelope timeoutEnvelope = null;
             _queue.TryDequeue(DateTime.Now.AddSeconds(5), TimeSpan.FromSeconds(5), out timeoutEnvelope);
 
             Assert.IsNotNull(timeoutEnvelope);
@@ -71,9 +73,10 @@ namespace Yasb.Tests.Messaging.Msmq
         public void ShouldRetrieveMessage()
         {
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+           MessageEnvelope envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
 
-            MessageEnvelope newEnvelope = null;
+           MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             Assert.AreNotEqual(newEnvelope.Id,Guid.Empty);
@@ -84,8 +87,9 @@ namespace Yasb.Tests.Messaging.Msmq
         {
 
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
-            MessageEnvelope newEnvelope = null;
+           MessageEnvelope envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
+           MessageEnvelope newEnvelope = null;
             var t1=Task.Factory.StartNew(()=>_queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
             var t2=Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
             var t3=Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
@@ -99,8 +103,9 @@ namespace Yasb.Tests.Messaging.Msmq
         {
 
             var message = new TestMessage("This is a test");
-            _queue.Push(message, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
-            MessageEnvelope newEnvelope = null;
+           MessageEnvelope envelope = new MessageEnvelope(message);
+            _queue.Push(envelope);
+           MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             _queue.SetMessageCompleted(newEnvelope.Id, DateTime.Now);
@@ -112,13 +117,19 @@ namespace Yasb.Tests.Messaging.Msmq
         public void ShouldGetMessagesInInsertionOrder()
         {
 
-            MessageEnvelope newEnvelope = null;
+           MessageEnvelope newEnvelope = null;
             var message1 = new TestMessage("Message 1");
-            _queue.Push(message1, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope1 = new MessageEnvelope(message1);
+            _queue.Push(envelope1);
+
             var message2 = new TestMessage("Message 2");
-            _queue.Push(message2, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope2 = new MessageEnvelope(message2);
+            _queue.Push(envelope2);
+
             var message3 = new TestMessage("Message 3");
-            _queue.Push(message3, _queue.LocalEndPoint.Value, typeof(TestMessageHandler).AssemblyQualifiedName);
+            var envelope3 = new MessageEnvelope(message3);
+            _queue.Push(envelope3);
+
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.AreEqual(message1.Value, ((TestMessage)newEnvelope.Message).Value);
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);

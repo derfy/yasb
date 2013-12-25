@@ -14,9 +14,9 @@ namespace Yasb.Redis.Messaging.Client.Commands
 
         public static IRedisCommand<byte[]> EvalSha(byte[] code, byte[][] args) { return new EvalShaCommand(code, args); }
 
-        public static IRedisCommand<byte[]> SAdd(string set, string value) { return new SAddCommand(set, value); }
+        public static IRedisCommand<byte[]> SAdd(byte[] set, byte[] value) { return new SAddCommand(set, value); }
 
-        public static IRedisCommand<byte[][]> SMembers(string set) { return new SMembersCommand(set); }
+        public static IRedisCommand<byte[][]> SMembers(byte[] set) { return new SMembersCommand(set); }
 
         public static IRedisCommand<byte[]> SRem(string set, string value) { return new SRemCommand(set, value); }
 

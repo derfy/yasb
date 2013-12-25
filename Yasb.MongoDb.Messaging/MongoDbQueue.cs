@@ -7,24 +7,24 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson.Serialization;
-using Yasb.Common.Messaging.Configuration.MongoDb;
+using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.MongoDb.Messaging
 {
-    public class MongoDbQueue : IQueue<MongoDbConnection>
+    public class MongoDbQueue : IQueue<MongoDbEndPoint>
     {
        
         private MongoCollection<BsonDocument> _collection;
         private const string TimeOutError = "Operation Timed Out";
 
-        public MongoDbQueue(MongoDbQueueEndPoint queueEndPoint, string queueName)
+        public MongoDbQueue(MongoDbEndPoint queueEndPoint)
         {
             LocalEndPoint = queueEndPoint;
             InitializeCollection();
             
         }
 
-       
+
         public bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope)
         {
             envelope = null;
@@ -60,9 +60,9 @@ namespace Yasb.MongoDb.Messaging
         {
             throw new NotImplementedException();
         }
-        public void Push(IMessage message, string replyTo, string messageHandler)
+        public void Push(MessageEnvelope envelope)
         {
-            var envelope = CreateMessageEnvelope(message, replyTo, messageHandler);
+            envelope.Id = new BsonObjectId(ObjectId.GenerateNewId()).ToString();
             _collection.Insert<MessageEnvelope>(envelope);
         }
 
@@ -71,16 +71,16 @@ namespace Yasb.MongoDb.Messaging
         {
             _collection.RemoveAll();
         }
-        public QueueEndPoint<MongoDbConnection> LocalEndPoint { get; private set; }
+        public MongoDbEndPoint LocalEndPoint { get; private set; }
 
         private void InitializeCollection()
         {
-            var database = MongoDbFactory.CreateDatabase(LocalEndPoint.Connection);
-            if (!database.CollectionExists(LocalEndPoint.Name))
+            var database = MongoDbFactory.CreateDatabase(LocalEndPoint);
+            if (!database.CollectionExists(LocalEndPoint.QueueName))
             {
-                database.CreateCollection(LocalEndPoint.Name);
+                database.CreateCollection(LocalEndPoint.QueueName);
             }
-            _collection = database.GetCollection(LocalEndPoint.Name);
+            _collection = database.GetCollection(LocalEndPoint.QueueName);
         }
 
 
@@ -88,11 +88,11 @@ namespace Yasb.MongoDb.Messaging
 
 
 
-        private MessageEnvelope CreateMessageEnvelope(IMessage message, string replyTo, string messageHandler)
-        {
-            var objectId = new BsonObjectId(ObjectId.GenerateNewId());
-            return new MessageEnvelope(objectId.ToString(), message, replyTo, LocalEndPoint.Value, messageHandler) { LastCreateOrUpdateTimestamp = DateTime.UtcNow.Ticks };
+        //private MessageEnvelope CreateMessageEnvelope(IMessage message)
+        //{
+        //    var objectId = new BsonObjectId(ObjectId.GenerateNewId());
+        //    return new MessageEnvelope(objectId.ToString(), message) { LastCreateOrUpdateTimestamp = DateTime.UtcNow.Ticks };
 
-        }
+        //}
     }
 }

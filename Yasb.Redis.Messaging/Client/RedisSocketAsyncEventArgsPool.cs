@@ -6,31 +6,26 @@ using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Collections.Concurrent;
 using Yasb.Common.Messaging;
 using System.Net.Sockets;
-using System.Net;
-using Yasb.Common.Messaging.Connections;
 using System.Threading;
+using System.Net;
 
 namespace Yasb.Redis.Messaging.Client
 {
     public class RedisSocketAsyncEventArgsPool : IRedisSocketAsyncEventArgsPool
     {
         private ConcurrentQueue<RedisSocketAsyncEventArgs> _internalQueue = new ConcurrentQueue<RedisSocketAsyncEventArgs>();
-        private ManualResetEventSlim _mres = new ManualResetEventSlim(false); 
-        private RedisConnection _connection;
-        public RedisSocketAsyncEventArgsPool(int size, RedisConnection connection)
+        private ManualResetEventSlim _mres = new ManualResetEventSlim(false);
+        public RedisSocketAsyncEventArgsPool(int size, EndPoint address)
         {
-            _connection  = connection;
+            Address  = address;
 
             Initialise(size, Address);
         }
 
         public EndPoint Address 
         { 
-            get 
-            {
-                var ipAddress = Dns.GetHostAddresses(_connection.Host).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).First();
-                return new IPEndPoint(ipAddress, _connection.Port);
-            } 
+            get;private set;
+           
         }
 
         private void Initialise(int size, EndPoint endPoint)

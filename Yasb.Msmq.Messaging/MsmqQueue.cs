@@ -6,14 +6,14 @@ using System.Messaging;
 using Yasb.Common.Messaging;
 using System.Transactions;
 using System.Threading.Tasks;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using Yasb.Common.Messaging.EndPoints.Msmq;
 
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqQueue : IQueue<MsmqConnection>
+    public class MsmqQueue : IQueue<MsmqEndPoint>
     {
         private IMessageFormatter _formatter;
-        public MsmqQueue(QueueEndPoint<MsmqConnection> localEndPoint,IMessageFormatter formatter)
+        public MsmqQueue(MsmqEndPoint localEndPoint, IMessageFormatter formatter)
         {
             LocalEndPoint = localEndPoint;
             _formatter = formatter;
@@ -35,7 +35,7 @@ namespace Yasb.Msmq.Messaging
                 {
                     //Console.WriteLine("Completing " + envelopeId);
                     var msg=internalQueue.ReceiveByCorrelationId(envelopeId, tx);
-                    var env=msg.Body as MessageEnvelope;
+                    var env = msg.Body as MessageEnvelope;
                     //Console.WriteLine(string.Format("Completed {0} after number of retries {1} ", envelopeId, env.RetriesNumber));
                     return null;
                 });
@@ -113,12 +113,12 @@ namespace Yasb.Msmq.Messaging
             return envelope!=null;
         }
 
-       
 
 
-        public void Push(IMessage message, string replyTo, string messageHandler)
+
+        public void Push(MessageEnvelope envelope)
         {
-            var envelope = CreateMessageEnvelope(message, replyTo, messageHandler);
+            envelope.Id= string.Format("{0}\\{1}", Guid.NewGuid(), 0);;
             var msmqMessage = new System.Messaging.Message(envelope) { Formatter = _formatter };
             using (var internalQueue = new MessageQueue(LocalEndPoint.Value) { Formatter = _formatter })
             {
@@ -133,7 +133,7 @@ namespace Yasb.Msmq.Messaging
                 internalQueue.Purge();
             }
         }
-        private MessageEnvelope WithMessageQueueTransaction(Func<MessageQueueTransaction, MessageEnvelope> func)
+        private MessageEnvelope WithMessageQueueTransaction(Func<MessageQueueTransaction,MessageEnvelope> func)
         {
             using (var tx = new MessageQueueTransaction())
             {
@@ -156,14 +156,10 @@ namespace Yasb.Msmq.Messaging
         }
 
 
-        public QueueEndPoint<MsmqConnection> LocalEndPoint { get; private set; }
+        public MsmqEndPoint LocalEndPoint { get; private set; }
 
 
-        private MessageEnvelope CreateMessageEnvelope(IMessage message, string replyTo, string messageHandler)
-        {
-            var envelopeId = string.Format("{0}\\{1}", Guid.NewGuid(), 0);
-            return new MessageEnvelope(envelopeId, message, replyTo, LocalEndPoint.Value, messageHandler);
-        }
+       
 
 
       
