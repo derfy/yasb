@@ -4,24 +4,22 @@ using System.Linq;
 using System.Text;
 using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
-using Yasb.Common.Serialization;
 using System.Messaging;
-using Yasb.Common.Messaging.EndPoints.Msmq;
-
+using Yasb.Common.Messaging.Serialization;
+using Yasb.Common.Messaging.Serialization.Xml;
+using Yasb.Msmq.Messaging.Configuration;
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqQueueFactory :IQueueFactory<MsmqEndPoint>
+    public class MsmqQueueFactory :IQueueFactory<MsmqEndPointConfiguration>
     {
-        private readonly IMessageFormatter _messageFormatter;
-        public MsmqQueueFactory( IMessageFormatter messageFormatter)
+        private AbstractXmlSerializer<MessageEnvelope> _envelopeSerializer;
+        public MsmqQueueFactory(AbstractXmlSerializer<MessageEnvelope> envelopeSerializer)
         {
-            _messageFormatter = messageFormatter;
+            _envelopeSerializer = envelopeSerializer;
         }
-
-
-        public  IQueue<MsmqEndPoint> CreateQueue(MsmqEndPoint endPoint)
+        public IQueue<MsmqEndPointConfiguration> CreateQueue(MsmqEndPointConfiguration endPoint)
         {
-            return new MsmqQueue(endPoint, _messageFormatter);
+            return new MsmqQueue(endPoint,_envelopeSerializer);
         }
     }
 }

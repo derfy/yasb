@@ -16,54 +16,91 @@ namespace Yasb.Tests.Common
     [TestClass]
     public class TaskRunnerTest
     {
-        public class TestResult { }
-        private WorkerPool<TestResult> _sut;
-       
+        private WorkerPool _sut;
 
         [TestMethod]
-        public void OnlyThreeWorkersShouldBeExecutedAtSameTime()
+        public void NoMoreThanMaxCapacityShouldBeExecutedAtSameTime()
         {
-
-            CountdownEvent cde = new CountdownEvent(3);
-
-            var worker = new Mock<IWorker<TestResult>>();
-            _sut = new WorkerPool<TestResult>(worker.Object);
+            
+            
+            var worker = new Mock<IWorker>();
+            _sut = new WorkerPool(worker.Object);
+            var executionTimes = _sut.MaxRunningTasksNumber +1;
+            CountdownEvent cde = new CountdownEvent(executionTimes);
             worker.Setup(w => w.Execute()).Callback(() =>
             {
                 cde.Signal();
-                while (true) { }
 
             });
-            _sut.Run();
-            cde.Wait();
-            worker.Verify(w => w.Execute(), Times.Exactly(3));
+            int i = 0;
+            _sut.DoWork(() => i++ < executionTimes);
+            cde.Wait(20);
+            worker.Verify(w => w.Execute(),Times.Exactly(_sut.MaxRunningTasksNumber));
+
+        }
+        [TestMethod]
+        public void LessThanMaxRunningTasksNumberWorkersCanBeExecutedAtSameTime()
+        {
+           
+            var worker = new Mock<IWorker>();
+            _sut = new WorkerPool(worker.Object);
+            var executionTimes = _sut.MaxRunningTasksNumber - 1;
+            CountdownEvent cde = new CountdownEvent(executionTimes);
+            worker.Setup(w => w.Execute()).Callback(() =>
+            {
+                cde.Signal();
+
+            });
+            int i = 0;
+            _sut.DoWork(() => i++ < executionTimes);
+            cde.Wait(200);
+            worker.Verify(w => w.Execute(), Times.Exactly(executionTimes));
            
         }
+        [TestMethod]
+        public void MaxRunningTasksNumberWorkersCanBeExecutedAtSameTime()
+        {
 
+            var worker = new Mock<IWorker>();
+            _sut = new WorkerPool(worker.Object);
+            var executionTimes = _sut.MaxRunningTasksNumber;
+            CountdownEvent cde = new CountdownEvent(executionTimes);
+            worker.Setup(w => w.Execute()).Callback(() =>
+            {
+                cde.Signal();
+
+            });
+            int i = 0;
+            _sut.DoWork(() => i++ < executionTimes);
+            cde.Wait(200);
+            worker.Verify(w => w.Execute(), Times.Exactly(executionTimes));
+
+        }
         [TestMethod]
         public void WorkerShouldHandleException()
         {
-            var mre = new ManualResetEventSlim();
-            var worker = new Mock<IWorker<TestResult>>();
-            _sut = new WorkerPool<TestResult>(worker.Object);
-
+           
+            var worker = new Mock<IWorker>();
+            _sut = new WorkerPool(worker.Object);
+            var executionTimes = _sut.MaxRunningTasksNumber;
+            CountdownEvent cde = new CountdownEvent(executionTimes);
             worker.Setup(w => w.Execute()).Throws(new Exception());
             worker.Setup(w => w.OnException(It.IsAny<Exception>())).Callback((Exception t) =>
             {
-                Console.WriteLine("jhfg");
-                mre.Set();
+                 cde.Signal();
             });
-            _sut.Run();
-            mre.Wait();
-            worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Exactly(3));
+            int i = 0;
+            _sut.DoWork(() => i++ < executionTimes);
+            cde.Wait(100);
+            worker.Verify(w => w.OnException(It.IsAny<Exception>()), Times.Exactly(executionTimes));
         }
         [TestMethod]
         public void ShouldBeToStop()
         {
             var mre = new ManualResetEventSlim();
-            var worker = new Mock<IWorker<TestResult>>();
-            _sut = new WorkerPool<TestResult>(worker.Object);
-            worker.Setup(w => w.Execute()).Callback(() =>
+            var worker = new Mock<IWorker>();
+            _sut = new WorkerPool(worker.Object);
+            worker.Setup(w => w.OnCanceled()).Callback(() =>
             {
                  mre.Set();
 

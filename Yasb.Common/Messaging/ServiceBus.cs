@@ -7,41 +7,41 @@ using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging
 {
-    public class ServiceBus<TEndPoint> : IServiceBus<TEndPoint> 
+    public class ServiceBus<TEndPointConfiguration> : IServiceBus<TEndPointConfiguration> 
     {
-        private readonly IQueueFactory<TEndPoint> _queueFactory;
-        private readonly IWorkerPool<MessageEnvelope> _messageReveiverWorkerPool;
-        private readonly ISubscriptionService<TEndPoint> _subscriptionService;
-        private IEndPointsRepository<TEndPoint> _endPointsRepository;
-        public ServiceBus(IEndPointsRepository<TEndPoint> endPointsRepository, IQueueFactory<TEndPoint> queueFactory, ISubscriptionService<TEndPoint> subscriptionService, IWorkerPool<MessageEnvelope> messageReveiverWorkerPool)
+        private readonly IQueueFactory<TEndPointConfiguration> _queueFactory;
+        private readonly IWorkerPool _messageReveiverWorkerPool;
+        private readonly ISubscriptionService<TEndPointConfiguration> _subscriptionService;
+        private EndPointsConfiguration<TEndPointConfiguration> _endPointsRepository;
+        public ServiceBus(EndPointsConfiguration<TEndPointConfiguration> endPointsRepository, IQueueFactory<TEndPointConfiguration> queueFactory, ISubscriptionService<TEndPointConfiguration> subscriptionService, MessagesReceiver<TEndPointConfiguration> messageReceiver)
         {
             _endPointsRepository = endPointsRepository;
             _queueFactory = queueFactory;
             _subscriptionService = subscriptionService;
-            _messageReveiverWorkerPool = messageReveiverWorkerPool;
+            _messageReveiverWorkerPool = new WorkerPool(messageReceiver);
         }
 
-        public virtual TEndPoint LocalEndPoint { get { return _endPointsRepository["local"]; } }
+        public virtual TEndPointConfiguration LocalEndPoint { get { return _endPointsRepository["local"]; } }
 
         public void Send(string endPointName, IMessage message)
         {
             var endPoint = _endPointsRepository[endPointName];
             var queue = _queueFactory.CreateQueue(endPoint);
-            queue.Push(new MessageEnvelope(message));
+            queue.Push(message);
         }
-       
-        public void Publish(IMessage message) 
+
+        public void Publish<TMessage>(TMessage message) where TMessage : IMessage
         {
             var subscriptions = _subscriptionService.GetSubscriptionEndPoints();
             foreach (var subscriptionEndPoint in subscriptions)
             {
                 var queue = _queueFactory.CreateQueue(subscriptionEndPoint);
-                queue.Push(new MessageEnvelope( message));
+                queue.Push(message);
             }
             
         }
 
-        public void Subscribe<TMessage>(string topicEndPointName) where TMessage : IMessage
+        public void Subscribe(string topicEndPointName)
         {
             var topicEndPoint = _endPointsRepository[topicEndPointName];
             _subscriptionService.SubscribeTo(topicEndPoint);

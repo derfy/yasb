@@ -6,36 +6,28 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Yasb.Common.Messaging;
-using Yasb.Common.Serialization;
 using Yasb.Common;
 
 namespace Yasb.Common.Messaging
 {
 
-    public class MessagesReceiver<TEndPoint> : IWorker<MessageEnvelope>, IDisposable 
+    public class MessagesReceiver<TEndPoint> : IWorker, IDisposable 
     {
         private IQueue<TEndPoint> _queue;
-        private IMessageDispatcher _messageDispatcher;
-        public MessagesReceiver(IQueue<TEndPoint> queue, IMessageDispatcher messageDispatcher)
+        public MessagesReceiver(IQueue<TEndPoint> queue)
         {
             _queue = queue;
-            _messageDispatcher = messageDispatcher;
         }
 
-        public virtual MessageEnvelope Execute()
+        public virtual void Execute()
         {
             var delta = new TimeSpan(0, 0, 5);
             MessageEnvelope envelope = null;
             if (!(_queue.TryDequeue(DateTime.UtcNow, delta, out envelope)))
-                return null;
-            if (!_messageDispatcher.TryDispatch(envelope))
-                return null;
-            return envelope;
+                return ;
+            _queue.SetMessageCompleted(envelope.Id, DateTime.UtcNow);
         }
-        public void OnCompleted(MessageEnvelope env)
-        {
-           _queue.SetMessageCompleted(env.Id, DateTime.UtcNow);
-        }
+        
         public void OnException(Exception ex)
         {
             var handlerException = ex as MessageHandlerException;
@@ -43,10 +35,15 @@ namespace Yasb.Common.Messaging
                 return;
             _queue.SetMessageInError(handlerException.EnvelopeId,handlerException.Message);
         }
-
+        public void OnCanceled()
+        {
+        }
         public void Dispose()
         {
           
         }
+
+
+        
     }
 }

@@ -9,10 +9,9 @@ using Yasb.Wireup;
 using System.Net;
 using Yasb.Common.Messaging.Configuration;
 using Autofac.Builder;
-using Yasb.Common.Messaging.EndPoints.Redis;
-using Yasb.Common.Messaging.Configuration.Redis;
-using Yasb.Common.Serialization;
-using Yasb.Common.Serialization.Json;
+using Yasb.Redis.Messaging.Configuration;
+using Yasb.Common.Tests.Messages;
+
 namespace Consumer
 {
     internal class Program
@@ -64,14 +63,14 @@ namespace Consumer
             
 
             var configurator = new RedisConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints<RedisEndPointConfiguration>(eb => eb.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_consumer"))
+            var bus = configurator.Bus(sb => sb.EndPoints(eb => eb.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_consumer"))
                                                    .SubscribesTo("redis_producer@192.168.227.128", ec => ec.WithHostName("192.168.227.128").WithQueueName("redis_producer")))
-                                                .Serializer<JsonSerializationConfiguration<RedisEndPoint>>());
+                                                   .ConfigureSubscriptionService(cfg => cfg.WithHostName("192.168.227.128")));
 
 
-            bus.Subscribe<ExampleMessage>("redis_producer@192.168.227.128");
+            bus.Subscribe("redis_producer@192.168.227.128");
             Console.WriteLine("subscription ExampleMessage sent");
-            bus.Subscribe<ExampleMessage2>("redis_producer@192.168.227.128");
+            bus.Subscribe("redis_producer@192.168.227.128");
             Console.WriteLine("subscription ExampleMessage2 sent");
             bus.Run();
         }

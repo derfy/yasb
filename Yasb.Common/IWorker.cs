@@ -7,12 +7,10 @@ using System.Threading;
 namespace Yasb.Common
 {
     
-    public interface IWorker<TResult> 
+    public interface IWorker
     {
-        TResult Execute();
-
+        void Execute();
         void OnException(Exception ex);
-
-        void OnCompleted(TResult result);
+        void OnCanceled();
     }
 }

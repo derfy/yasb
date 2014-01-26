@@ -7,7 +7,6 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Reflection;
 using System.Linq.Expressions;
-using Yasb.Common.Serialization;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Messaging;
 using Yasb.Redis.Messaging;
@@ -15,26 +14,21 @@ using Newtonsoft.Json;
 using System.Net;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using Yasb.Redis.Messaging.Client;
-using Yasb.Common.Messaging.EndPoints.Redis;
-using Yasb.Common.Messaging.Configuration.Redis;
-using Yasb.Common.Serialization.Json;
+using Yasb.Redis.Messaging.Configuration;
+using Autofac.Core;
 
 namespace Yasb.Wireup
 {
 
 
-    public class RedisConfigurator : AbstractConfigurator<RedisEndPoint, JsonNetSerializer<RedisEndPoint>> 
+    public class RedisConfigurator : AbstractConfigurator<RedisEndPointConfiguration, RedisSubscriptionServiceConfiguration> 
     {
 
-        protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<RedisEndPoint, JsonNetSerializer<RedisEndPoint>> serviceBusConfiguration)
+        protected override IModule RegisterServiceBusModule(ServiceBusConfiguration<RedisEndPointConfiguration, RedisSubscriptionServiceConfiguration> serviceBusConfiguration)
         {
-            builder.RegisterModule(new RedisServiceBusModule(serviceBusConfiguration));
+            return new RedisServiceBusModule(serviceBusConfiguration);
             
         }
 
-        protected override void RegisterQueueModule(ContainerBuilder builder, ServiceBusConfiguration<RedisEndPoint, JsonNetSerializer<RedisEndPoint>> queueConfiguration)
-        {
-            builder.RegisterModule(new RedisQueueModule(queueConfiguration,"queue"));
-        }
     }
 }

@@ -10,7 +10,7 @@ namespace Yasb.Common.Messaging
 
     public interface IHandleMessages
     {
-   
+        void Handle<TMessage>(TMessage message);
     }
 
     public interface IHandleMessages<TMessage> : IHandleMessages where TMessage : IMessage

@@ -9,7 +9,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.MongoDb.Messaging
 {
@@ -22,16 +22,16 @@ namespace Yasb.MongoDb.Messaging
         //[BsonSerializer(typeof(MyClassSerializer))]
         public string[] Endpoints { get; set; }
     }
-    public class MongoDbSubscriptionService : ISubscriptionService<MongoDbEndPoint>
+    public class MongoDbSubscriptionService : ISubscriptionService<MongoDbEndPointConfiguration>
     {
         private MongoCollection _collection;
         public MongoDbSubscriptionService(MongoDatabase database)
         {
             InitializeCollection(database);
         }
-       
 
-        public MongoDbEndPoint[] GetSubscriptionEndPoints()
+
+        public MongoDbEndPointConfiguration[] GetSubscriptionEndPoints()
         {
             throw new NotImplementedException();
         }
@@ -40,11 +40,11 @@ namespace Yasb.MongoDb.Messaging
 
 
 
-        public void SubscribeTo(MongoDbEndPoint topicEndPoint)
+        public void SubscribeTo(MongoDbEndPointConfiguration topicEndPoint)
         {
             throw new NotImplementedException();
         }
-        public void UnSubscribe(string topicName, MongoDbEndPoint subscriberEndPoint)
+        public void UnSubscribe(string topicName, MongoDbEndPointConfiguration subscriberEndPoint)
         {
             throw new NotImplementedException();
         }

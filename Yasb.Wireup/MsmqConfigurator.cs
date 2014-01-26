@@ -6,25 +6,22 @@ using Yasb.Common.Messaging.Configuration;
 using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.Msmq.Messaging;
-using Yasb.Common.Messaging.EndPoints.Msmq;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using System.Messaging;
+using Yasb.Msmq.Messaging.Configuration;
+using Autofac.Core;
 
 namespace Yasb.Wireup
 {
 
-    public class MsmqConfigurator : AbstractConfigurator<MsmqEndPoint,MsmqSerializationConfiguration>
+    public class MsmqConfigurator : AbstractConfigurator<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration>
     {
 
 
-        protected override void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration> serviceBusConfiguration)
+        protected override IModule RegisterServiceBusModule(ServiceBusConfiguration<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration> serviceBusConfiguration)
         {
-          //  builder.RegisterModule(new MsmqQueueModule(serviceBusConfiguration,"bus"));
-            builder.RegisterModule(new MsmqServiceBusModule(serviceBusConfiguration));
+            return new MsmqServiceBusModule(serviceBusConfiguration);
         }
-        protected override void RegisterQueueModule(ContainerBuilder builder, ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration> queueConfiguration)
-        {
-            builder.RegisterModule(new MsmqQueueModule(queueConfiguration,"queue"));
-        }
+       
        
        
     }

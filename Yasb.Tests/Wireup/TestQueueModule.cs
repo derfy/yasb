@@ -8,14 +8,15 @@ using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
 using Moq;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Tests.Wireup
 {
 
-    public class TestQueueModule : ScopedModule<QueueConfiguration<TestEndPoint>>
+    public class TestQueueModule : ScopedModule<ServiceBusConfiguration<TestEndPoint, RedisEndPointConfiguration>>
     {
         private IQueueFactory<TestEndPoint> _queueFactory;
-        public TestQueueModule(IQueueFactory<TestEndPoint> queueFactory, QueueConfiguration<TestEndPoint> queueConfiguration, string scope)
+        public TestQueueModule(IQueueFactory<TestEndPoint> queueFactory, ServiceBusConfiguration<TestEndPoint, RedisEndPointConfiguration> queueConfiguration, string scope)
             : base(queueConfiguration,scope)
         {
              _queueFactory = queueFactory;
@@ -33,12 +34,12 @@ namespace Yasb.Tests.Wireup
             
         }
     }
-  
-    public class TestServiceBusModule : ServiceBusModule<TestEndPoint,TestSerializationConfiguration>
+
+    public class TestServiceBusModule : ServiceBusModule<TestEndPointConfiguration, RedisEndPointConfiguration>
     {
-        Mock<ISubscriptionService<TestEndPoint>> _subscriptionService;
-        Mock<IQueueFactory<TestEndPoint>> _queueFactory;
-        public TestServiceBusModule(ServiceBusConfiguration<TestEndPoint,TestSerializationConfiguration> configuration, Mock<IQueueFactory<TestEndPoint>> queueFactory, Mock<ISubscriptionService<TestEndPoint>> subscriptionService)
+        Mock<ISubscriptionService<TestEndPointConfiguration>> _subscriptionService;
+        Mock<IQueueFactory<TestEndPointConfiguration>> _queueFactory;
+        public TestServiceBusModule(ServiceBusConfiguration<TestEndPointConfiguration, RedisEndPointConfiguration> configuration, Mock<IQueueFactory<TestEndPointConfiguration>> queueFactory, Mock<ISubscriptionService<TestEndPointConfiguration>> subscriptionService)
             : base(configuration)
         {
             _queueFactory = queueFactory;
@@ -48,11 +49,11 @@ namespace Yasb.Tests.Wireup
         {
             base.Load(builder);
 
-            builder.RegisterWithScope<IQueueFactory<TestEndPoint>>((componentScope, parameters) =>
+            builder.RegisterWithScope<IQueueFactory<TestEndPointConfiguration>>((componentScope, parameters) =>
             {
                 return _queueFactory.Object;
             }).InstancePerMatchingLifetimeScope(Scope);
-            builder.RegisterWithScope<ISubscriptionService<TestEndPoint>>((componentScope, parameters) =>
+            builder.RegisterWithScope<ISubscriptionService<TestEndPointConfiguration>>((componentScope, parameters) =>
             {
 
                 return _subscriptionService.Object;

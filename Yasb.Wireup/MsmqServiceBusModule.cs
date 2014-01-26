@@ -6,15 +6,19 @@ using Yasb.Common.Messaging.Configuration;
 using Yasb.Msmq.Messaging;
 using Autofac;
 using Yasb.Common.Messaging;
-using Yasb.Common.Messaging.EndPoints.Msmq;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using System.Messaging;
+using Yasb.Msmq.Messaging.Configuration;
+using Yasb.Common.Tests.Messages;
+using Yasb.Common.Messaging.Serialization;
+using Yasb.Common.Messaging.Serialization.Xml;
+using Yasb.Common.Messaging.Serialization.Json;
 
 namespace Yasb.Wireup
 {
 
-    public class MsmqServiceBusModule : ServiceBusModule<MsmqEndPoint,MsmqSerializationConfiguration> 
+    public class MsmqServiceBusModule : ServiceBusModule<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration> 
     {
-        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqEndPoint, MsmqSerializationConfiguration> serviceBusConfiguration)
+        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
 
@@ -25,11 +29,29 @@ namespace Yasb.Wireup
             base.Load(builder);
             builder.RegisterWithScope<MsmqSubscriptionService>((componentScope, parameters) =>
             {
-                var localEndPoint = Configuration.EndPoints["local"];
-                return new MsmqSubscriptionService(localEndPoint);
+                Configuration.SubscriptionServiceConfiguration.LocalEndPointConfiguration = Configuration.EndPoints["local"];
+                return new MsmqSubscriptionService(Configuration.SubscriptionServiceConfiguration);
             })
-           .As<ISubscriptionService<MsmqEndPoint>>();
-           
+           .As<ISubscriptionService<MsmqEndPointConfiguration>>();
+
+            
+
+            builder.RegisterWithScope<Func<Type, AbstractXmlSerializer<IMessage>>>((componentScope, parameters) =>
+            {
+                return (type) => new DefaultXmlMessageSerializer(type);
+            }).InstancePerMatchingLifetimeScope(Scope);
+
+
+            builder.RegisterWithScope<XmlMessageEnvelopeSerializer>((componentScope, parameters) =>
+            {
+                return new XmlMessageEnvelopeSerializer(componentScope.Resolve<Func<Type, AbstractXmlSerializer<IMessage>>>());
+            }).As<AbstractXmlSerializer<MessageEnvelope>>().InstancePerMatchingLifetimeScope(Scope);
+
+
+            builder.RegisterWithScope<MsmqQueueFactory>((componentScope, parameters) =>
+            {
+                return new MsmqQueueFactory(componentScope.Resolve<AbstractXmlSerializer<MessageEnvelope>>());
+            }).As<IQueueFactory<MsmqEndPointConfiguration>>().InstancePerMatchingLifetimeScope(Scope);
         }
     }
 }

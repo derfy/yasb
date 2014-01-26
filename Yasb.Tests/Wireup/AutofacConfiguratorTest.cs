@@ -6,8 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Wireup;
 using Yasb.Common.Tests;
 using Yasb.Common.Messaging;
-using Yasb.Common.Messaging.EndPoints.Redis;
-using Yasb.Common.Messaging.Configuration.Redis;
+using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Tests.Wireup
 {
@@ -20,22 +19,10 @@ namespace Yasb.Tests.Wireup
         [TestMethod]
         public void ShouldBeAbleToCreateServiceBus()
         {
-            var serviceBus = _sut.Bus(c => c.EndPoints<RedisEndPointConfiguration>(e => e.ReceivesOn(ec => ec.WithQueueName("localQueue"))));
-                                           //.ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1")
-                                           //                                         .WithConnection("myHost", "127.0.0.1")
-                                           //                                         .WithConnection("myOtherHost", "192.198.70.86"))
-            Assert.IsNotNull(serviceBus);
+            var bus = _sut.Bus(sb => sb.EndPoints(lec => lec.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_producer"))).ConfigureSubscriptionService(cfg => cfg.WithHostName("192.168.227.128")));
+                                     
+            Assert.IsNotNull(bus);
         }
-      //  [Ignore]
-        [TestMethod]
-        public void ShouldBeAbleToCreateQueue()
-        {
-            //var queue = _sut.ConfigureQueue(c => c.WithLocalEndPoint("myHost", "queue_test"));
-                //.ConfigureConnections<FluentIPEndPointConfigurer>(conn => conn.WithConnection("local", "127.0.0.1")
-                //                                                              .WithConnection("myHost", "127.0.0.1")
-                //                                                              .WithConnection("myOtherHost", "192.198.70.86")));
-          //  Assert.IsNotNull(queue);
-            
-        }
+       
     }
 }

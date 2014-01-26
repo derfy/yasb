@@ -5,21 +5,18 @@ using System.Text;
 using Autofac;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.MongoDb.Messaging;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
-using Yasb.Common.Messaging.Configuration.MongoDb;
+using Autofac.Core;
+using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.Wireup
 {
-    public class MongoDbConfigurator : AbstractConfigurator<MongoDbEndPoint, MongoDbSerializationConfiguration>
+    public class MongoDbConfigurator : AbstractConfigurator<MongoDbEndPointConfiguration, SubscriptionServiceConfiguration>
     {
-        protected override void RegisterServiceBusModule(Autofac.ContainerBuilder builder, ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> serviceBusConfiguration)
+        protected override IModule RegisterServiceBusModule(ServiceBusConfiguration<MongoDbEndPointConfiguration, SubscriptionServiceConfiguration> serviceBusConfiguration)
         {
-            builder.RegisterModule(new MongoDbServiceBusModule(serviceBusConfiguration));
+            return new MongoDbServiceBusModule(serviceBusConfiguration);
         }
 
-        protected override void RegisterQueueModule(Autofac.ContainerBuilder builder, ServiceBusConfiguration<MongoDbEndPoint, MongoDbSerializationConfiguration> queueConfiguration)
-        {
-           builder.RegisterModule(new MongoDbQueueModule(queueConfiguration, "queue"));
-        }
+       
     }
 }

@@ -41,11 +41,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac">
-      <HintPath>..\..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.dll</HintPath>
-    </Reference>
-    <Reference Include="Autofac.Configuration">
-      <HintPath>..\..\..\packages\Autofac.2.6.3.862\lib\NET40\Autofac.Configuration.dll</HintPath>
+    <Reference Include="Autofac, Version=3.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\Autofac.3.3.0\lib\net40\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -67,6 +65,10 @@
     <ProjectReference Include="..\..\..\Yasb.Common\Yasb.Common.csproj">
       <Project>{6C55221E-FE18-4FC8-B2B0-F4F842B240F6}</Project>
       <Name>Yasb.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Yasb.Redis.Messaging\Yasb.Redis.Messaging.csproj">
+      <Project>{603cf365-a1f5-42c5-a78b-da6ec1f61223}</Project>
+      <Name>Yasb.Redis.Messaging</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Yasb.Wireup\Yasb.Wireup.csproj">
       <Project>{E90CB416-314A-4EA9-9B0A-1D6666644778}</Project>

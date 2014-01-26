@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
+using Yasb.Common.Tests.Messages;
 
 namespace Yasb.Common.Messaging
 {
-    
     public class MessageEnvelope
     {
         private Dictionary<string, object> _headers = new Dictionary<string, object>();
@@ -13,40 +14,20 @@ namespace Yasb.Common.Messaging
         {
 
         }
-
         public MessageEnvelope(IMessage message)
         {
             Message = message;
         }
 
-       
         public IMessage Message { get; set; }
 
-       // public TEndPoint From { get;  set; }
+        public string Id { get; set; }
 
-        public string Id
-        {
-            get { return GetHeader<string>("Id"); }
-            set { SetHeader("Id", value); }
-        }
-        
-        public int RetriesNumber
-        {
-            get { return GetHeader<int>("RetriesNumber"); }
-            set { SetHeader("RetriesNumber", value); }
-        }
+        public int RetriesNumber { get; set; }
 
-        public string LastErrorMessage
-        {
-            get { return GetHeader<string>("LastErrorMessage"); }
-            set { SetHeader("LastErrorMessage", value); }
-        }
+        public string LastErrorMessage { get; set; }
 
-        public long? StartTimestamp
-        {
-            get { return GetHeader<long?>("StartTimestamp"); }
-            set { SetHeader("StartTimestamp", value); }
-        }
+        public long? StartTimestamp { get; set; }
 
         public DateTime? StartTime
         {
@@ -62,14 +43,14 @@ namespace Yasb.Common.Messaging
             _headers[name] = value;
         }
 
-        public TValue GetHeader<TValue>(string name) 
+        public TValue GetHeader<TValue>(string name)
         {
-            object value=default(TValue);
-            return _headers.TryGetValue(name,out value) ? (TValue)value : default(TValue);
+            object value = default(TValue);
+            return _headers.TryGetValue(name, out value) ? (TValue)value : default(TValue);
         }
 
-        public Type HandlerType { get; private set; }
 
-
+        
     }
+   
 }

@@ -6,16 +6,21 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Yasb.Redis.Messaging.Client;
 using Yasb.Redis.Messaging;
-using Yasb.Common.Serialization;
-using Yasb.Common.Messaging;
 using Yasb.Common.Tests;
 using Yasb.Redis.Messaging.Client.Interfaces;
 using System.Net;
 using Yasb.Common.Tests.Configuration;
 using Yasb.Common.Extensions;
 using Yasb.Common.Messaging.Configuration;
-using Yasb.Common.Messaging.EndPoints.Redis;
 using Yasb.Common.Messaging.EndPoints;
+using Yasb.Common.Messaging;
+using Yasb.Redis.Messaging.Serialization;
+using Yasb.Common.Messaging.Serialization;
+using Yasb.Common.Messaging.Serialization.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Yasb.Redis.Messaging.Configuration;
+using System.IO;
 namespace Yasb.Tests.Messaging
 {
     /// <summary>
@@ -24,17 +29,16 @@ namespace Yasb.Tests.Messaging
     [TestClass]
     public class RedisQueueTest
     {
-        private IQueue<RedisEndPoint> _sut;
-        private Mock<ISerializer> _serializerMock= new Mock<ISerializer>();
+        private IQueue<RedisEndPointConfiguration> _sut;
+        private Mock<AbstractJsonSerializer<MessageEnvelope>> _serializerMock = new Mock<AbstractJsonSerializer<MessageEnvelope>>();
         private Mock<IRedisClient> _redisClientMock = new Mock<IRedisClient>();
-        private RedisEndPoint _endPointTest;
-        private RedisEndPoint _fromEndPoint = new RedisEndPoint("", "");
-
+        private RedisEndPointConfiguration _endPointTest;
+       
         private RedisQueueFactory _queueFactory;
         public RedisQueueTest()
         {
           //  var connection= new RedisConnection("foo", 8080);
-            _endPointTest = new RedisEndPoint("localhost", "test") { Port=8080};
+            _endPointTest = new RedisEndPointConfiguration("localhost", "test");
            // _serializerMock.Setup(s=>s.
           _queueFactory = new RedisQueueFactory(_serializerMock.Object, c => _redisClientMock.Object);
 
@@ -54,13 +58,12 @@ namespace Yasb.Tests.Messaging
         [TestMethod]
         public void ShouldBeAbleToPush()
         {
-            
-            var bytes = Encoding.Default.GetBytes("foo");
-            _serializerMock.Setup(c => c.Serialize(It.IsAny<MessageEnvelope>())).Returns(bytes);
-            _redisClientMock.Setup(c => c.EvalSha("PushMessage.lua", 1, It.IsAny<byte[]>(), bytes));
             var message = new TestMessage("This is a test");
-            var envelope = new MessageEnvelope(message);
-            _sut.Push(envelope);
+            var bytes = Encoding.Default.GetBytes("foo");
+            _serializerMock.Setup(c => c.Serialize(It.Is<MessageEnvelope>(e => e.Message == message))).Returns(bytes);
+            _redisClientMock.Setup(c => c.EvalSha("PushMessage.lua", 1, It.IsAny<byte[]>(), bytes));
+            
+            _sut.Push(message);
             _redisClientMock.VerifyAll();
             _serializerMock.VerifyAll();
         }
@@ -75,7 +78,7 @@ namespace Yasb.Tests.Messaging
             var now=DateTime.Now;
             var timoutWindow = new TimeSpan();
             _redisClientMock.Setup(c => c.EvalSha("TryGetEnvelope.lua", 1, "test", now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString())).Returns(script1);
-            _serializerMock.Setup(c => c.Deserialize<MessageEnvelope>(script1)).Returns(envelope);
+            _serializerMock.Setup(c => c.Deserialize(It.IsAny<JsonReader>())).Returns(envelope);
             var res = _sut.TryDequeue(now, timoutWindow, out newEnvelope);
             _redisClientMock.VerifyAll();
             _serializerMock.VerifyAll();
@@ -91,7 +94,7 @@ namespace Yasb.Tests.Messaging
            // _endPointTest.Setup(e => e.Name).Returns("test");
             _redisClientMock.Setup(c => c.EvalSha("TryGetEnvelope.lua", 1, "test", now.Subtract(timoutWindow).Ticks.ToString(), now.Ticks.ToString())).Returns(() => null);
             var res = _sut.TryDequeue(now, timoutWindow, out envelope);
-            _serializerMock.Verify(c => c.Deserialize<MessageEnvelope>(It.IsAny<byte[]>()), Times.Never());
+            _serializerMock.Verify(c => c.Deserialize(It.IsAny<JsonReader>()), Times.Never());
             _redisClientMock.VerifyAll();
             Assert.IsFalse(res);
             Assert.AreEqual(null, envelope);

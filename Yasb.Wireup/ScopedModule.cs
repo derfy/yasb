@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Autofac;
+using Autofac.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +18,9 @@ namespace Yasb.Wireup
         }
         protected TConfiguration Configuration { get; private set; }
         protected string Scope { get; private set; }
-       
+
+        
+        
     }
     
 }

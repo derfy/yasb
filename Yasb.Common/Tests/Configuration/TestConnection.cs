@@ -13,6 +13,15 @@ namespace Yasb.Common.Tests.Configuration
     {
         private string _queueName;
         private string _hostName;
+        public TestEndPointConfiguration()
+        {
+
+        }
+        public TestEndPointConfiguration(string hostName, string queueName)
+        {
+            _hostName = hostName;
+            _queueName = queueName;
+        }
         public TestEndPointConfiguration WithHostName(string hostName)
         {
             _hostName = hostName;
@@ -31,11 +40,13 @@ namespace Yasb.Common.Tests.Configuration
         {
             get { return new TestEndPoint(_hostName, _queueName); }
         }
+
+        
     }
-    public class TestEndPoint : QueueEndPoint,IEndPoint {
+    public class TestEndPoint : QueueEndPoint {
         public TestEndPoint(string host,string queueName):base(host,queueName)
         {
-
+            Port = 6379;
         }
         public  string Value
         {

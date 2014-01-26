@@ -7,8 +7,8 @@ using Yasb.Common.Messaging;
 using System.Threading.Tasks;
 using Yasb.Common.Tests;
 using System.Threading;
-using Yasb.Common.Messaging.EndPoints.Msmq;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using Yasb.Msmq.Messaging.Configuration;
+using Yasb.Common.Tests.Messages;
 
 namespace Producer
 {
@@ -58,7 +58,8 @@ namespace Producer
         public static void Run()
         {
             var configurator = new MsmqConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints<MsmqEndPointConfiguration>(c=>c.ReceivesOn(lec => lec.WithQueueName("msmq_producer"))));
+            var bus = configurator.Bus(sb => sb.EndPoints(c => c.ReceivesOn(lec => lec.WithQueueName("msmq_producer")))
+                                               .ConfigureSubscriptionService(c => c.WithHostName("192.168.227.128").WithDatabase("Subscriptions")));
                                                //.ConfigureConnections<MsmqFluentConnectionConfigurer>(conn => conn.WithConnection("local", "localhost")));
 
             int i = 0;

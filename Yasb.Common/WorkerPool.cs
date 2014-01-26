@@ -10,80 +10,63 @@ using System.Collections.Concurrent;
 namespace Yasb.Common
 {
 
-    public class WorkerPool<TResult> : IWorkerPool<TResult>
+    public class WorkerPool : IWorkerPool
     {
 
-        private const int MaxRunningTasksNumber=3;
-        private int _runningTasksNumber = 0;
         private ConcurrentQueue<Task> _waitingTasksQueue = new ConcurrentQueue<Task>();
         private CancellationTokenSource _tokenSource = new CancellationTokenSource();
         
-        private ManualResetEventSlim _mres = new ManualResetEventSlim(false);
+        
 
-
-        public WorkerPool(IWorker<TResult> worker)
+        public WorkerPool(IWorker worker,int maxRunningTaskNumber=3)
         {
+            MaxRunningTasksNumber = maxRunningTaskNumber;
             Parallel.For(0, MaxRunningTasksNumber, i => _waitingTasksQueue.Enqueue(CreateTask(worker)));
         }
         public Task Run()
         {
-            return Task.Factory.StartNew(() =>
-            {
-                while (true)
-                {
-                    _mres.Reset();
-                    Task task = null;
-                    while (_waitingTasksQueue.TryDequeue(out task))
-                    {
-                        Join(task);
-                    }
-                    _mres.Wait();
-                }
-            },TaskCreationOptions.LongRunning);
-           
+            return Task.Factory.StartNew(() => DoWork(() => true), TaskCreationOptions.LongRunning);
         }
 
-        public void Join(Task workerTask)
+        public void DoWork(Func<bool> predicate)
         {
-          
-            if (_runningTasksNumber == MaxRunningTasksNumber)
+            Task task;
+            while (predicate())
             {
-                _mres.Wait();
-                _mres.Reset();
+                
+                if (_waitingTasksQueue.TryDequeue(out task) && task.Status!=TaskStatus.Canceled)
+                {
+                    task.Start();
+                }
             }
            
-            workerTask.Start();
         }
 
-        private Task CreateTask(IWorker<TResult> worker)
+        public int MaxRunningTasksNumber { get; private set; }
+        
+
+        private Task CreateTask(IWorker worker)
         {
             var token = _tokenSource.Token;
             token.ThrowIfCancellationRequested();
-            var task = new Task<TResult>(() =>
-            {
-               
-                Interlocked.Increment(ref _runningTasksNumber);
-                return worker.Execute();
-            }, token);
+            var task = new Task(() => worker.Execute(), token);
             task.ContinueWith(t =>
             {
-                if (t.Result != null)
-                    worker.OnCompleted(t.Result);
                 _waitingTasksQueue.Enqueue(CreateTask(worker));
-                Interlocked.Decrement(ref _runningTasksNumber);
-                _mres.Set();
+
             }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
             task.ContinueWith(faultedTask =>
             {
                 faultedTask.Exception.Handle(ex =>
                 {
                     worker.OnException(ex);
+                    _waitingTasksQueue.Enqueue(CreateTask(worker));
                     return true;
                 });
             }, TaskContinuationOptions.ExecuteSynchronously|TaskContinuationOptions.OnlyOnFaulted);
             task.ContinueWith(canceledTask =>
             {
-                
+                worker.OnCanceled();
             }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnCanceled);
             return task;
         }

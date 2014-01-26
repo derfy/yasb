@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Yasb.Common.Messaging.Configuration.MongoDb;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.Common.Tests.Messages;
+using Yasb.MongoDb.Messaging.Configuration;
 using Yasb.Wireup;
 
 namespace Consumer
@@ -56,13 +56,13 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new MongoDbConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints<MongoDbEndPointConfiguration>(e => e.ReceivesOn(c => c.WithHostName("192.168.127.128").WithQueueName("msmq_consumer@"))));
+            var bus = configurator.Bus(sb => sb.EndPoints(e => e.ReceivesOn(c => c.WithHostName("192.168.127.128").WithQueueName("msmq_consumer@"))));
                                                //.ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test"))
                                               
 
 
-            bus.Subscribe<ExampleMessage>("msmq_producer@vmEndPoint");
-            bus.Subscribe<ExampleMessage2>("msmq_producer@vmEndPoint");
+            bus.Subscribe("msmq_producer@vmEndPoint");
+            bus.Subscribe("msmq_producer@vmEndPoint");
             bus.Run();
         }
 

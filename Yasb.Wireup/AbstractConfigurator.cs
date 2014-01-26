@@ -6,38 +6,30 @@ using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.Common.Messaging.Configuration;
 using Yasb.Common.Messaging.EndPoints;
+using Autofac.Core;
 
 namespace Yasb.Wireup
 {
-    public abstract class AbstractConfigurator<TEndPoint, TSerializerConfiguration> 
+    public abstract class AbstractConfigurator<TEndPoint, TSubscriptionServiceConfiguration> 
     {
         public AbstractConfigurator()
         {
         }
 
-        public IServiceBus<TEndPoint> Bus(Action<ServiceBusConfigurer<TEndPoint, TSerializerConfiguration>> action)
+        public IServiceBus<TEndPoint> Bus(Action<ServiceBusConfigurer<TEndPoint, TSubscriptionServiceConfiguration>> action)
         {
             var builder = new ContainerBuilder();
-            var serviceBusConfigurer = new ServiceBusConfigurer<TEndPoint,TSerializerConfiguration>();
+            var serviceBusConfigurer = new ServiceBusConfigurer<TEndPoint, TSubscriptionServiceConfiguration>();
             action(serviceBusConfigurer);
             var serviceBusConfiguration = serviceBusConfigurer.Built;
+            var lifetimeScope = builder.Build().BeginLifetimeScope("bus", b => b.RegisterModule(RegisterServiceBusModule(serviceBusConfiguration)));
+            return lifetimeScope.Resolve<IServiceBus<TEndPoint>>();
             
-            RegisterServiceBusModule(builder,serviceBusConfiguration);
-            return builder.Build().BeginLifetimeScope("bus").Resolve<IServiceBus<TEndPoint>>();
         }
 
+       
+       
 
-        public IQueue<TEndPoint> ConfigureQueue(Action<ServiceBusConfigurer<TEndPoint,  TSerializerConfiguration>> action)
-        {
-            var builder = new ContainerBuilder();
-            var queueConfigurer = new ServiceBusConfigurer<TEndPoint, TSerializerConfiguration>();
-            action(queueConfigurer);
-            RegisterQueueModule(builder,queueConfigurer.Built);
-            return builder.Build().BeginLifetimeScope("queue").Resolve<IQueue<TEndPoint>>();
-        }
-
-
-        protected abstract void RegisterServiceBusModule(ContainerBuilder builder, ServiceBusConfiguration<TEndPoint,TSerializerConfiguration> serviceBusConfiguration);
-        protected abstract void RegisterQueueModule(ContainerBuilder builder, ServiceBusConfiguration<TEndPoint, TSerializerConfiguration> queueConfiguration);
+        protected abstract IModule RegisterServiceBusModule(ServiceBusConfiguration<TEndPoint, TSubscriptionServiceConfiguration> serviceBusConfiguration);
     }
 }

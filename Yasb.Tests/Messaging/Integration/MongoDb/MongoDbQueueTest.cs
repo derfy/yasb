@@ -8,7 +8,6 @@ using Yasb.Wireup;
 using Yasb.MongoDb.Messaging;
 using Yasb.Common.Tests;
 using System.Threading.Tasks;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.Tests.Messaging.Integration.MongoDb
 {

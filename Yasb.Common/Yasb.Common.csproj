@@ -37,11 +37,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Newtonsoft.Json.5.0.8\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Messaging" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,30 +62,18 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Guard.cs" />
     <Compile Include="Messaging\Configuration\EndPointsConfigurer.cs" />
-    <Compile Include="Messaging\Configuration\EndPointsRepository.cs" />
+    <Compile Include="Messaging\Configuration\EndPointsConfiguration.cs" />
     <Compile Include="Messaging\Configuration\IEndPointConfiguration.cs" />
     <Compile Include="Messaging\Configuration\ISerializerConfiguration.cs" />
-    <Compile Include="Messaging\Configuration\MongoDb\MongoDbEndPointConfiguration.cs" />
-    <Compile Include="Messaging\Configuration\MongoDb\MongoDbSerializationConfiguration.cs" />
-    <Compile Include="Messaging\Configuration\Msmq\MsmqEndPointConfiguration.cs" />
-    <Compile Include="Messaging\Configuration\Msmq\MsmqSerializationConfiguration.cs" />
-    <Compile Include="Serialization\Json\ICanJsonSerializeMessage.cs" />
-    <Compile Include="Serialization\Json\ICanJsonSerializeEndPoint.cs" />
-    <Compile Include="Messaging\Configuration\Redis\RedisEndPointConfiguration.cs" />
-    <Compile Include="Serialization\Json\EndPointConverter.cs" />
-    <Compile Include="Serialization\Json\JsonConverter.cs" />
-    <Compile Include="Serialization\Json\JsonSerializationConfiguration.cs" />
-    <Compile Include="Messaging\EndPoints\IEndPoint.cs" />
+    <Compile Include="Messaging\Configuration\SubscriptionServiceConfiguration.cs" />
     <Compile Include="Messaging\EndPoints\IEndPointsRepository.cs" />
+    <Compile Include="Messaging\EndPoints\QueueEndPoint.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Messaging\Exceptions\InvalidEndPointException.cs" />
     <Compile Include="Messaging\IQueueFactory.cs" />
-    <Compile Include="Messaging\EndPoints\AbstractEndPoint.cs" />
-    <Compile Include="Messaging\EndPoints\MongoDb\MongoDbEndPoint.cs" />
-    <Compile Include="Messaging\EndPoints\Msmq\MsmqEndPoint.cs" />
-    <Compile Include="Messaging\Configuration\QueueConfiguration.cs" />
     <Compile Include="Messaging\Configuration\ServiceBusConfiguration.cs" />
     <Compile Include="Messaging\Configuration\ServiceBusConfigurer.cs" />
-    <Compile Include="Messaging\EndPoints\Redis\RedisEndPoint.cs" />
     <Compile Include="Messaging\IMessageHandler.cs" />
     <Compile Include="Messaging\IHandleMessages.cs" />
     <Compile Include="Messaging\IMessage.cs" />
@@ -89,21 +86,20 @@
     <Compile Include="Messaging\MessageEnvelope.cs" />
     <Compile Include="Messaging\MessageHandlerException.cs" />
     <Compile Include="Messaging\MessagesReceiver.cs" />
+    <Compile Include="Messaging\Serialization\Json\AbstractJsonSerializer.cs" />
+    <Compile Include="Messaging\Serialization\Json\DefaultJsonMessageDeserializer.cs" />
+    <Compile Include="Messaging\Serialization\Json\JsonMessageEnvelopeSerializer.cs" />
+    <Compile Include="Messaging\Serialization\Xml\AbstractXmlSerializer.cs" />
+    <Compile Include="Messaging\Serialization\Xml\DefaultXmlMessageSerializer.cs" />
+    <Compile Include="Messaging\Serialization\Xml\XmlMessageEnvelopeSerializer.cs" />
     <Compile Include="Messaging\ServiceBus.cs" />
-    <Compile Include="Serialization\AbstractSerializer.cs" />
-    <Compile Include="Serialization\ISerializer.cs" />
-    <Compile Include="Serialization\Json\MessageConverter.cs" />
-    <Compile Include="Serialization\MessageDeserializers\DefaultMessageDeserializer.cs" />
-    <Compile Include="Serialization\MessageDeserializers\IMessageDeserializer.cs" />
-    <Compile Include="Serialization\MessageDeserializers\SubscriptionMessageDeserializer.cs" />
-    <Compile Include="Serialization\Json\JsonNetSerializer.cs" />
+    <Compile Include="Tests\Messages\ExampleMessage.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="WorkerPool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\Configuration\TestConnection.cs" />
     <Compile Include="Tests\TestMessage.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\" />

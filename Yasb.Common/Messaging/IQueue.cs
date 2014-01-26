@@ -5,13 +5,13 @@ using System.Text;
 
 namespace Yasb.Common.Messaging
 {
-    public interface IQueue<TEndPoint> 
+    public interface IQueue<TEndPointConfiguration> 
     {
         bool TryDequeue(DateTime now, TimeSpan timoutWindow, out MessageEnvelope envelope);
         void SetMessageCompleted(string envelopeId, DateTime now);
         void SetMessageInError(string envelopeId,string errorMessage);
-        void Push(MessageEnvelope endPoint);
+        void Push(IMessage message);
         void Clear();
-        TEndPoint LocalEndPoint { get; }
+        TEndPointConfiguration LocalEndPointConfiguration { get; }
     }
 }

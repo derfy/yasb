@@ -8,28 +8,24 @@ using Yasb.Common.Messaging.EndPoints;
 namespace Yasb.Common.Messaging.Configuration
 {
 
-    public class ServiceBusConfigurer<TEndPoint, TSerializer> 
+    public class ServiceBusConfigurer<TEndPointConfiguration, TSubscriptionServiceConfiguration> 
     {
         public ServiceBusConfigurer()
         {
-            Built = new ServiceBusConfiguration<TEndPoint,TSerializer>();
+            Built = new ServiceBusConfiguration<TEndPointConfiguration, TSubscriptionServiceConfiguration>();
         }
-        public ServiceBusConfigurer<TEndPoint, TSerializer> EndPoints<TEndPointConfiguration>(Action<EndPointsConfigurer<TEndPoint, TEndPointConfiguration>> endPointConfigurationBuilder)
-            where TEndPointConfiguration : IEndPointConfiguration<TEndPoint>
+        public ServiceBusConfigurer<TEndPointConfiguration, TSubscriptionServiceConfiguration> EndPoints(Action<EndPointsConfigurer<TEndPointConfiguration>> endPointConfigurationBuilder)
         {
-            var endPointsConfigurer = new EndPointsConfigurer<TEndPoint, TEndPointConfiguration>(Built.EndPoints);
+            var endPointsConfigurer = new EndPointsConfigurer<TEndPointConfiguration>(Built.EndPoints);
             endPointConfigurationBuilder(endPointsConfigurer);
             return this;
         }
-        public ServiceBusConfigurer<TEndPoint, TSerializer> Serializer<TSerializerConfiguration>(Action<TSerializerConfiguration> serializerConfigurer=null)
-            where TSerializerConfiguration : ISerializerConfiguration<TSerializer>
+        public ServiceBusConfigurer<TEndPointConfiguration, TSubscriptionServiceConfiguration> ConfigureSubscriptionService(Action<TSubscriptionServiceConfiguration> subscriptionServiceConfigurationBuilder)
         {
-
-            var serializationConfiguration = Activator.CreateInstance<TSerializerConfiguration>();
-            Built.Serializer = serializationConfiguration.Built;
+           subscriptionServiceConfigurationBuilder(Built.SubscriptionServiceConfiguration);
             return this;
         }
-        public ServiceBusConfiguration<TEndPoint, TSerializer> Built { get; private set; }
+        public ServiceBusConfiguration<TEndPointConfiguration, TSubscriptionServiceConfiguration> Built { get; private set; }
        
        
     }

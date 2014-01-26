@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Yasb.Common
 {
-    public interface IWorkerPool<TResult>
+    public interface IWorkerPool
     {
         Task Run();
         void Stop();

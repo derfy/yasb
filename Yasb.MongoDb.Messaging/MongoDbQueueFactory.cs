@@ -5,14 +5,14 @@ using System.Text;
 using Yasb.Common.Messaging;
 using MongoDB.Driver;
 using Yasb.Common.Messaging.Configuration;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.MongoDb.Messaging
 {
-    public class MongoDbQueueFactory :  IQueueFactory<MongoDbEndPoint>
+    public class MongoDbQueueFactory :  IQueueFactory<MongoDbEndPointConfiguration>
     {
 
-        public  IQueue<MongoDbEndPoint> CreateQueue(MongoDbEndPoint endPoint)
+        public IQueue<MongoDbEndPointConfiguration> CreateQueue(MongoDbEndPointConfiguration endPoint)
         {
             throw new NotImplementedException();
         }

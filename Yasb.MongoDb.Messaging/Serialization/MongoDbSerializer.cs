@@ -7,7 +7,6 @@ using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Bson.IO;
 using MongoDB.Bson;
 using Yasb.Common.Messaging;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
 
 namespace Yasb.MongoDb.Messaging.Serialization
 {

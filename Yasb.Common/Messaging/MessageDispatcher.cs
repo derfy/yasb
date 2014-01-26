@@ -15,28 +15,25 @@ namespace Yasb.Common.Messaging
     }
     public class MessageDispatcher : IMessageDispatcher
     {
-        private Func<Type, IEnumerable<IHandleMessages>> _messageHandlerFactory;
-        public MessageDispatcher(Func<Type, IEnumerable<IHandleMessages>> messageHandlerFactory)
+        private IHandleMessages _messageHandler;
+        public MessageDispatcher(IHandleMessages messageHandler)
         {
-            _messageHandlerFactory = messageHandlerFactory;
+            _messageHandler = messageHandler;
         }
         public bool TryDispatch(MessageEnvelope envelope)
         {
-            var messageType = envelope.Message.GetType();
+            //var messageType = envelope.Message.GetType();
             
-            try {
-                var handler = _messageHandlerFactory(messageType).SingleOrDefault(h => h.GetType().Equals(envelope.HandlerType));
-                if (handler == null)
-                    return false;
-                var mhi = GetHandleMethodDelegate(messageType);
-                mhi(handler, envelope.Message);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                throw new MessageHandlerException(envelope.Id, ex.Message);
-            }
-            
+            //try {
+            //    var mhi = GetHandleMethodDelegate(messageType);
+            //    mhi(_messageHandler, envelope.Message);
+            //    return true;
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new MessageHandlerException(envelope.Id, ex.Message);
+            //}
+            return true;
         }
         private ConcurrentDictionary<Type, MessageHandlerMethodDelegate> _handlers = new ConcurrentDictionary<Type, MessageHandlerMethodDelegate>();
 

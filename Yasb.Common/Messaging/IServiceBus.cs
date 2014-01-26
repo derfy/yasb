@@ -9,8 +9,8 @@ namespace Yasb.Common.Messaging
     {
         TEndPoint LocalEndPoint { get; }
         void Send(string remoteEndPointName, IMessage message);
-        void Publish(IMessage message);
-        void Subscribe<TMessage>(string topicEndPointName) where TMessage : IMessage;
+        void Publish<TMessage>(TMessage message) where TMessage : IMessage;
+        void Subscribe(string topicEndPointName);
         void Run();
     }
 }

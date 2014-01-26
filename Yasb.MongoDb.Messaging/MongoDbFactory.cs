@@ -4,21 +4,21 @@ using System.Linq;
 using System.Text;
 using MongoDB.Driver;
 using Yasb.Common.Messaging;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.MongoDb.Messaging
 {
     public static class MongoDbFactory
     {
-        
 
-        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbEndPoint connection)
+
+        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbEndPointConfiguration connection)
         {
              return new MongoDbSubscriptionService(MongoDbFactory.CreateDatabase(connection));
         }
 
 
-        internal static MongoDatabase CreateDatabase(MongoDbEndPoint connection)
+        internal static MongoDatabase CreateDatabase(MongoDbEndPointConfiguration connection)
         {
             var connectionString = string.Format("mongodb://{0}", connection.Host);
             var server = MongoServer.Create(connectionString);

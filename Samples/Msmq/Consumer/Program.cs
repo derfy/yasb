@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using Yasb.Wireup;
 using System.Threading;
-using Yasb.Common.Messaging.EndPoints.Msmq;
-using Yasb.Common.Messaging.Configuration.Msmq;
+using Yasb.Msmq.Messaging.Configuration;
+using Yasb.Common.Tests.Messages;
 namespace Consumer
 {
     internal class Program
@@ -55,13 +55,12 @@ namespace Consumer
         public static void Run()
         {
             var configurator = new MsmqConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints<MsmqEndPointConfiguration>(cfg => cfg.ReceivesOn(c => c.WithQueueName("msmq_consumer"))));
-                                               //onfigureConnections<MsmqFluentConnectionConfigurer>(c => c.WithConnection("localhost", "msmq_consumer"))
+            var bus = configurator.Bus(sb => sb.EndPoints(cfg => cfg.ReceivesOn(c => c.WithQueueName("msmq_consumer"))
+                                                                                               .SubscribesTo("msmq_producer", ec => ec.WithQueueName("msmq_producer")))
+                                               .ConfigureSubscriptionService(c => c.WithHostName("192.168.227.128").WithDatabase("Subscriptions")));
 
-
-
-            bus.Subscribe<ExampleMessage>("msmq_producer");
-            bus.Subscribe<ExampleMessage2>("msmq_producer");
+            bus.Subscribe("msmq_producer");
+            bus.Subscribe("msmq_producer");
             bus.Run();
         }
 

@@ -6,9 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Yasb.Msmq.Messaging;
 using Yasb.Common.Messaging;
 using Moq;
-using Yasb.Common.Serialization;
 using Newtonsoft.Json;
-using Yasb.Msmq.Messaging.Serialization;
 using System.Messaging;
 using Yasb.Tests.Common.Serialization;
 using Yasb.Wireup;
@@ -16,7 +14,10 @@ using Yasb.Common.Tests;
 using System.Threading.Tasks;
 using System.Net;
 using Yasb.Tests.Messaging.Redis;
-using Yasb.Common.Messaging.EndPoints.Msmq;
+using Yasb.Common.Messaging.Serialization.Xml;
+using System.IO;
+using System.Xml;
+using Yasb.Msmq.Messaging.Configuration;
 
 namespace Yasb.Tests.Messaging.Msmq
 {
@@ -26,21 +27,21 @@ namespace Yasb.Tests.Messaging.Msmq
     [TestClass]
     public class MsmqQueueTest
     {
-        private IQueue<MsmqEndPoint> _queue;
-        private MsmqEndPoint __fromEndPoint=new MsmqEndPoint("","");
-
+        private IQueue<MsmqEndPointConfiguration> _queue;
+       private Mock<AbstractXmlSerializer<MessageEnvelope>> serializer = new Mock<AbstractXmlSerializer<MessageEnvelope>>();
         public MsmqQueueTest()
         {
-             //_queue = new MsmqConfigurator().ConfigureQueue(e => e.WithLocalEndPoint("localConnection", "test_msmq"));
-           
+            var localEndPoint=new MsmqEndPointConfiguration(".","test");
+
+            
+            _queue = new MsmqQueue(localEndPoint, serializer.Object);
             
         }
 
         [TestInitialize()]
         public void BeforeTest()
         {
-            var queue = _queue as MsmqQueue;
-            queue.Clear();
+            _queue.Clear();
           
         }
 
@@ -51,8 +52,9 @@ namespace Yasb.Tests.Messaging.Msmq
 
             var message = new TestMessage("This is a test");
            MessageEnvelope envelope = new MessageEnvelope(message);
-            _queue.Push(envelope);
-
+            _queue.Push(message);
+            serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+               .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message });
            MessageEnvelope newEnvelope = null;
             //Get Message
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
@@ -74,8 +76,9 @@ namespace Yasb.Tests.Messaging.Msmq
         {
             var message = new TestMessage("This is a test");
            MessageEnvelope envelope = new MessageEnvelope(message);
-            _queue.Push(envelope);
-
+            _queue.Push(message);
+            serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+               .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message });
            MessageEnvelope newEnvelope = null;
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
@@ -88,8 +91,10 @@ namespace Yasb.Tests.Messaging.Msmq
 
             var message = new TestMessage("This is a test");
            MessageEnvelope envelope = new MessageEnvelope(message);
-            _queue.Push(envelope);
+            _queue.Push(message);
            MessageEnvelope newEnvelope = null;
+           serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+              .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message });
             var t1=Task.Factory.StartNew(()=>_queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
             var t2=Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
             var t3=Task.Factory.StartNew(() => _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope));
@@ -101,11 +106,13 @@ namespace Yasb.Tests.Messaging.Msmq
         [TestMethod]
         public void MarkAsCompleteShouldRemoveMessageFromQueue()
         {
-
+            
             var message = new TestMessage("This is a test");
            MessageEnvelope envelope = new MessageEnvelope(message);
-            _queue.Push(envelope);
+            _queue.Push(message);
            MessageEnvelope newEnvelope = null;
+           serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+              .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message });
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
             Assert.IsNotNull(newEnvelope);
             _queue.SetMessageCompleted(newEnvelope.Id, DateTime.Now);
@@ -119,23 +126,27 @@ namespace Yasb.Tests.Messaging.Msmq
 
            MessageEnvelope newEnvelope = null;
             var message1 = new TestMessage("Message 1");
-            var envelope1 = new MessageEnvelope(message1);
-            _queue.Push(envelope1);
+            _queue.Push(message1);
 
             var message2 = new TestMessage("Message 2");
-            var envelope2 = new MessageEnvelope(message2);
-            _queue.Push(envelope2);
+            _queue.Push(message2);
 
             var message3 = new TestMessage("Message 3");
-            var envelope3 = new MessageEnvelope(message3);
-            _queue.Push(envelope3);
+            _queue.Push(message3);
+            serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+                .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc" ,Message=message1});
+            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
+            Assert.AreEqual(message1, newEnvelope.Message);
 
+            serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+               .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message2 });
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(message1.Value, ((TestMessage)newEnvelope.Message).Value);
+            Assert.AreEqual(message2, newEnvelope.Message);
+
+            serializer.Setup(s => s.Deserialize(It.IsAny<XmlReader>()))
+               .Returns(new MessageEnvelope() { RetriesNumber = 2, Id = "abc", Message = message3 });
             _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(message2.Value, ((TestMessage)newEnvelope.Message).Value);
-            _queue.TryDequeue(DateTime.Now, TimeSpan.FromSeconds(5), out newEnvelope);
-            Assert.AreEqual(message3.Value, ((TestMessage)newEnvelope.Message).Value);
+            Assert.AreEqual(message3, newEnvelope.Message);
         }
     
     }

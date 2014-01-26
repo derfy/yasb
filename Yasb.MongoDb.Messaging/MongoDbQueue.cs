@@ -7,19 +7,19 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson.Serialization;
-using Yasb.Common.Messaging.EndPoints.MongoDb;
+using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.MongoDb.Messaging
 {
-    public class MongoDbQueue : IQueue<MongoDbEndPoint>
+    public class MongoDbQueue : IQueue<MongoDbEndPointConfiguration>
     {
        
         private MongoCollection<BsonDocument> _collection;
         private const string TimeOutError = "Operation Timed Out";
 
-        public MongoDbQueue(MongoDbEndPoint queueEndPoint)
+        public MongoDbQueue(MongoDbEndPointConfiguration queueEndPoint)
         {
-            LocalEndPoint = queueEndPoint;
+            LocalEndPointConfiguration = queueEndPoint;
             InitializeCollection();
             
         }
@@ -60,9 +60,9 @@ namespace Yasb.MongoDb.Messaging
         {
             throw new NotImplementedException();
         }
-        public void Push(MessageEnvelope envelope)
+        public void Push(IMessage message)
         {
-            envelope.Id = new BsonObjectId(ObjectId.GenerateNewId()).ToString();
+            var envelope = new MessageEnvelope(message) { Id = new BsonObjectId(ObjectId.GenerateNewId()).ToString() };
             _collection.Insert<MessageEnvelope>(envelope);
         }
 
@@ -71,16 +71,16 @@ namespace Yasb.MongoDb.Messaging
         {
             _collection.RemoveAll();
         }
-        public MongoDbEndPoint LocalEndPoint { get; private set; }
+        public MongoDbEndPointConfiguration LocalEndPointConfiguration { get; private set; }
 
         private void InitializeCollection()
         {
-            var database = MongoDbFactory.CreateDatabase(LocalEndPoint);
-            if (!database.CollectionExists(LocalEndPoint.QueueName))
+            var database = MongoDbFactory.CreateDatabase(LocalEndPointConfiguration);
+            if (!database.CollectionExists(LocalEndPointConfiguration.QueueName))
             {
-                database.CreateCollection(LocalEndPoint.QueueName);
+                database.CreateCollection(LocalEndPointConfiguration.QueueName);
             }
-            _collection = database.GetCollection(LocalEndPoint.QueueName);
+            _collection = database.GetCollection(LocalEndPointConfiguration.QueueName);
         }
 
 

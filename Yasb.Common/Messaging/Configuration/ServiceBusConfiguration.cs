@@ -4,21 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Reflection;
 using Yasb.Common.Messaging.EndPoints;
-using Yasb.Common.Serialization;
 
 namespace Yasb.Common.Messaging.Configuration
 {
-    public class ServiceBusConfiguration<TEndPoint,  TSerializer>
+    public class ServiceBusConfiguration<TEndPointConfiguration, TSubscriptionServiceConfiguration>
     {
         public ServiceBusConfiguration()
         {
-            EndPoints = new EndPointsRepository<TEndPoint>();
-            
+            EndPoints = new EndPointsConfiguration<TEndPointConfiguration>();
+            SubscriptionServiceConfiguration = Activator.CreateInstance<TSubscriptionServiceConfiguration>();
         }
 
+        public EndPointsConfiguration<TEndPointConfiguration> EndPoints { get; private set; }
 
-        public TSerializer Serializer { get; internal set; }
-
-        public EndPointsRepository<TEndPoint> EndPoints { get; private set; }
+        public TSubscriptionServiceConfiguration SubscriptionServiceConfiguration { get; private set; }
     }
 }
