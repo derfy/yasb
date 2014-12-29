@@ -16,7 +16,7 @@ namespace Yasb.Redis.Messaging
 {
     public delegate IRedisClient RedisClientFactory(EndPoint address);
 
-    public class RedisQueueFactory :  IQueueFactory<RedisEndPointConfiguration>
+    public class RedisQueueFactory :  IQueueFactory<RedisEndPoint>
     {
         private RedisClientFactory _redisClientFactory;
         private AbstractJsonSerializer<MessageEnvelope> _serializer;
@@ -27,9 +27,9 @@ namespace Yasb.Redis.Messaging
             _redisClientFactory = redisClientFactory;
         }
 
-        public IQueue<RedisEndPointConfiguration> CreateQueue(RedisEndPointConfiguration endPoint)
+        public IQueue<RedisEndPoint> CreateQueue(RedisEndPoint endPoint)
         {
-            var redisClient = _redisClientFactory(endPoint.Built.Address);
+            var redisClient = _redisClientFactory(endPoint.Address);
             return new RedisQueue(endPoint, _serializer, redisClient);
         }
     }

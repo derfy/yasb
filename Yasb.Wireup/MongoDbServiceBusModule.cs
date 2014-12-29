@@ -10,20 +10,20 @@ using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.Wireup
 {
-    public class MongoDbServiceBusModule : ServiceBusModule<MongoDbEndPointConfiguration, SubscriptionServiceConfiguration> 
+    public class MongoDbServiceBusModule : ServiceBusModule<MongoDbEndPoint,MongoDbEndPointConfiguration> 
     {
-        public MongoDbServiceBusModule(ServiceBusConfiguration<MongoDbEndPointConfiguration, SubscriptionServiceConfiguration> serviceBusConfiguration)
+        public MongoDbServiceBusModule(EndPointsConfigurer<MongoDbEndPointConfiguration> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
         }
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<ISubscriptionService<MongoDbEndPointConfiguration>>((componentScope, parameters) =>
-            {
-                var localEndPoint = Configuration.EndPoints["local"];
-                 return MongoDbFactory.CreateSubscriptionService(localEndPoint);
-            });
+            //builder.RegisterWithScope<ISubscriptionService<MongoDbEndPointConfiguration>>((componentScope, parameters) =>
+            //{
+            //    var localEndPoint = Configuration.EndPoints["local"];
+            //     return MongoDbFactory.CreateSubscriptionService(localEndPoint.Built);
+            //});
         }
     }
 }

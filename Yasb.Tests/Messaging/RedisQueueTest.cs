@@ -29,7 +29,7 @@ namespace Yasb.Tests.Messaging
     [TestClass]
     public class RedisQueueTest
     {
-        private IQueue<RedisEndPointConfiguration> _sut;
+        private IQueue<RedisEndPoint> _sut;
         private Mock<AbstractJsonSerializer<MessageEnvelope>> _serializerMock = new Mock<AbstractJsonSerializer<MessageEnvelope>>();
         private Mock<IRedisClient> _redisClientMock = new Mock<IRedisClient>();
         private RedisEndPointConfiguration _endPointTest;
@@ -42,7 +42,7 @@ namespace Yasb.Tests.Messaging
            // _serializerMock.Setup(s=>s.
           _queueFactory = new RedisQueueFactory(_serializerMock.Object, c => _redisClientMock.Object);
 
-            _sut = _queueFactory.CreateQueue(_endPointTest);// new RedisQueue(_endPointTest, _serializerMock.Object, _redisClientMock.Object);
+            _sut = _queueFactory.CreateQueue(_endPointTest.Built);// new RedisQueue(_endPointTest, _serializerMock.Object, _redisClientMock.Object);
            
         }
 

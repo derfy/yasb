@@ -6,8 +6,10 @@ using System.Threading;
 using Autofac;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
+using Yasb.Wireup.ConfiguratorExtensions.Redis;
 using Yasb.Redis.Messaging.Configuration;
 using Yasb.Common.Tests.Messages;
+using Yasb.Redis.Messaging;
 
 namespace Producer
 {
@@ -56,11 +58,14 @@ namespace Producer
         }
         public static void Run()
         {
-            var configurator = new RedisConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints(lec => lec.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_producer")))
-                .ConfigureSubscriptionService(cfg => cfg.WithHostName("192.168.227.128")));
+            var ipAddress = "192.168.1.11";
+            var bus = Configurator.Configure<RedisEndPoint>().ConfigureEndPoints(lec => lec.ReceivesOn(c => c.WithHostName(ipAddress).WithQueueName("redis_producer")))
+                .ConfigureSubscriptionService(cfg => cfg.WithHostName(ipAddress))
+                .Bus();
+            //var configurator = new RedisOlConfigurator();
+            //var bus = configurator.Bus(sb => sb.EndPoints(lec => lec.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_producer")))
+            //    .ConfigureSubscriptionService(cfg => cfg.WithHostName("192.168.227.128")));
             int i = 0;
-            bus.Run();
             while (i < 5000)
             {
                 Reset.WaitOne();

@@ -16,10 +16,11 @@ using Yasb.Redis.Messaging.Serialization.MessageDeserializers;
 
 namespace Yasb.Wireup
 {
-    public class ServiceBusModule<TEndPoint, TSubscriptionServiceConfiguration> : ScopedModule<ServiceBusConfiguration<TEndPoint, TSubscriptionServiceConfiguration>> 
+    public class ServiceBusModule<TEndPoint,TEndPointConfiguration> : ScopedModule<EndPointsConfigurer<TEndPointConfiguration>> 
+        where TEndPointConfiguration : IEndPointConfiguration<TEndPoint>
    
     {
-        public ServiceBusModule(ServiceBusConfiguration<TEndPoint, TSubscriptionServiceConfiguration> configuration)
+        public ServiceBusModule(EndPointsConfigurer<TEndPointConfiguration> configuration)
             : base(configuration, "bus")
         {
         }
@@ -28,19 +29,23 @@ namespace Yasb.Wireup
         {
             base.Load(builder);
 
-            
+
+            builder.Register<Func<string, TEndPoint>>(c => endpoint => Configuration.GetEndPointByName(endpoint).Built);
             builder.RegisterWithScope<MessagesReceiver<TEndPoint>>((componentScope, parameters) =>
             {
                 var queueFactory = componentScope.Resolve<IQueueFactory<TEndPoint>>();
-                var localQueue = queueFactory.CreateQueue(Configuration.EndPoints["local"]);
+                var endPointFactory = componentScope.Resolve<Func<string, TEndPoint>>();
+                var localEndPoint = endPointFactory("local");
+                var localQueue = queueFactory.CreateQueue(localEndPoint);
                 return new MessagesReceiver<TEndPoint>(localQueue);
             }).InstancePerMatchingLifetimeScope(Scope);
 
             builder.RegisterWithScope<ServiceBus<TEndPoint>>((componentScope, parameters) =>
             {
-                return new ServiceBus<TEndPoint>(Configuration.EndPoints, componentScope.Resolve<IQueueFactory<TEndPoint>>(), componentScope.Resolve<ISubscriptionService<TEndPoint>>(), componentScope.Resolve<MessagesReceiver<TEndPoint>>());
+                var endPointFactory = componentScope.Resolve<Func<string, TEndPoint>>();
+                return new ServiceBus<TEndPoint>(endPointFactory, componentScope.Resolve<IQueueFactory<TEndPoint>>(), componentScope.Resolve<ISubscriptionService<TEndPoint>>(), componentScope.Resolve<MessagesReceiver<TEndPoint>>());
             }).As<IServiceBus<TEndPoint>>().InstancePerMatchingLifetimeScope(Scope);
-            
+
             
         }
     }

@@ -18,6 +18,7 @@ using Yasb.Common.Messaging.Serialization.Json;
 using Moq;
 using Newtonsoft.Json;
 using Yasb.Redis.Messaging.Serialization.MessageDeserializers;
+using Yasb.Common.Messaging.Tcp;
 
 namespace Yasb.Tests.Messaging.Redis
 {
@@ -34,15 +35,15 @@ namespace Yasb.Tests.Messaging.Redis
     [TestClass]
     public class RedisQueueTest
     {
-        private IQueue<RedisEndPointConfiguration> _queue;
+        private IQueue<RedisEndPoint> _queue;
         private AbstractJsonSerializer<MessageEnvelope> _serializer = new JsonMessageEnvelopeSerializer(type => new DefaultJsonMessageDeserializer(type));
             //new Mock<AbstractJsonSerializer<MessageEnvelope>>();
         public RedisQueueTest()
         {
-            var configurator = new RedisConfigurator();
             var localEndPoint=new RedisEndPointConfiguration("192.168.227.128","queue_test");
-            var redisClient = new RedisClient(new RedisSocketAsyncEventArgsPool(10, localEndPoint.Built.Address));
-            _queue = new RedisQueue(localEndPoint, _serializer, redisClient);
+            var connectionPool = new TcpConnectionsPool<RedisConnection>(10, () => new RedisConnection(localEndPoint.Built.Address));
+            var redisClient = new RedisClient(connectionPool);
+            _queue = new RedisQueue(localEndPoint.Built, _serializer, redisClient);
         }
         [TestInitialize()]
         public void BeforeTest()

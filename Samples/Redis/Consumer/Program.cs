@@ -6,11 +6,13 @@ using Autofac;
 using System.Threading;
 using Yasb.Common.Messaging;
 using Yasb.Wireup;
+using Yasb.Wireup.ConfiguratorExtensions.Redis;
 using System.Net;
 using Yasb.Common.Messaging.Configuration;
 using Autofac.Builder;
 using Yasb.Redis.Messaging.Configuration;
 using Yasb.Common.Tests.Messages;
+using Yasb.Redis.Messaging;
 
 namespace Consumer
 {
@@ -60,18 +62,17 @@ namespace Consumer
 
         public static void Run()
         {
-            
 
-            var configurator = new RedisConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints(eb => eb.ReceivesOn(c => c.WithHostName("192.168.227.128").WithQueueName("redis_consumer"))
-                                                   .SubscribesTo("redis_producer@192.168.227.128", ec => ec.WithHostName("192.168.227.128").WithQueueName("redis_producer")))
-                                                   .ConfigureSubscriptionService(cfg => cfg.WithHostName("192.168.227.128")));
+            var ipAddress = "192.168.1.11";
+            var bus = Configurator.Configure<RedisEndPoint>().ConfigureEndPoints(eb => eb.ReceivesOn(c => c.WithHostName(ipAddress).WithQueueName("redis_consumer"))
+                                                   .SubscribesTo(string.Format("redis_producer@{0}",ipAddress), ec => ec.WithHostName(ipAddress).WithQueueName("redis_producer")))
+                                                   .ConfigureSubscriptionService(cfg => cfg.WithHostName(ipAddress)).Bus();
 
 
-            bus.Subscribe("redis_producer@192.168.227.128");
+            bus.Subscribe(string.Format("redis_producer@{0}", ipAddress));
             Console.WriteLine("subscription ExampleMessage sent");
-            bus.Subscribe("redis_producer@192.168.227.128");
-            Console.WriteLine("subscription ExampleMessage2 sent");
+            //bus.Subscribe("redis_producer@192.168.227.128");
+            //Console.WriteLine("subscription ExampleMessage2 sent");
             bus.Run();
         }
 

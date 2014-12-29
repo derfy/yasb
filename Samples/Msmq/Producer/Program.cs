@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Yasb.Wireup;
+using Yasb.Wireup.ConfiguratorExtensions.Msmq;
 using Yasb.Common.Messaging;
 using System.Threading.Tasks;
 using Yasb.Common.Tests;
 using System.Threading;
 using Yasb.Msmq.Messaging.Configuration;
 using Yasb.Common.Tests.Messages;
+using Yasb.Msmq.Messaging;
 
 namespace Producer
 {
@@ -57,9 +59,8 @@ namespace Producer
         }
         public static void Run()
         {
-            var configurator = new MsmqConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints(c => c.ReceivesOn(lec => lec.WithQueueName("msmq_producer")))
-                                               .ConfigureSubscriptionService(c => c.WithHostName("192.168.227.128").WithDatabase("Subscriptions")));
+            var bus = Configurator.Configure<MsmqEndPoint>().ConfigureEndPoints(c => c.ReceivesOn(lec => lec.WithQueueName("msmq_producer")))
+                                               .ConfigureSubscriptionService(c => c.WithHostName("192.168.227.128")).Bus();
                                                //.ConfigureConnections<MsmqFluentConnectionConfigurer>(conn => conn.WithConnection("local", "localhost")));
 
             int i = 0;

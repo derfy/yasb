@@ -12,13 +12,13 @@ namespace Yasb.MongoDb.Messaging
     {
 
 
-        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbEndPointConfiguration connection)
+        public static MongoDbSubscriptionService CreateSubscriptionService(MongoDbEndPoint connection)
         {
              return new MongoDbSubscriptionService(MongoDbFactory.CreateDatabase(connection));
         }
 
 
-        internal static MongoDatabase CreateDatabase(MongoDbEndPointConfiguration connection)
+        internal static MongoDatabase CreateDatabase(MongoDbEndPoint connection)
         {
             var connectionString = string.Format("mongodb://{0}", connection.Host);
             var server = MongoServer.Create(connectionString);

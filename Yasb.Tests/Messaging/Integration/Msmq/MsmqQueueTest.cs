@@ -27,14 +27,14 @@ namespace Yasb.Tests.Messaging.Msmq
     [TestClass]
     public class MsmqQueueTest
     {
-        private IQueue<MsmqEndPointConfiguration> _queue;
+        private IQueue<MsmqEndPoint> _queue;
        private Mock<AbstractXmlSerializer<MessageEnvelope>> serializer = new Mock<AbstractXmlSerializer<MessageEnvelope>>();
         public MsmqQueueTest()
         {
             var localEndPoint=new MsmqEndPointConfiguration(".","test");
 
             
-            _queue = new MsmqQueue(localEndPoint, serializer.Object);
+            _queue = new MsmqQueue(localEndPoint.Built, serializer.Object);
             
         }
 

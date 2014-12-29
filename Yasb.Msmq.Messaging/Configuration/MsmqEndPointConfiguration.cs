@@ -6,7 +6,7 @@ using Yasb.Common.Messaging.Configuration;
 
 namespace Yasb.Msmq.Messaging.Configuration
 {
-    public class MsmqEndPointConfiguration
+    public class MsmqEndPointConfiguration : IEndPointConfiguration<MsmqEndPoint>
     {
         private string _hostName="localhost";
         private bool _isPrivate = true;
@@ -32,6 +32,12 @@ namespace Yasb.Msmq.Messaging.Configuration
             QueueName = queueName;
             return this;
         }
+
+        public MsmqEndPoint Built
+        {
+            get { return new MsmqEndPoint(_hostName, QueueName); }
+        }
+
         internal string Host { get { return _hostName == "localhost" ? "." : _hostName; } }
 
         internal string QueueName { get; private set; }
@@ -43,6 +49,8 @@ namespace Yasb.Msmq.Messaging.Configuration
 
         public string Value { get { return string.Format(@"{0}:{1}:{2}", Host, _isPrivate ? "private" : "public", QueueName); } }
 
-        
+
+
+       
     }
 }

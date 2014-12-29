@@ -14,37 +14,37 @@ using Yasb.Redis.Messaging.Configuration;
 
 namespace Yasb.Redis.Messaging
 {
-    public class RedisSubscriptionService : ISubscriptionService<RedisEndPointConfiguration>
+    public class RedisSubscriptionService<TEndPoint> : ISubscriptionService<TEndPoint>
     {
-        private IRedisClient _connection;
-        private AbstractJsonSerializer<RedisEndPointConfiguration> _serializer;
+        private IRedisClient _redisClient;
+        private AbstractJsonSerializer<TEndPoint> _serializer;
        // private byte[] _localEndPointValue;
-        private RedisEndPointConfiguration _localEndPoint;
-        public RedisSubscriptionService(RedisSubscriptionServiceConfiguration configuration, RedisClientFactory clientFactory, AbstractJsonSerializer<RedisEndPointConfiguration> serializer)
+        private TEndPoint _localEndPoint;
+        public RedisSubscriptionService(TEndPoint localEndPoint, IRedisClient redisClient, AbstractJsonSerializer<TEndPoint> serializer)
         {
            
            _serializer = serializer;
-           _connection = clientFactory(configuration.Built);
-           _localEndPoint = configuration.LocalEndPointConfiguration;
+           _redisClient = redisClient;
+           _localEndPoint = localEndPoint;
             
         }
 
 
 
-        public void SubscribeTo(RedisEndPointConfiguration topicEndPoint)
+        public void SubscribeTo(TEndPoint topicEndPoint)
         {
             var localEndPointValue = _serializer.Serialize(_localEndPoint);
             var topicEndPointValue = _serializer.Serialize(topicEndPoint);
-            _connection.Sadd(topicEndPointValue, localEndPointValue);
+            _redisClient.Sadd(topicEndPointValue, localEndPointValue);
         }
 
-        public RedisEndPointConfiguration[] GetSubscriptionEndPoints()
+        public TEndPoint[] GetSubscriptionEndPoints()
         {
             var localEndPointValue = _serializer.Serialize(_localEndPoint);
-            return _connection.SMembers(localEndPointValue).Select(e => _serializer.Deserialize(e)).ToArray();
+            return _redisClient.SMembers(localEndPointValue).Select(e => _serializer.Deserialize(e)).ToArray();
         }
 
-        public void UnSubscribe(string topicName, RedisEndPointConfiguration subscriberEndPoint)
+        public void UnSubscribe(string topicName, TEndPoint subscriberEndPoint)
         {
             throw new NotImplementedException();
         }

@@ -71,7 +71,7 @@
     <Compile Include="Messaging\Integration\MongoDb\MongoDbQueueTest.cs" />
     <Compile Include="Messaging\Integration\Msmq\MsmqQueueTest.cs" />
     <Compile Include="Messaging\Integration\Redis\RedisQueueTest.cs" />
-    <Compile Include="Messaging\Integration\Redis\RedisSocketAsyncEventArgsPoolTest.cs" />
+    <Compile Include="Messaging\Integration\Redis\TcpConnectionsPoolTest.cs" />
     <Compile Include="Common\Serialization\SerializerTest.cs" />
     <Compile Include="Common\TaskRunnerTest.cs" />
     <Compile Include="Messaging\RedisQueueTest.cs" />
@@ -80,7 +80,6 @@
     <Compile Include="Wireup\AutofacConfiguratorTest.cs" />
     <Compile Include="Wireup\RegisterOneInstanceForObjectKeyTest.cs" />
     <Compile Include="Wireup\TestConfigurator.cs" />
-    <Compile Include="Wireup\TestQueueModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

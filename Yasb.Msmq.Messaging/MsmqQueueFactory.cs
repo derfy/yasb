@@ -10,14 +10,14 @@ using Yasb.Common.Messaging.Serialization.Xml;
 using Yasb.Msmq.Messaging.Configuration;
 namespace Yasb.Msmq.Messaging
 {
-    public class MsmqQueueFactory :IQueueFactory<MsmqEndPointConfiguration>
+    public class MsmqQueueFactory :IQueueFactory<MsmqEndPoint>
     {
         private AbstractXmlSerializer<MessageEnvelope> _envelopeSerializer;
         public MsmqQueueFactory(AbstractXmlSerializer<MessageEnvelope> envelopeSerializer)
         {
             _envelopeSerializer = envelopeSerializer;
         }
-        public IQueue<MsmqEndPointConfiguration> CreateQueue(MsmqEndPointConfiguration endPoint)
+        public IQueue<MsmqEndPoint> CreateQueue(MsmqEndPoint endPoint)
         {
             return new MsmqQueue(endPoint,_envelopeSerializer);
         }

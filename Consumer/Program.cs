@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Yasb.Common.Tests.Messages;
+using Yasb.MongoDb.Messaging;
 using Yasb.MongoDb.Messaging.Configuration;
 using Yasb.Wireup;
-
+using Yasb.Wireup.ConfiguratorExtensions.MongoDb;
 namespace Consumer
 {
     class Program
@@ -55,8 +56,7 @@ namespace Consumer
 
         public static void Run()
         {
-            var configurator = new MongoDbConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints(e => e.ReceivesOn(c => c.WithHostName("192.168.127.128").WithQueueName("msmq_consumer@"))));
+            var bus = Configurator.Configure<MongoDbEndPoint>().ConfigureEndPoints(e => e.ReceivesOn(c => c.WithHostName("192.168.127.128").WithQueueName("msmq_consumer@"))).Bus();
                                                //.ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test"))
                                               
 

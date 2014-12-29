@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Yasb.Common.Tests.Messages;
+using Yasb.MongoDb.Messaging;
 using Yasb.MongoDb.Messaging.Configuration;
 using Yasb.Wireup;
-
+using Yasb.Wireup.ConfiguratorExtensions.MongoDb;
 namespace Producer
 {
     class Program
@@ -54,8 +55,7 @@ namespace Producer
         }
         public static void Run()
         {
-            var configurator = new MongoDbConfigurator();
-            var bus = configurator.Bus(sb => sb.EndPoints(c => c.ReceivesOn(cfg => cfg.WithHostName("vmEndPoint").WithQueueName("msmq_producer"))));
+             var bus = Configurator.Configure<MongoDbEndPoint>().ConfigureEndPoints(c => c.ReceivesOn(cfg => cfg.WithHostName("vmEndPoint").WithQueueName("msmq_producer"))).Bus();
                                                //.ConfigureConnections<MongoDbFluentConnectionConfigurer>(c => c.WithConnection("vmEndPoint", "192.168.127.128", "test")));
 
             int i = 0;

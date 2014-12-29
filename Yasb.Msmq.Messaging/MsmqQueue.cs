@@ -17,27 +17,27 @@ using Yasb.Msmq.Messaging.Configuration;
 namespace Yasb.Msmq.Messaging
 {
     internal enum MessageIdType { Id,Correlation }
-    public class MsmqQueue : IQueue<MsmqEndPointConfiguration>
+    public class MsmqQueue : IQueue<MsmqEndPoint>
     {
         private IMessageFormatter _formatter;
-        public MsmqQueue(MsmqEndPointConfiguration localEndPointConfiguration, AbstractXmlSerializer<MessageEnvelope> envelopeSerializer)
+        public MsmqQueue(MsmqEndPoint localEndPoint, AbstractXmlSerializer<MessageEnvelope> envelopeSerializer)
         {
-            LocalEndPointConfiguration = localEndPointConfiguration;
+            LocalEndPoint = localEndPoint;
             _formatter = new CustomMessageFormatter(envelopeSerializer);
             Initialize();
         }
         public void Initialize()
         {
-            if (!MessageQueue.Exists(LocalEndPointConfiguration.Path))
-                MessageQueue.Create(LocalEndPointConfiguration.Path, true);
+            if (!MessageQueue.Exists(LocalEndPoint.Path))
+                MessageQueue.Create(LocalEndPoint.Path, true);
         }
 
 
-        public MsmqEndPointConfiguration LocalEndPointConfiguration { get; private set; }
+        public MsmqEndPoint LocalEndPoint { get; private set; }
 
         public void SetMessageCompleted(string envelopeId, DateTime now)
         {
-            using (var internalQueue = new MessageQueue(LocalEndPointConfiguration.Path) )
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Path) )
             {
                 internalQueue.ReceiveByCorrelationId(envelopeId);
                 Console.WriteLine("Message {0} was Completed at : {1}", envelopeId, now);
@@ -104,7 +104,7 @@ namespace Yasb.Msmq.Messaging
 
         public void Push(IMessage message)
         {
-            using (var internalQueue = new MessageQueue(LocalEndPointConfiguration.Path) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Path) { Formatter = _formatter })
             {
                 var envelope = new MessageEnvelope(message);
                 var msmqMessage = new Message(envelope);
@@ -116,7 +116,7 @@ namespace Yasb.Msmq.Messaging
         }
         public void Clear()
         {
-            using (var internalQueue = new MessageQueue(LocalEndPointConfiguration.Path) { Formatter = _formatter })
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Path) { Formatter = _formatter })
             {
                 internalQueue.Purge();
             }
@@ -129,7 +129,7 @@ namespace Yasb.Msmq.Messaging
             {
                 try
                 {
-                    using (var internalQueue = new MessageQueue(LocalEndPointConfiguration.Path) { Formatter = _formatter })
+                    using (var internalQueue = new MessageQueue(LocalEndPoint.Path) { Formatter = _formatter })
                     {
                         tx.Begin();
                         var msg = messageIdType == MessageIdType.Correlation ? internalQueue.ReceiveByCorrelationId(messageId, tx) : internalQueue.ReceiveById(messageId, tx);
@@ -155,7 +155,7 @@ namespace Yasb.Msmq.Messaging
         private bool TryPeekMessage(out Message message)
         {
             message = null;
-            using (var internalQueue = new MessageQueue(LocalEndPointConfiguration.Path) )
+            using (var internalQueue = new MessageQueue(LocalEndPoint.Path) )
             {
 
                 try

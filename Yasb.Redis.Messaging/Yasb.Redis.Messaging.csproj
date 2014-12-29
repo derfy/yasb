@@ -50,7 +50,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\BufferPool.cs" />
     <Compile Include="Client\BinaryUtils.cs" />
     <Compile Include="Client\Commands\CommandNames.cs" />
     <Compile Include="Client\Commands\CommandResultProcessor.cs" />
@@ -65,15 +64,11 @@
     <Compile Include="Client\Commands\SMembersCommand.cs" />
     <Compile Include="Client\Commands\SRemCommand.cs" />
     <Compile Include="Client\Interfaces\IRedisClient.cs" />
-    <Compile Include="Client\RedisSocketAsyncEventArgsPool.cs" />
-    <Compile Include="Client\Interfaces\IRedisSocketAsyncEventArgsPool.cs" />
     <Compile Include="Client\Interfaces\ICommandResultProcessor.cs" />
     <Compile Include="Client\RedisClient.cs" />
     <Compile Include="Client\RedisException.cs" />
-    <Compile Include="Client\RedisSocketAsyncEventArgs.cs" />
-    <Compile Include="Configuration\RedisConfigurer.cs" />
+    <Compile Include="Client\RedisConnection.cs" />
     <Compile Include="Configuration\RedisEndPointConfiguration.cs" />
-    <Compile Include="Configuration\RedisSubscriptionServiceConfiguration.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -11,15 +11,15 @@ using Yasb.MongoDb.Messaging.Configuration;
 
 namespace Yasb.MongoDb.Messaging
 {
-    public class MongoDbQueue : IQueue<MongoDbEndPointConfiguration>
+    public class MongoDbQueue : IQueue<MongoDbEndPoint>
     {
        
         private MongoCollection<BsonDocument> _collection;
         private const string TimeOutError = "Operation Timed Out";
 
-        public MongoDbQueue(MongoDbEndPointConfiguration queueEndPoint)
+        public MongoDbQueue(MongoDbEndPoint queueEndPoint)
         {
-            LocalEndPointConfiguration = queueEndPoint;
+            LocalEndPoint = queueEndPoint;
             InitializeCollection();
             
         }
@@ -71,16 +71,16 @@ namespace Yasb.MongoDb.Messaging
         {
             _collection.RemoveAll();
         }
-        public MongoDbEndPointConfiguration LocalEndPointConfiguration { get; private set; }
+        public MongoDbEndPoint LocalEndPoint { get; private set; }
 
         private void InitializeCollection()
         {
-            var database = MongoDbFactory.CreateDatabase(LocalEndPointConfiguration);
-            if (!database.CollectionExists(LocalEndPointConfiguration.QueueName))
+            var database = MongoDbFactory.CreateDatabase(LocalEndPoint);
+            if (!database.CollectionExists(LocalEndPoint.QueueName))
             {
-                database.CreateCollection(LocalEndPointConfiguration.QueueName);
+                database.CreateCollection(LocalEndPoint.QueueName);
             }
-            _collection = database.GetCollection(LocalEndPointConfiguration.QueueName);
+            _collection = database.GetCollection(LocalEndPoint.QueueName);
         }
 
 

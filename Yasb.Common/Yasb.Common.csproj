@@ -61,19 +61,19 @@
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Guard.cs" />
+    <Compile Include="Messaging\Tcp\BufferPool.cs" />
+    <Compile Include="Messaging\Tcp\ITcpConnectionsPool.cs" />
+    <Compile Include="Messaging\Tcp\TcpConnectionsPool.cs" />
+    <Compile Include="Messaging\Tcp\TcpConnection.cs" />
     <Compile Include="Messaging\Configuration\EndPointsConfigurer.cs" />
-    <Compile Include="Messaging\Configuration\EndPointsConfiguration.cs" />
     <Compile Include="Messaging\Configuration\IEndPointConfiguration.cs" />
     <Compile Include="Messaging\Configuration\ISerializerConfiguration.cs" />
     <Compile Include="Messaging\Configuration\SubscriptionServiceConfiguration.cs" />
-    <Compile Include="Messaging\EndPoints\IEndPointsRepository.cs" />
     <Compile Include="Messaging\EndPoints\QueueEndPoint.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Messaging\Exceptions\InvalidEndPointException.cs" />
     <Compile Include="Messaging\IQueueFactory.cs" />
-    <Compile Include="Messaging\Configuration\ServiceBusConfiguration.cs" />
-    <Compile Include="Messaging\Configuration\ServiceBusConfigurer.cs" />
     <Compile Include="Messaging\IMessageHandler.cs" />
     <Compile Include="Messaging\IHandleMessages.cs" />
     <Compile Include="Messaging\IMessage.cs" />

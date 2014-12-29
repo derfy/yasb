@@ -25,7 +25,7 @@ namespace Yasb.Tests.Common.Messaging
     public class ServiceBusTests
     {
         private Mock<ISubscriptionService<TestEndPointConfiguration>> _subscriptionService;
-        private IServiceBus<TestEndPointConfiguration> _sut;
+        private IServiceBus<TestEndPoint> _sut;
         private Mock<IQueueFactory<TestEndPointConfiguration>> _queueFactory; 
         [TestInitialize]
         public void Setup()
@@ -34,18 +34,16 @@ namespace Yasb.Tests.Common.Messaging
             _subscriptionService = new Mock<ISubscriptionService<TestEndPointConfiguration>>();
             //_endPointFactory = new Mock<IEndPointFactory<ITestEndPoint>>();
             _queueFactory = new Mock<IQueueFactory<TestEndPointConfiguration>>();
-           var configurator = new TestConfigurator(_queueFactory);
-            configurator.SubscriptionService = _subscriptionService;
-            _sut = configurator.Bus(sb => sb.EndPoints(ec =>
+            _sut = Configurator.Configure<TestEndPoint>().ConfigureEndPoints(ec =>
                    ec.ReceivesOn(e => e.WithHostName("192.168.127.128").WithQueueName("consumer"))
-                     .SubscribesTo("producer@vmEndPoint", e => e.WithHostName("vmEndPoint").WithQueueName("producer"))));
+                     .SubscribesTo("producer@vmEndPoint", e => e.WithHostName("vmEndPoint").WithQueueName("producer"))).Bus();
            
         }
         [TestMethod]
         public void LocalMessageEndPointShouldBeCorrect()
         {
 
-            Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint.Built.Value);
+            Assert.AreEqual<string>("192.168.127.128:6379:consumer", _sut.LocalEndPoint.Value);
         }
         [TestMethod]
         public void WhenSendingMessageQueueShouldBeInvokedCorrectly()

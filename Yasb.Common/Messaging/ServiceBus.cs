@@ -7,25 +7,25 @@ using Yasb.Common.Messaging.EndPoints;
 
 namespace Yasb.Common.Messaging
 {
-    public class ServiceBus<TEndPointConfiguration> : IServiceBus<TEndPointConfiguration> 
+    public class ServiceBus<TEndPoint> : IServiceBus<TEndPoint> 
     {
-        private readonly IQueueFactory<TEndPointConfiguration> _queueFactory;
+        private readonly IQueueFactory<TEndPoint> _queueFactory;
         private readonly IWorkerPool _messageReveiverWorkerPool;
-        private readonly ISubscriptionService<TEndPointConfiguration> _subscriptionService;
-        private EndPointsConfiguration<TEndPointConfiguration> _endPointsRepository;
-        public ServiceBus(EndPointsConfiguration<TEndPointConfiguration> endPointsRepository, IQueueFactory<TEndPointConfiguration> queueFactory, ISubscriptionService<TEndPointConfiguration> subscriptionService, MessagesReceiver<TEndPointConfiguration> messageReceiver)
+        private readonly ISubscriptionService<TEndPoint> _subscriptionService;
+        private Func<string, TEndPoint> _endPointsFactory;
+        public ServiceBus(Func<string, TEndPoint> endPointsFactory, IQueueFactory<TEndPoint> queueFactory, ISubscriptionService<TEndPoint> subscriptionService, MessagesReceiver<TEndPoint> messageReceiver)
         {
-            _endPointsRepository = endPointsRepository;
+            _endPointsFactory = endPointsFactory;
             _queueFactory = queueFactory;
             _subscriptionService = subscriptionService;
             _messageReveiverWorkerPool = new WorkerPool(messageReceiver);
         }
 
-        public virtual TEndPointConfiguration LocalEndPoint { get { return _endPointsRepository["local"]; } }
+        public virtual TEndPoint LocalEndPoint { get { return _endPointsFactory("local"); } }
 
         public void Send(string endPointName, IMessage message)
         {
-            var endPoint = _endPointsRepository[endPointName];
+            var endPoint = _endPointsFactory(endPointName);
             var queue = _queueFactory.CreateQueue(endPoint);
             queue.Push(message);
         }
@@ -43,7 +43,7 @@ namespace Yasb.Common.Messaging
 
         public void Subscribe(string topicEndPointName)
         {
-            var topicEndPoint = _endPointsRepository[topicEndPointName];
+            var topicEndPoint = _endPointsFactory(topicEndPointName);
             _subscriptionService.SubscribeTo(topicEndPoint);
         }
        

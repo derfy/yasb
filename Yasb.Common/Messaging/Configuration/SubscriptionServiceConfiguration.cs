@@ -1,34 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
 namespace Yasb.Common.Messaging.Configuration
 {
     public class SubscriptionServiceConfiguration
     {
-        public SubscriptionServiceConfiguration()
-        {
-           HostName="localhost";
-           Port = 27017;
-           DatabaseName = "Test";
-        }
-
+        private int _port = 6379;
+        private string _hostName;
         public SubscriptionServiceConfiguration WithHostName(string hostName)
         {
-            HostName =  hostName;
+            _hostName = hostName;
             return this;
         }
-        public SubscriptionServiceConfiguration WithDatabase(string databaseName)
+        public EndPoint ServerAddress
         {
-            DatabaseName = databaseName;
-            return this;
+            get
+            {
+                var ipAddress = Dns.GetHostAddresses(_hostName).Where(ip => ip.AddressFamily == AddressFamily.InterNetwork).First();
+                return new IPEndPoint(ipAddress, _port);
+            }
         }
-
-        internal string HostName { get; private set; }
-
-        internal int Port { get; private set; }
-
-        internal string DatabaseName { get; set; }
     }
 }

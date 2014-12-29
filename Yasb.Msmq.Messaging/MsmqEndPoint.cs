@@ -19,7 +19,7 @@ namespace Yasb.Msmq.Messaging
 
         public bool IsPrivate { get;set; }
 
-        
-        
+        internal string Path { get { return string.Format(@"{0}\{1}$\{2}", Host, IsPrivate ? "private" : "public", QueueName); } }
+        public string Value { get { return string.Format(@"{0}:{1}:{2}", Host, IsPrivate ? "private" : "public", QueueName); } }
     }
 }

@@ -16,9 +16,9 @@ using Yasb.Common.Messaging.Serialization.Json;
 namespace Yasb.Wireup
 {
 
-    public class MsmqServiceBusModule : ServiceBusModule<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration> 
+    public class MsmqServiceBusModule : ServiceBusModule<MsmqEndPoint,MsmqEndPointConfiguration> 
     {
-        public MsmqServiceBusModule(ServiceBusConfiguration<MsmqEndPointConfiguration, MsmqSubscriptionServiceConfiguration> serviceBusConfiguration)
+        public MsmqServiceBusModule(EndPointsConfigurer<MsmqEndPointConfiguration> serviceBusConfiguration)
             : base(serviceBusConfiguration)
         {
 
@@ -27,12 +27,12 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterWithScope<MsmqSubscriptionService>((componentScope, parameters) =>
-            {
-                Configuration.SubscriptionServiceConfiguration.LocalEndPointConfiguration = Configuration.EndPoints["local"];
-                return new MsmqSubscriptionService(Configuration.SubscriptionServiceConfiguration);
-            })
-           .As<ISubscriptionService<MsmqEndPointConfiguration>>();
+           // builder.RegisterWithScope<MsmqSubscriptionService>((componentScope, parameters) =>
+           // {
+           //     Configuration.SubscriptionServiceConfiguration.LocalEndPointConfiguration = Configuration.EndPoints["local"];
+           //     return new MsmqSubscriptionService(Configuration.SubscriptionServiceConfiguration);
+           // })
+           //.As<ISubscriptionService<MsmqEndPointConfiguration>>();
 
             
 

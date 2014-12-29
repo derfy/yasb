@@ -13,20 +13,20 @@ using Autofac.Core;
 
 namespace Yasb.Tests.Wireup
 {
-    public class TestConfigurator : AbstractConfigurator<TestEndPointConfiguration, RedisEndPointConfiguration>
+
+
+    public static class TestConfiguratorExtensions
     {
-        private Mock<IQueueFactory<TestEndPointConfiguration>> _queueFactory;
-        public TestConfigurator(Mock<IQueueFactory<TestEndPointConfiguration>> queueFactory)
-        {
-             _queueFactory = queueFactory;
-        }
-        public Mock<ISubscriptionService<TestEndPointConfiguration>> SubscriptionService { get; set; }
 
-
-        protected override IModule RegisterServiceBusModule(ServiceBusConfiguration<TestEndPointConfiguration, RedisEndPointConfiguration> serviceBusConfiguration)
+        public static Configurator<TestEndPoint> ConfigureEndPoints(this Configurator<TestEndPoint> configurator, Action<EndPointsConfigurer<TestEndPointConfiguration>> action)
         {
-           // builder.RegisterModule(new TestQueueModule(_endPointFactory.Object, _queueFactory.Object, serviceBusConfiguration, "bus"));
-            return new TestServiceBusModule(serviceBusConfiguration, _queueFactory, SubscriptionService);
+            var configuration = new EndPointsConfigurer<TestEndPointConfiguration>();
+            action(configuration);
+            
+            return configurator;
         }
+        
+
     }
+   
 }

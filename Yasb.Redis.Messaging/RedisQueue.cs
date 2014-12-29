@@ -21,16 +21,16 @@ using Yasb.Redis.Messaging.Configuration;
 namespace Yasb.Redis.Messaging
 {
 
-    public class RedisQueue : IQueue<RedisEndPointConfiguration>, IDisposable
+    public class RedisQueue : IQueue<RedisEndPoint>, IDisposable
     {
         private AbstractJsonSerializer<MessageEnvelope> _serializer;
         private IRedisClient _redisClient;
         private string _queueName;
-        public RedisQueue(RedisEndPointConfiguration localEndPoint, AbstractJsonSerializer<MessageEnvelope> serializer, IRedisClient redisClient)
+        public RedisQueue(RedisEndPoint localEndPoint, AbstractJsonSerializer<MessageEnvelope> serializer, IRedisClient redisClient)
         {
             _serializer = serializer;
-            _queueName = localEndPoint.Built.QueueName;
-            LocalEndPointConfiguration=localEndPoint;
+            _queueName = localEndPoint.QueueName;
+            LocalEndPoint=localEndPoint;
             _redisClient = redisClient;
           
         }
@@ -64,7 +64,7 @@ namespace Yasb.Redis.Messaging
              _redisClient.EvalSha("PushMessage.lua", 1, _queueName.ToUtf8Bytes(), bytes);
         }
 
-        public RedisEndPointConfiguration LocalEndPointConfiguration { get; private set; }
+        public RedisEndPoint LocalEndPoint { get; private set; }
 
         public void Clear() {
             _redisClient.Del(_queueName);
