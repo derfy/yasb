@@ -21,11 +21,11 @@ namespace Yasb.Redis.Messaging.Client
     public class RedisClient : IRedisClient, IDisposable
     {
         internal const int Success = 1;
-        private ITcpConnectionsPool<RedisConnection> _connectionsPool;
+        private TcpConnectionsManager<RedisConnection> _connectionsManager;
         private ConcurrentDictionary<string, byte[]> _internalCache = new ConcurrentDictionary<string, byte[]>();
-        public RedisClient(ITcpConnectionsPool<RedisConnection> connectionEventArgsPool)
+        public RedisClient(TcpConnectionsManager<RedisConnection> connectionsManager)
         {
-            _connectionsPool = connectionEventArgsPool;
+            _connectionsManager = connectionsManager;
         }
 
         
@@ -118,17 +118,10 @@ namespace Yasb.Redis.Messaging.Client
 
         private TResult SendCommand<TResult>(IRedisCommand<TResult> command)
         {
-            var connection = _connectionsPool.Dequeue();
-
-            var task = connection.SendAsync(command.ToBinary);
+           
+            var task = _connectionsManager.SendAsync(command.ToBinary);
             return task.ContinueWith(taskSend =>
             {
-                if (taskSend.IsCanceled)
-                {
-                     _connectionsPool.Enqueue(connection);
-                    return default(TResult);
-                }
-                _connectionsPool.Enqueue(connection);
                 using (var commandProcessor = new CommandResultProcessor(taskSend.Result))
                 {
                     return command.ProcessResponse(commandProcessor);

@@ -42,7 +42,8 @@ namespace Yasb.Tests.Messaging.Redis
         {
             var localEndPoint=new RedisEndPointConfiguration("192.168.227.128","queue_test");
             var connectionPool = new TcpConnectionsPool<RedisConnection>(10, () => new RedisConnection(localEndPoint.Built.Address));
-            var redisClient = new RedisClient(connectionPool);
+            var connectionManager = new TcpConnectionsManager<RedisConnection>(connectionPool);
+            var redisClient = new RedisClient(connectionManager);
             _queue = new RedisQueue(localEndPoint.Built, _serializer, redisClient);
         }
         [TestInitialize()]

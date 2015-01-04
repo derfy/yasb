@@ -63,6 +63,7 @@
     <Compile Include="Guard.cs" />
     <Compile Include="Messaging\Tcp\BufferPool.cs" />
     <Compile Include="Messaging\Tcp\ITcpConnectionsPool.cs" />
+    <Compile Include="Messaging\Tcp\TcpConnectionsManager.cs" />
     <Compile Include="Messaging\Tcp\TcpConnectionsPool.cs" />
     <Compile Include="Messaging\Tcp\TcpConnection.cs" />
     <Compile Include="Messaging\Configuration\EndPointsConfigurer.cs" />

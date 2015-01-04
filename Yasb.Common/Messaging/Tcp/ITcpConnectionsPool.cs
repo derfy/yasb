@@ -6,7 +6,7 @@ using System.Net;
 
 namespace Yasb.Common.Messaging.Tcp
 {
-    public interface ITcpConnectionsPool<TConnection> where TConnection : TcpConnection 
+    public interface ITcpConnectionsPool<TConnection> where TConnection : TcpConnectionState 
     {
         TConnection Dequeue();
 

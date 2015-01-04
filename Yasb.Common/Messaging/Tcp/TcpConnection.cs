@@ -4,182 +4,242 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Yasb.Common.Messaging.Tcp
 {
-    public abstract class TcpConnection : IDisposable
+    public abstract class TcpConnectionState : IDisposable
     {
+        private const int INACTIVITY_TIMEOUT = 1000 * 5; // 5 secs
+        
+        private SocketAsyncEventArgs _args;
+        private Timer _timer;
         private Socket _socket;
-        private EndPoint _remoteAddress;
-        protected TcpConnection(EndPoint address)
+        private bool _isDisconnected = false;
+        private int _reserved = 0;
+
+        public TcpConnectionState(EndPoint remoteAddress)
         {
-            _remoteAddress = address;
+            _args = new SocketAsyncEventArgs() { RemoteEndPoint = remoteAddress,DisconnectReuseSocket=true };
+            _args.Completed += (object sender, SocketAsyncEventArgs e) => OnCompleted(sender, e);
+            _timer = new Timer(DisconnectAsync, null, int.MaxValue, int.MaxValue);
             _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            
         }
-        
-        
-        
+     
+        public Task<bool> ConnectAsync()
+        {
+           TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            _args.UserToken = tcs;
+            if (!_socket.ConnectAsync(_args))
+            {
+                ProcessConnect(_socket,_args);
+            }
+            return tcs.Task;
+        }
+
         public Task<byte[]> SendAsync(byte[][] data)
         {
-            var taskCompletionSource = new TaskCompletionSource<byte[]>();
-            var args = new SocketAsyncEventArgs() 
-            { 
-                RemoteEndPoint = _remoteAddress,
-                UserToken=taskCompletionSource,
-               // BufferList = WriteAllToSendBufferList(data).ToList()
-            };
-            args.Completed += (object sender, SocketAsyncEventArgs e) => { 
-                OnCompleted(sender, e);
-                if (e.LastOperation == SocketAsyncOperation.Connect && _socket.Connected) 
-                {
-                    args.BufferList = WriteAllToSendBufferList(data).ToList();
-                    SendAsync(args);
-                }
-            };
-            if (!_socket.Connected)
+           TaskCompletionSource<byte[]> tcs = new TaskCompletionSource<byte[]>();
+            _args.UserToken = tcs;
+            var segments = WriteAllToSendBufferList(data);
+            _args.BufferList = segments.ToList();
+            if (!_socket.SendAsync(_args))
             {
-                ConnectAsync(args);
+                ProcessSend(_socket,_args);
             }
-            else 
-            {
-                args.BufferList = WriteAllToSendBufferList(data).ToList();
-                SendAsync(args); 
-            }
-            return taskCompletionSource.Task;
+            return tcs.Task;
         }
-        public void Reset(SocketAsyncEventArgs args)
+
+        public bool Reserve() 
+        {
+            if (0 == Interlocked.Exchange(ref _reserved, 1))
+            {
+                if (_isDisconnected)
+                    return false;
+                _timer.Change(int.MaxValue, int.MaxValue);
+                return true;
+            }
+            return false;
+          
+        }
+        public void UnReserve()
+        {
+            if (_isDisconnected)
+                throw new ApplicationException("Object in use is disconnected");
+            
+            _timer.Change(INACTIVITY_TIMEOUT, int.MaxValue);
+            Interlocked.Exchange(ref _reserved, 0);
+
+        }
+        public void Dispose()
+        {
+            ProcessDisconnect(_socket, _args);
+        }
+
+        protected abstract IEnumerable<ArraySegment<byte>> WriteAllToSendBufferList(params byte[][] cmdWithBinaryArgs);
+
+        public bool IsBound 
+        {
+            get
+            {
+
+                return _socket.Connected;
+            } 
+        }
+
+        private void OnCompleted(object sender, SocketAsyncEventArgs completedArgs)
+        {
+            var socket = sender as Socket;
+            switch (completedArgs.LastOperation)
+            {
+                case SocketAsyncOperation.Connect:
+                    ProcessConnect(socket,completedArgs);
+                    break;
+                case SocketAsyncOperation.Send:
+                    ProcessSend(socket,completedArgs);
+                    break;
+                case SocketAsyncOperation.Receive:
+                    ProcessReceive(socket,completedArgs);
+                    break;
+                case SocketAsyncOperation.Disconnect:
+                    ProcessDisconnect(socket, completedArgs);
+                    break;
+            }
+        }
+        private void Reset(SocketAsyncEventArgs args)
         {
             var buffer = args.Buffer;
             args.SetBuffer(null, 0, 0);
             BufferPool.ReleaseBufferToPool(ref buffer);
-            args.UserToken = null;
 
         }
 
-
-        
-
-        protected abstract IEnumerable<ArraySegment<byte>> WriteAllToSendBufferList(params byte[][] cmdWithBinaryArgs);
-
-
-
-        private  void OnCompleted(object sender, SocketAsyncEventArgs completedArgs)
+        private void ReceiveAsync(Socket socket, SocketAsyncEventArgs args)
         {
-            switch (completedArgs.LastOperation)
+            if (!socket.ReceiveAsync(args))
             {
-                case SocketAsyncOperation.Connect:
-                    ProcessConnect(completedArgs);
-                    break;
-                case SocketAsyncOperation.Send:
-                    ProcessSend(completedArgs);
-                    break;
-                case SocketAsyncOperation.Receive:
-                    ProcessReceive(completedArgs);
-                    break;
-                case SocketAsyncOperation.Disconnect:
-                    ProcessDisconnect(completedArgs);
-                    break;
+                ProcessReceive(socket,args);
             }
         }
 
-       
-        
-        private void ConnectAsync(SocketAsyncEventArgs args)
+        private void ProcessReceive(Socket socket,SocketAsyncEventArgs args)
         {
-            if (!_socket.ConnectAsync(args))
-            {
-                ProcessConnect(args);
-            }
-        }
-
-        private void SendAsync(SocketAsyncEventArgs args)
-        {
-            if (!_socket.SendAsync(args))
-            {
-                ProcessSend(args);
-            }
-        }
-        private void ReceiveAsync(SocketAsyncEventArgs args)
-        {
-            if (!_socket.ReceiveAsync(args))
-            {
-                ProcessReceive(args);
-            }
-        }
-        private void DisconnectAsync(SocketAsyncEventArgs args)
-        {
-            if (!_socket.DisconnectAsync(args))
-            {
-                ProcessDisconnect(args);
-            }
-        }
-        private void ProcessConnect(SocketAsyncEventArgs args)
-        {
-            var tcs = args.UserToken as TaskCompletionSource<byte[]>;
+            var taskCompletionSource = args.UserToken as TaskCompletionSource<byte[]>;
             if (args.SocketError != SocketError.Success)
             {
-                ProcessDisconnect(args);
+                ProcessDisconnect(socket,args);
+                taskCompletionSource.SetException(new SocketException((int)args.SocketError));
                 return;
             }
-        }
-        private void ProcessSend(SocketAsyncEventArgs args)
-        {
-            args.BufferList = null;
-            args.SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
-            ReceiveAsync(args);
-        }
-        private void ProcessReceive(SocketAsyncEventArgs args)
-        {
-            var tcs = args.UserToken as TaskCompletionSource<byte[]>;
-
-
-            if (args.BytesTransferred == 0 || args.SocketError != SocketError.Success)
-            {
-                DisconnectAsync(args);
-                return;
-            }
-
+           
             var total = args.BytesTransferred + args.Offset;
-            if (_socket.Available > 0)
+            if (socket.Available > 0)
             {
                 var buffer = args.Buffer;
 
-                if (total + _socket.Available > buffer.Length)
+                if (total + socket.Available > buffer.Length)
                 {
-                    BufferPool.ResizeAndFlushLeft(ref buffer, total + _socket.Available, 0, total);
+                    BufferPool.ResizeAndFlushLeft(ref buffer, total + socket.Available, 0, total);
                 }
 
                 args.SetBuffer(buffer, total, buffer.Length - total);
 
-                ReceiveAsync(args);
+                ReceiveAsync(socket,args);
                 return;
             }
 
             var array = new byte[total];
             Array.Copy(args.Buffer, array, total);
             Reset(args);
-
-            tcs.SetResult(array);
+            taskCompletionSource.SetResult(array);
         }
 
-        private void ProcessDisconnect(SocketAsyncEventArgs args)
+        private void DisconnectAsync(Socket socket, SocketAsyncEventArgs args)
         {
-            var tcs = args.UserToken as TaskCompletionSource<byte[]>;
+            if (!socket.DisconnectAsync(args))
+            {
+                ProcessDisconnect(socket,args);
+            }
+        }
+
+        private void ProcessConnect(Socket socket, SocketAsyncEventArgs args)
+        {
+            var taskCompletionSource = args.UserToken as TaskCompletionSource<bool>;
+            if (args.SocketError != SocketError.Success && args.SocketError != SocketError.IsConnected)
+            {
+                ProcessDisconnect(socket, args);
+                taskCompletionSource.SetException(new SocketException((int)args.SocketError));
+                return;
+            }
+            taskCompletionSource.SetResult(true);
+        }
+        private void ProcessSend(Socket socket,SocketAsyncEventArgs args)
+        {
+            args.BufferList = null;
+            args.SetBuffer(BufferPool.GetBuffer(), 0, BufferPool.BufferLength);
+            ReceiveAsync(socket,args);
+        }
+
+
+
+
+        private void DisconnectAsync(object state)
+        {
+            if (0 == Interlocked.Exchange(ref _reserved, 1))
+            {
+                _isDisconnected = true;
+                if (!_socket.DisconnectAsync(_args))
+                {
+                    ProcessDisconnect(_socket, _args);
+                }
+            }
+           
+           
+        }
+
+        private void ProcessDisconnect(Socket socket, SocketAsyncEventArgs args)
+        {
+            Console.WriteLine("disconnecting ");
             Reset(args);
-            Dispose();
-            tcs.SetCanceled();
-        }
-        
-        
-
+            _timer.Dispose();
+            socket.Close();
+        } 
         
 
 
-
-        public void Dispose()
+        
+        private bool IsClientConnected(Socket client)
         {
+            bool blockingState = client.Blocking;
+            try
+            {
+                byte[] tmp = new byte[1];
+
+                client.Blocking = false;
+                client.Send(tmp, 0, 0);
+                Console.WriteLine("Connected!");
+                return true;
+            }
+            catch (SocketException e)
+            {
+                // 10035 == WSAEWOULDBLOCK 
+                if (e.NativeErrorCode.Equals(10035))
+                    Console.WriteLine("Still Connected, but the Send would block");
+                else
+                {
+                    Console.WriteLine("Disconnected: error code {0}!", e.NativeErrorCode);
+                }
+                return false;
+            }
+            finally
+            {
+                client.Blocking = blockingState;
+            }
+
+            
         }
+       
     }
+   
 }

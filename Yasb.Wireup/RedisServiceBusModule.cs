@@ -36,10 +36,16 @@ namespace Yasb.Wireup
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
+            builder.RegisterWithScope<RedisClientFactory>(componentScope =>
+            {
+                return address => componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(address));
+            }).InstancePerMatchingLifetimeScope(Scope);
+
             builder.RegisterOneInstanceForObjectKey<EndPoint, IRedisClient>((address, context) =>
             {
                 var connectionsPool = context.Resolve<ITcpConnectionsPool<RedisConnection>>(TypedParameter.From<EndPoint>(address));
-                return new RedisClient(connectionsPool);
+                var connectionManager = new TcpConnectionsManager<RedisConnection>(connectionsPool);
+                return new RedisClient(connectionManager);
             });
 
 
@@ -56,11 +62,7 @@ namespace Yasb.Wireup
                 return new RedisQueueFactory(componentScope.Resolve<AbstractJsonSerializer<MessageEnvelope>>(), componentScope.Resolve<RedisClientFactory>());
             }).As<IQueueFactory<RedisEndPoint>>().InstancePerMatchingLifetimeScope(Scope);
 
-            builder.RegisterWithScope<RedisClientFactory>(componentScope =>
-            {
-                return address => componentScope.Resolve<IRedisClient>(TypedParameter.From<EndPoint>(address));
-            }).InstancePerMatchingLifetimeScope(Scope);
-
+           
             builder.RegisterWithScope<Func<Type, AbstractJsonSerializer<IMessage>>>((componentScope, parameters) =>
             {
                 return (type) => new DefaultJsonMessageDeserializer(type);

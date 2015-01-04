@@ -59,7 +59,8 @@ namespace Yasb.Common.Messaging.Tcp
 
         internal static void ReleaseBufferToPool(ref byte[] buffer)
         {
-            if (buffer == null) return;
+            if (buffer == null) 
+                return;
             if (buffer.Length == BufferLength)
             {
                 for (int i = 0; i < pool.Length; i++)

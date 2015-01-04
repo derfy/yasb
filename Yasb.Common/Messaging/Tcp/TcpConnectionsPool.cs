@@ -10,10 +10,13 @@ using System.Net;
 
 namespace Yasb.Common.Messaging.Tcp
 {
-    public class TcpConnectionsPool<TConnection> : ITcpConnectionsPool<TConnection> where TConnection : TcpConnection 
+    public class TcpConnectionsPool<TConnection> : ITcpConnectionsPool<TConnection> where TConnection : TcpConnectionState 
     {
         private ConcurrentQueue<TConnection> _internalQueue = new ConcurrentQueue<TConnection>();
         private ManualResetEventSlim _mres = new ManualResetEventSlim(false);
+
+        public event EventHandler Empty;
+
         public TcpConnectionsPool(int size, Func<TConnection> factory)
         {
         
@@ -22,7 +25,7 @@ namespace Yasb.Common.Messaging.Tcp
 
       
 
-        private void Initialise(int size,  Func<TConnection> factory)
+        internal void Initialise(int size,  Func<TConnection> factory)
         {
             for (int ii = 0; ii < size; ii++)
             {
@@ -34,11 +37,18 @@ namespace Yasb.Common.Messaging.Tcp
         {
 
             TConnection connection = default(TConnection);
-            while (!_internalQueue.TryDequeue(out connection))
+            do
             {
-                _mres.Wait();
-                _mres.Reset();
-            }
+                while (!_internalQueue.TryDequeue(out connection))
+                {
+                    if (Empty != null)
+                    {
+                        Empty(this,new EventArgs());
+                    }
+                    _mres.Wait();
+                    _mres.Reset();
+                }
+            } while (!connection.Reserve());
             return connection;
         }
 
@@ -51,6 +61,7 @@ namespace Yasb.Common.Messaging.Tcp
         {
            
             _internalQueue.Enqueue(connection);
+            connection.UnReserve();
             _mres.Set();
         }
 
